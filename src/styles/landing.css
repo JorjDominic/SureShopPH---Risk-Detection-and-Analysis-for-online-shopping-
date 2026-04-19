@@ -1220,6 +1220,8 @@ h1, h2, h3, .ss-landing-logo-text {
 
 .ss-landing-section {
     padding: 5.5rem 0;
+    content-visibility: auto;
+    contain-intrinsic-size: 780px;
 }
 
 .ss-landing-feature-card,
@@ -1235,6 +1237,20 @@ h1, h2, h3, .ss-landing-logo-text {
 .ss-landing-feature-card:hover,
 .ss-landing-step-card:hover {
     transform: translateY(-10px) scale(1.01);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ss-landing-glass-card,
+    .ss-landing-live-dot,
+    .ss-landing-meter-fill,
+    .ss-landing-orb-a,
+    .ss-landing-orb-b,
+    .ss-landing-hero-visual,
+    .ss-landing-hero-text {
+        animation: none !important;
+        transition: none !important;
+        transform: none !important;
+    }
 }
 
 .ss-landing-demo {

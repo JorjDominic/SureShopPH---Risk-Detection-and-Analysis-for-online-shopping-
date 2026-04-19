@@ -405,6 +405,8 @@ body.ss-theme-dark .ss-dashboard-btn-secondary {
 
 .ss-dashboard-section {
   padding-top: 1.5rem;
+  content-visibility: auto;
+  contain-intrinsic-size: 720px;
 }
 
 .ss-dashboard-section-heading,

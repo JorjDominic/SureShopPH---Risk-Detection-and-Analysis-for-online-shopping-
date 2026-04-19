@@ -8,9 +8,12 @@ function LandingHeader({ session }) {
   const [logoutBusy, setLogoutBusy] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setIsScrolled(window.scrollY > 18);
+    const onScroll = () => {
+      const next = window.scrollY > 18;
+      setIsScrolled((prev) => (prev === next ? prev : next));
+    };
     onScroll();
-    window.addEventListener('scroll', onScroll);
+    window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 

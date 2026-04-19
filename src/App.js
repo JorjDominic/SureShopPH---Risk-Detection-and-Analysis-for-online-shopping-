@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { BrowserRouter, Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import './styles/styles.css';
 import './styles/landing.css';
@@ -31,47 +31,12 @@ function PublicOnlyRoute({ session, children }) {
 }
 
 function LandingPage({ isDarkMode, session }) {
-  const heroRef = useRef(null);
-
-  useEffect(() => {
-    const hero = heroRef.current;
-    if (!hero) return undefined;
-
-    const updateParallax = (event) => {
-      const target = event.target;
-      if (target instanceof Element && target.closest('.ss-landing-hero-content')) {
-        hero.style.setProperty('--ss-parallax-x', '0');
-        hero.style.setProperty('--ss-parallax-y', '0');
-        return;
-      }
-
-      const rect = hero.getBoundingClientRect();
-      const x = ((event.clientX - rect.left) / (rect.width || 1)) - 0.5;
-      const y = ((event.clientY - rect.top) / (rect.height || 1)) - 0.5;
-      hero.style.setProperty('--ss-parallax-x', x.toFixed(4));
-      hero.style.setProperty('--ss-parallax-y', y.toFixed(4));
-    };
-
-    const resetParallax = () => {
-      hero.style.setProperty('--ss-parallax-x', '0');
-      hero.style.setProperty('--ss-parallax-y', '0');
-    };
-
-    hero.addEventListener('pointermove', updateParallax);
-    hero.addEventListener('pointerleave', resetParallax);
-
-    return () => {
-      hero.removeEventListener('pointermove', updateParallax);
-      hero.removeEventListener('pointerleave', resetParallax);
-    };
-  }, []);
-
   return (
     <div className="App">
       <LandingHeader session={session} />
 
       <main className="ss-landing-main">
-        <section className="ss-landing-hero" id="home" ref={heroRef}>
+        <section className="ss-landing-hero" id="home">
           <div className="ss-landing-colorbends-layer" aria-hidden="true">
             <ColorBends
               colors={isDarkMode ? ['#38bdf8', '#14b8a6', '#818cf8'] : ['#14b8a6', '#3b82f6', '#f97316']}
@@ -80,8 +45,8 @@ function LandingPage({ isDarkMode, session }) {
               scale={1.08}
               frequency={1}
               warpStrength={1}
-              mouseInfluence={1.35}
-              parallax={0.75}
+              mouseInfluence={0}
+              parallax={0}
               noise={0.05}
               transparent
               autoRotate={3}

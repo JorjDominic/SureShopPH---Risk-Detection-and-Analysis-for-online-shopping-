@@ -117,11 +117,15 @@ export default function ColorBends({
   const rafRef = useRef(null);
   const materialRef = useRef(null);
   const resizeObserverRef = useRef(null);
+  const intersectionObserverRef = useRef(null);
   const rotationRef = useRef(rotation);
   const autoRotateRef = useRef(autoRotate);
   const pointerTargetRef = useRef(new THREE.Vector2(0, 0));
   const pointerCurrentRef = useRef(new THREE.Vector2(0, 0));
   const pointerSmoothRef = useRef(8);
+  const isVisibleRef = useRef(true);
+  const isInViewportRef = useRef(true);
+  const frameAccumulatorRef = useRef(0);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -167,7 +171,8 @@ export default function ColorBends({
 
     rendererRef.current = renderer;
     renderer.outputColorSpace = THREE.SRGBColorSpace;
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    const isCoarsePointer = window.matchMedia('(pointer: coarse)').matches;
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isCoarsePointer ? 1.25 : 1.6));
     renderer.setClearColor(0x000000, transparent ? 0 : 1);
     renderer.domElement.style.width = '100%';
     renderer.domElement.style.height = '100%';
@@ -175,6 +180,12 @@ export default function ColorBends({
     container.appendChild(renderer.domElement);
 
     const clock = new THREE.Clock();
+    let rafId = null;
+    const targetFps = isCoarsePointer ? 24 : 30;
+    const targetFrameInterval = 1 / targetFps;
+    const enablePointerEffects = mouseInfluence > 0 || parallax > 0;
+
+    const shouldAnimate = () => isVisibleRef.current && isInViewportRef.current;
 
     const handleResize = () => {
       const w = container.clientWidth || 1;
@@ -183,7 +194,24 @@ export default function ColorBends({
       material.uniforms.uCanvas.value.set(w, h);
     };
 
+    const handleVisibilityChange = () => {
+      isVisibleRef.current = document.visibilityState !== 'hidden';
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
     handleResize();
+
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver(
+        (entries) => {
+          isInViewportRef.current = entries.some((entry) => entry.isIntersecting);
+        },
+        { threshold: 0.01 }
+      );
+      io.observe(container);
+      intersectionObserverRef.current = io;
+    }
 
     if ('ResizeObserver' in window) {
       const ro = new ResizeObserver(handleResize);
@@ -194,7 +222,23 @@ export default function ColorBends({
     }
 
     const loop = () => {
+      if (!shouldAnimate()) {
+        clock.getDelta();
+        rafId = requestAnimationFrame(loop);
+        rafRef.current = rafId;
+        return;
+      }
+
       const dt = clock.getDelta();
+      frameAccumulatorRef.current += dt;
+
+      if (frameAccumulatorRef.current < targetFrameInterval) {
+        rafId = requestAnimationFrame(loop);
+        rafRef.current = rafId;
+        return;
+      }
+
+      frameAccumulatorRef.current = 0;
       const elapsed = clock.elapsedTime;
       material.uniforms.uTime.value = elapsed;
 
@@ -202,22 +246,28 @@ export default function ColorBends({
       const rad = (deg * Math.PI) / 180;
       material.uniforms.uRot.value.set(Math.cos(rad), Math.sin(rad));
 
-      const cur = pointerCurrentRef.current;
-      const tgt = pointerTargetRef.current;
-      const amt = Math.min(1, dt * pointerSmoothRef.current);
-      cur.lerp(tgt, amt);
-      material.uniforms.uPointer.value.copy(cur);
+      if (enablePointerEffects) {
+        const cur = pointerCurrentRef.current;
+        const tgt = pointerTargetRef.current;
+        const amt = Math.min(1, dt * pointerSmoothRef.current);
+        cur.lerp(tgt, amt);
+        material.uniforms.uPointer.value.copy(cur);
+      }
 
       renderer.render(scene, camera);
-      rafRef.current = requestAnimationFrame(loop);
+      rafId = requestAnimationFrame(loop);
+      rafRef.current = rafId;
     };
 
-    rafRef.current = requestAnimationFrame(loop);
+    rafId = requestAnimationFrame(loop);
+    rafRef.current = rafId;
 
     return () => {
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+      if (intersectionObserverRef.current) intersectionObserverRef.current.disconnect();
       if (resizeObserverRef.current) resizeObserverRef.current.disconnect();
       else window.removeEventListener('resize', handleResize);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
 
       geometry.dispose();
       material.dispose();
@@ -287,6 +337,12 @@ export default function ColorBends({
   ]);
 
   useEffect(() => {
+    if (mouseInfluence <= 0 && parallax <= 0) {
+      pointerTargetRef.current.set(0, 0);
+      pointerCurrentRef.current.set(0, 0);
+      return undefined;
+    }
+
     const container = containerRef.current;
     if (!container) return undefined;
 
@@ -299,14 +355,14 @@ export default function ColorBends({
 
     const handlePointerLeaveWindow = () => pointerTargetRef.current.set(0, 0);
 
-    container.addEventListener('pointermove', handlePointerMove);
+    container.addEventListener('pointermove', handlePointerMove, { passive: true });
     container.addEventListener('pointerleave', handlePointerLeaveWindow);
 
     return () => {
       container.removeEventListener('pointermove', handlePointerMove);
       container.removeEventListener('pointerleave', handlePointerLeaveWindow);
     };
-  }, []);
+  }, [mouseInfluence, parallax]);
 
   return <div ref={containerRef} className={`color-bends-container ${className}`.trim()} style={style} />;
 }

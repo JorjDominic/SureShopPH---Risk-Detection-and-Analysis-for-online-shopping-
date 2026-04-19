@@ -10,7 +10,7 @@ function DashboardFooter() {
           <div className="ss-landing-footer-column">
             <div className="ss-landing-footer-logo">
               <div className="ss-landing-logo-icon">
-                <img src="/favicon.ico" alt="SureShop logo" className="ss-landing-logo-img" />
+                <img src="/favicon.ico" alt="SureShop logo" className="ss-landing-logo-img" width="32" height="32" loading="lazy" decoding="async" />
               </div>
               <span className="ss-landing-logo-text">SureShop</span>
             </div>

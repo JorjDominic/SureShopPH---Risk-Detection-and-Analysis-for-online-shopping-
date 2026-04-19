@@ -35,7 +35,7 @@ function LandingHeader({ session }) {
             <div className="ss-landing-nav-logo">
               <Link to="/" className="ss-landing-logo-link">
                 <div className="ss-landing-logo-icon">
-                  <img src="/favicon.ico" alt="SureShop logo" className="ss-landing-logo-img" />
+                  <img src="/favicon.ico" alt="SureShop logo" className="ss-landing-logo-img" width="32" height="32" decoding="async" />
                 </div>
                 <span className="ss-landing-logo-text">SureShopPH</span>
               </Link>

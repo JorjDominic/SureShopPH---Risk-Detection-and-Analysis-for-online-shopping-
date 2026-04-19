@@ -1,0 +1,60 @@
+.gradient-panel {
+  position: relative;
+  background: linear-gradient(135deg, #e0f7fa 0%, #b2dfdb 100%);
+  border-radius: 1.5rem;
+  box-shadow: 0 2px 16px 0 rgba(0, 32, 64, 0.04);
+  padding: 2rem;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.gradient-panel-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.circle {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(32px);
+  opacity: 0.35;
+}
+.circle1 {
+  width: 320px;
+  height: 320px;
+  left: -80px;
+  top: -80px;
+  background: radial-gradient(circle, #4fd1c5 0%, transparent 80%);
+}
+.circle2 {
+  width: 220px;
+  height: 220px;
+  right: 10%;
+  top: 40px;
+  background: radial-gradient(circle, #81e6d9 0%, transparent 80%);
+}
+.circle3 {
+  width: 180px;
+  height: 180px;
+  left: 40%;
+  bottom: -60px;
+  background: radial-gradient(circle, #38b2ac 0%, transparent 80%);
+}
+
+.gradient-panel-content {
+  position: relative;
+  z-index: 2;
+}
+
+.gradient-panel.grid-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px);
+  background-size: 32px 32px;
+  pointer-events: none;
+  z-index: 3;
+}

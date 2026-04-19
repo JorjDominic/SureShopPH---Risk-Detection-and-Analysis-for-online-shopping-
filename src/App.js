@@ -1,16 +1,51 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { BrowserRouter, Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import './styles/styles.css';
 import './styles/landing.css';
 import LandingHeader from './components/LandingHeader';
 import LandingFooter from './components/LandingFooter';
-import ColorBends from './components/ColorBends';
+import GradientPanel from './components/GradientPanel';
 import Login from './views/login';
 import Register from './views/register';
 import UserDashboard from './views/user/userdashboard';
 import ForgotPassword from './views/forgotPassword';
 import ResetPassword from './views/resetPassword';
 import { getCurrentSession, onAuthStateChange } from './services/authService';
+
+function DeferredSectionContent({ children, minHeight = 420 }) {
+  const [isVisible, setIsVisible] = useState(false);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    const node = containerRef.current;
+    if (!node) return undefined;
+
+    if (!('IntersectionObserver' in window)) {
+      setIsVisible(true);
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '320px 0px', threshold: 0.01 }
+    );
+
+    observer.observe(node);
+
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={containerRef} style={isVisible ? undefined : { minHeight }}>
+      {isVisible ? children : null}
+    </div>
+  );
+}
 
 function ProtectedRoute({ session, children }) {
   const location = useLocation();
@@ -30,93 +65,76 @@ function PublicOnlyRoute({ session, children }) {
   return children;
 }
 
-function LandingPage({ isDarkMode, session }) {
+function LandingPage({ session }) {
   return (
     <div className="App">
       <LandingHeader session={session} />
 
       <main className="ss-landing-main">
         <section className="ss-landing-hero" id="home">
-          <div className="ss-landing-colorbends-layer" aria-hidden="true">
-            <ColorBends
-              colors={isDarkMode ? ['#38bdf8', '#14b8a6', '#818cf8'] : ['#14b8a6', '#3b82f6', '#f97316']}
-              rotation={6}
-              speed={0.18}
-              scale={1.08}
-              frequency={1}
-              warpStrength={1}
-              mouseInfluence={0}
-              parallax={0}
-              noise={0.05}
-              transparent
-              autoRotate={3}
-            />
-          </div>
-          <div className="ss-landing-grid-overlay" aria-hidden="true"></div>
-          <div className="ss-landing-hero-bg"></div>
-          <div className="ss-landing-orb ss-landing-orb-a"></div>
-          <div className="ss-landing-orb ss-landing-orb-b"></div>
+          {/* Background and circles handled by CSS pseudo-elements */}
           <div className="container">
             <div className="ss-landing-hero-content">
               <div className="ss-landing-hero-text">
-                <div className="ss-landing-kicker">AI-Powered Risk Detection for Filipino Shoppers</div>
-                <h1 className="ss-landing-hero-title">Shop Smarter. Stay Protected.</h1>
-                <p className="ss-landing-hero-subtitle">
-                  SureshopPH analyzes listings, sellers, and URLs in real-time to help you identify
-                  fraudulent activity before you buy — powered by localized AI built for the Philippine
-                  e-commerce environment.
-                </p>
-                <div className="ss-landing-hero-stats">
-                  <div className="ss-landing-stat-item">
-                    <i className="fas fa-shield-check"></i>
-                    <span>Localized Taglish NLP analysis</span>
+                  <div className="ss-landing-kicker">AI-Powered Risk Detection for Filipino Shoppers</div>
+                  <h1 className="ss-landing-hero-title">Shop Smarter. Stay Protected.</h1>
+                  <p className="ss-landing-hero-subtitle">
+                    SureshopPH analyzes listings, sellers, and URLs in real-time to help you identify
+                    fraudulent activity before you buy — powered by localized AI built for the Philippine
+                    e-commerce environment.
+                  </p>
+                  <div className="ss-landing-hero-stats">
+                    <div className="ss-landing-stat-item">
+                      <i className="fas fa-shield-check"></i>
+                      <span>Localized Taglish NLP analysis</span>
+                    </div>
+                    <div className="ss-landing-stat-item">
+                      <i className="fas fa-bolt"></i>
+                      <span>Real-time risk scoring</span>
+                    </div>
                   </div>
-                  <div className="ss-landing-stat-item">
-                    <i className="fas fa-bolt"></i>
-                    <span>Real-time risk scoring</span>
-                  </div>
-                </div>
-                <div className="ss-landing-hero-buttons">
-                  <a
-                    href="https://chromewebstore.google.com/category/extensions"
-                    className="btn btn-primary ss-landing-btn-primary"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <i className="fas fa-download"></i> Install Browser Extension
-                  </a>
-                  <a href="#demo" className="btn btn-secondary ss-landing-btn-secondary">
-                    <i className="fas fa-play-circle"></i> Watch Demo
-                  </a>
-                  <a href="#features" className="ss-landing-btn-tertiary">
-                    <i className="fas fa-chart-line"></i> Explore All Features
-                  </a>
-                </div>
-              </div>
-              <div className="ss-landing-hero-visual" aria-hidden="true">
-                <div className="ss-landing-glass-card ss-landing-glass-main">
-                  <h3>Risk Scan</h3>
-                  <p>amazon-super-discount.example</p>
-                  <div className="ss-landing-risk-meter">
-                    <span>Risk Score</span>
-                    <strong>87%</strong>
-                  </div>
-                  <div className="ss-landing-meter-bar">
-                    <div className="ss-landing-meter-fill"></div>
+                  <div className="ss-landing-hero-buttons">
+                    <a
+                      href="https://chromewebstore.google.com/category/extensions"
+                      className="btn btn-primary ss-landing-btn-primary"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <i className="fas fa-download"></i> Install Browser Extension
+                    </a>
+                    <a href="#demo" className="btn btn-secondary ss-landing-btn-secondary">
+                      <i className="fas fa-play-circle"></i> Watch Demo
+                    </a>
+                    <a href="#features" className="ss-landing-btn-tertiary">
+                      <i className="fas fa-chart-line"></i> Explore All Features
+                    </a>
                   </div>
                 </div>
-                <div className="ss-landing-glass-card ss-landing-glass-alert">
-                  <i className="fas fa-triangle-exclamation"></i>
-                  Suspicious seller account detected — registered 3 days ago
-                </div>
-                <div className="ss-landing-glass-card ss-landing-glass-safe">
-                  <i className="fas fa-circle-check"></i>
-                  Seller verified — high ratings and response rate
+                <div className="ss-landing-hero-visual" aria-hidden="true">
+                  <div className="ss-landing-glass-card ss-landing-glass-main">
+                    <h3>Risk Scan</h3>
+                    <p>amazon-super-discount.example</p>
+                    <div className="ss-landing-risk-meter">
+                      <span>Risk Score</span>
+                      <strong>87%</strong>
+                    </div>
+                    <div className="ss-landing-meter-bar">
+                      <div className="ss-landing-meter-fill"></div>
+                    </div>
+                  </div>
+                  <div className="ss-landing-glass-card ss-landing-glass-alert">
+                    <i className="fas fa-triangle-exclamation"></i>
+                    Suspicious seller account detected — registered 3 days ago
+                  </div>
+                  <div className="ss-landing-glass-card ss-landing-glass-safe">
+                    <i className="fas fa-circle-check"></i>
+                    Seller verified — high ratings and response rate
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+
 
         <section className="ss-landing-trust-strip" aria-label="Trust signals">
           <div className="container">
@@ -130,7 +148,8 @@ function LandingPage({ isDarkMode, session }) {
         </section>
 
         <section className="ss-landing-section ss-landing-features ss-landing-section-signature" id="features" data-section="01">
-          <div className="container">
+          <DeferredSectionContent minHeight={900}>
+            <div className="container">
             <div className="ss-landing-section-header">
               <p className="ss-landing-eyebrow">Multi-Factor Risk Detection</p>
               <h2 className="ss-landing-section-title">Comprehensive Listing Protection</h2>
@@ -180,11 +199,13 @@ function LandingPage({ isDarkMode, session }) {
                 <p>Report suspicious listings and false positives directly through the extension, contributing to a growing database of verified high-risk scans for all Filipino shoppers.</p>
               </div>
             </div>
-          </div>
+            </div>
+          </DeferredSectionContent>
         </section>
 
         <section className="ss-landing-section ss-landing-how ss-landing-section-signature" id="how" data-section="02">
-          <div className="container">
+          <DeferredSectionContent minHeight={700}>
+            <div className="container">
             <div className="ss-landing-section-header">
               <p className="ss-landing-eyebrow">Simple by Design</p>
               <h2 className="ss-landing-section-title">How SureshopPH Works</h2>
@@ -216,11 +237,13 @@ function LandingPage({ isDarkMode, session }) {
                 <p>Receive a real-time Risk Score and breakdown of detected red flags directly on the listing page — empowering you to decide with confidence.</p>
               </div>
             </div>
-          </div>
+            </div>
+          </DeferredSectionContent>
         </section>
 
         <section className="ss-landing-section ss-landing-community ss-landing-section-signature" id="community" data-section="03">
-          <div className="container">
+          <DeferredSectionContent minHeight={700}>
+            <div className="container">
             <div className="ss-landing-section-header">
               <p className="ss-landing-eyebrow">Community-Driven Protection</p>
               <h2 className="ss-landing-section-title">Join the SureshopPH Community</h2>
@@ -251,11 +274,13 @@ function LandingPage({ isDarkMode, session }) {
                 </ul>
               </div>
             </div>
-          </div>
+            </div>
+          </DeferredSectionContent>
         </section>
 
         <section className="ss-landing-section ss-landing-demo ss-landing-section-signature" id="demo" data-section="04">
-          <div className="container">
+          <DeferredSectionContent minHeight={760}>
+            <div className="container">
             <div className="ss-landing-demo-content">
               <div className="ss-landing-demo-text">
                 <p className="ss-landing-eyebrow">Product Walkthrough</p>
@@ -283,11 +308,13 @@ function LandingPage({ isDarkMode, session }) {
                 </div>
               </div>
             </div>
-          </div>
+            </div>
+          </DeferredSectionContent>
         </section>
 
         <section className="ss-landing-section ss-landing-cta ss-landing-section-signature" data-section="05">
-          <div className="container">
+          <DeferredSectionContent minHeight={500}>
+            <div className="container">
             <div className="ss-landing-cta-content">
               <p className="ss-landing-eyebrow">Your Protection Starts Here</p>
               <h2>Ready to Shop with Confidence?</h2>
@@ -306,7 +333,8 @@ function LandingPage({ isDarkMode, session }) {
                 </Link>
               </div>
             </div>
-          </div>
+            </div>
+          </DeferredSectionContent>
         </section>
       </main>
 
@@ -402,7 +430,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<LandingPage isDarkMode={isDarkMode} session={session} />} />
+        <Route path="/" element={<LandingPage session={session} />} />
         <Route path="/login" element={<PublicOnlyRoute session={session}><Login /></PublicOnlyRoute>} />
         <Route path="/register" element={<PublicOnlyRoute session={session}><Register /></PublicOnlyRoute>} />
         <Route path="/forgot-password" element={<PublicOnlyRoute session={session}><ForgotPassword /></PublicOnlyRoute>} />

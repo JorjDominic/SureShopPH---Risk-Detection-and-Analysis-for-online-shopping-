@@ -7,26 +7,26 @@ const RATE_LIMITS = {
 login: {
 keyPrefix: "ss_rate_login_",
 windowMs: 10 * 60 * 1000,
-maxAttempts: 8,
-lockMs: 2 * 60 * 1000,
+maxAttempts: 10,
+lockMs: 60 * 1000,
 },
 register: {
 keyPrefix: "ss_rate_register_",
 windowMs: 15 * 60 * 1000,
-maxAttempts: 6,
-lockMs: 2 * 60 * 1000,
+maxAttempts: 10,
+lockMs: 60 * 1000,
 },
 reset: {
 keyPrefix: "ss_rate_reset_",
 windowMs: 15 * 60 * 1000,
-maxAttempts: 6,
-lockMs: 2 * 60 * 1000,
+maxAttempts: 8,
+lockMs: 60 * 1000,
 },
 resend: {
 keyPrefix: "ss_rate_resend_",
 windowMs: 15 * 60 * 1000,
-maxAttempts: 6,
-lockMs: 2 * 60 * 1000,
+maxAttempts: 8,
+lockMs: 60 * 1000,
 },
 }
 
@@ -198,17 +198,25 @@ Boolean(data?.user) &&
 Array.isArray(data.user.identities) &&
 data.user.identities.length === 0
 
-if (error || isExistingEmailSignup) {
-markFailedAttempt("register", normalizedEmail)
 if (isExistingEmailSignup) {
 return {
 data: null,
 error: createClientError("This email is already registered. Please sign in instead."),
 }
 }
-} else {
-clearAttempts("register", normalizedEmail)
+
+if (error) {
+const errorMessage = (error.message || "").toLowerCase()
+const isExpectedRegisterCase = errorMessage.includes("user already registered")
+
+if (!isExpectedRegisterCase) {
+markFailedAttempt("register", normalizedEmail)
 }
+
+return { data: null, error: mapAuthError(error, "Unable to register right now.") }
+}
+
+clearAttempts("register", normalizedEmail)
 
 return { data, error: mapAuthError(error, "Unable to register right now.") }
 }

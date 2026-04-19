@@ -29,6 +29,9 @@ function Register() {
 	useEffect(() => {
 		if (lockSeconds <= 0) return undefined
 
+		setMessage(`Too many registration attempts. Try again in ${formatLockTimer(lockSeconds)}.`)
+		setMessageType("error")
+
 		const timer = setInterval(() => {
 			setLockSeconds((prev) => (prev <= 1 ? 0 : prev - 1))
 		}, 1000)
@@ -84,9 +87,13 @@ function Register() {
 				setMessageType("error")
 				if (typeof error.waitSeconds === "number" && error.waitSeconds > 0) {
 					setLockSeconds(error.waitSeconds)
+					setMessage(`Too many registration attempts. Try again in ${formatLockTimer(error.waitSeconds)}.`)
 				}
 				const status = getRateLimitStatus("register", email)
-				if (status.isLocked) setLockSeconds(status.waitSeconds)
+				if (status.isLocked) {
+					setLockSeconds(status.waitSeconds)
+					setMessage(`Too many registration attempts. Try again in ${formatLockTimer(status.waitSeconds)}.`)
+				}
 				return
 			}
 

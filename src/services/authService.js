@@ -89,10 +89,13 @@ if (msg.includes("too many requests") || msg.includes("rate limit"))
 return createClientError("Too many attempts. Please wait a few minutes.")
 
 if (msg.includes("user already registered"))
-return createClientError("Email already registered.")
+return createClientError("This email is already registered.")
 
 if (msg.includes("email not confirmed"))
 return createClientError("Please verify your email first.")
+
+if (msg.includes("email rate limit exceeded"))
+return createClientError("Too many emails sent. Please wait before trying again.")
 
 return createClientError(error.message || fallback)
 }
@@ -103,7 +106,7 @@ export const registerUser = async (email, password, confirmPassword) => {
 const normalizedEmail = normalizeEmail(email)
 
 if (!validateEmailFormat(normalizedEmail))
-return { data: null, error: createClientError("Invalid email.") }
+return { data: null, error: createClientError("Please enter a valid email address.") }
 
 const passError = validatePasswordRules(password)
 if (passError)
@@ -116,7 +119,7 @@ const rate = checkRateLimit(normalizedEmail)
 if (!rate.allowed)
 return {
 data: null,
-error: createClientError(`Wait ${rate.waitSeconds}s before trying again.`),
+error: createClientError(`Too many attempts. Try again in ${rate.waitSeconds}s.`),
 }
 
 const { data, error } = await supabase.auth.signUp({
@@ -130,7 +133,35 @@ emailRedirectTo: `${window.location.origin}/login?verified=1`,
 if (error) markFailedAttempt(normalizedEmail)
 else clearAttempts(normalizedEmail)
 
-return { data, error: mapAuthError(error) }
+return { data, error: mapAuthError(error, "Unable to register right now.") }
+}
+
+// ================= RESEND VERIFICATION =================
+
+export const resendVerificationEmail = async (email) => {
+const normalizedEmail = normalizeEmail(email)
+
+if (!validateEmailFormat(normalizedEmail))
+return { error: createClientError("Please enter a valid email address.") }
+
+const rate = checkRateLimit(normalizedEmail)
+if (!rate.allowed)
+return {
+error: createClientError(`Too many attempts. Try again in ${rate.waitSeconds}s.`),
+}
+
+const { error } = await supabase.auth.resend({
+type: "signup",
+email: normalizedEmail,
+options: {
+emailRedirectTo: `${window.location.origin}/login?verified=1`,
+},
+})
+
+if (error) markFailedAttempt(normalizedEmail)
+else clearAttempts(normalizedEmail)
+
+return { error: mapAuthError(error, "Unable to resend verification email.") }
 }
 
 // ================= LOGIN =================
@@ -139,16 +170,16 @@ export const loginUser = async (email, password) => {
 const normalizedEmail = normalizeEmail(email)
 
 if (!validateEmailFormat(normalizedEmail))
-return { data: null, error: createClientError("Invalid email.") }
+return { data: null, error: createClientError("Please enter a valid email address.") }
 
 if (!password)
-return { data: null, error: createClientError("Password required.") }
+return { data: null, error: createClientError("Please enter your password.") }
 
 const rate = checkRateLimit(normalizedEmail)
 if (!rate.allowed)
 return {
 data: null,
-error: createClientError(`Wait ${rate.waitSeconds}s before trying again.`),
+error: createClientError(`Too many attempts. Try again in ${rate.waitSeconds}s.`),
 }
 
 const { data, error } = await supabase.auth.signInWithPassword({
@@ -158,7 +189,7 @@ password,
 
 if (error) {
 markFailedAttempt(normalizedEmail)
-return { data: null, error: mapAuthError(error) }
+return { data: null, error: mapAuthError(error, "Unable to sign in right now.") }
 }
 
 clearAttempts(normalizedEmail)
@@ -169,12 +200,14 @@ return { data, error: null }
 // ================= GOOGLE =================
 
 export const signInWithGoogle = async () => {
-return supabase.auth.signInWithOAuth({
+const { data, error } = await supabase.auth.signInWithOAuth({
 provider: "google",
 options: {
 redirectTo: `${window.location.origin}/userdashboard`,
 },
 })
+
+return { data, error: mapAuthError(error, "Unable to start Google sign-in.") }
 }
 
 // ================= RESET PASSWORD =================
@@ -183,12 +216,12 @@ export const requestPasswordReset = async (email) => {
 const normalizedEmail = normalizeEmail(email)
 
 if (!validateEmailFormat(normalizedEmail))
-return { error: createClientError("Invalid email.") }
+return { error: createClientError("Please enter a valid email address.") }
 
 const rate = checkRateLimit(normalizedEmail)
 if (!rate.allowed)
 return {
-error: createClientError(`Wait ${rate.waitSeconds}s before trying again.`),
+error: createClientError(`Too many attempts. Try again in ${rate.waitSeconds}s.`),
 }
 
 const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
@@ -198,7 +231,7 @@ redirectTo: `${window.location.origin}/reset-password`,
 if (error) markFailedAttempt(normalizedEmail)
 else clearAttempts(normalizedEmail)
 
-return { error: mapAuthError(error) }
+return { error: mapAuthError(error, "Unable to process request right now.") }
 }
 
 // ================= UPDATE PASSWORD =================
@@ -211,7 +244,7 @@ if (password !== confirmPassword)
 return { error: createClientError("Passwords do not match.") }
 
 const { error } = await supabase.auth.updateUser({ password })
-return { error: mapAuthError(error) }
+return { error: mapAuthError(error, "Unable to reset password right now.") }
 }
 
 // ================= SESSION =================
@@ -221,5 +254,5 @@ export const onAuthStateChange = (cb) => supabase.auth.onAuthStateChange(cb)
 
 export const logoutUser = async () => {
 const { error } = await supabase.auth.signOut()
-return { error: mapAuthError(error) }
+return { error: mapAuthError(error, "Unable to sign out.") }
 }

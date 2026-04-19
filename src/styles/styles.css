@@ -8,6 +8,11 @@
 --primary: #22c55e;       /* green */
 --primary-dark: #15803d;  /* dark green */
 
+    --font-body: 'Manrope', sans-serif;
+    --font-display: 'Fraunces', serif;
+    --font-accent: 'Space Grotesk', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+
     --danger: #dc2626;
     --warning: #f59e0b;
     --success: #16a34a;
@@ -18,11 +23,27 @@
 }
 
 html, body {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: var(--font-body);
 
     background-color: var(--light);
     color: var(--text);
     line-height: 1.6;
+    text-rendering: geometricPrecision;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.015em;
+}
+
+.btn,
+.auth-kicker,
+.ss-landing-eyebrow,
+.ss-dashboard-chip,
+.ss-dashboard-eyebrow,
+.ss-dashboard-panel-pill {
+    font-family: var(--font-accent);
 }
 
 .container {

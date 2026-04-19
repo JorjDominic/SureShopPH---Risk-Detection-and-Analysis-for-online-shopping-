@@ -52,6 +52,15 @@
   overflow: hidden;
 }
 
+.login-page .auth-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid rgba(14, 165, 164, 0.16);
+  pointer-events: none;
+}
+
 .login-page .auth-card::before {
   content: "";
   position: absolute;
@@ -76,9 +85,11 @@
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  font-family: var(--font-accent);
 }
 
 .login-page .auth-card h1 {
+  font-family: var(--font-display);
   margin-bottom: 0.65rem;
   text-align: center;
   font-size: 2rem;
@@ -88,6 +99,7 @@
 }
 
 .login-subtitle {
+  font-family: var(--font-body);
   margin-bottom: 1.6rem;
   text-align: center;
   color: #475569;
@@ -99,6 +111,7 @@
 }
 
 .login-page .form-group label {
+  font-family: var(--font-accent);
   margin-bottom: 0.45rem;
   font-size: 0.92rem;
   font-weight: 700;
@@ -144,6 +157,7 @@
   font-weight: 700;
   cursor: pointer;
   font-size: 0.82rem;
+  font-family: var(--font-mono);
 }
 
 .password-toggle-btn:hover {
@@ -179,6 +193,7 @@
   font-weight: 700;
   font-size: 1rem;
   letter-spacing: 0.01em;
+  font-family: var(--font-accent);
   box-shadow: 0 14px 28px -16px rgba(15, 118, 110, 0.75);
 }
 
@@ -205,6 +220,7 @@
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
+  font-family: var(--font-accent);
   box-shadow: 0 14px 28px -20px rgba(15, 23, 42, 0.25);
 }
 
@@ -245,6 +261,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
+  font-family: var(--font-mono);
 }
 
 .auth-divider::before,

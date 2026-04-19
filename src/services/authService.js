@@ -95,6 +95,10 @@ const mapAuthError = (error, fallback = "Something went wrong. Please try again.
     return createClientError("This email is already registered. Please sign in instead.")
   }
 
+  if (message.includes("email not confirmed") || message.includes("email not verified")) {
+    return createClientError("Your email is not verified yet. Please check your inbox and verify before signing in.")
+  }
+
   if (
     message.includes("unsupported provider") ||
     message.includes("provider is not enabled") ||
@@ -126,11 +130,29 @@ export const registerUser = async (email, password, confirmPassword) => {
     email: normalizedEmail,
     password,
     options: {
-      emailRedirectTo: `${window.location.origin}/login`,
+      emailRedirectTo: `${window.location.origin}/login?verified=1`,
     },
   })
 
   return { data, error: mapAuthError(error, "Unable to register at the moment.") }
+}
+
+export const resendVerificationEmail = async (email) => {
+  const normalizedEmail = normalizeEmail(email)
+
+  if (!validateEmailFormat(normalizedEmail)) {
+    return { error: createClientError("Please enter a valid email address.") }
+  }
+
+  const { error } = await supabase.auth.resend({
+    type: "signup",
+    email: normalizedEmail,
+    options: {
+      emailRedirectTo: `${window.location.origin}/login?verified=1`,
+    },
+  })
+
+  return { error: mapAuthError(error, "Unable to resend verification email right now.") }
 }
 
 export const loginUser = async (email, password) => {

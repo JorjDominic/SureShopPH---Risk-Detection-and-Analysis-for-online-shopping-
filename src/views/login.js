@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import SkeletonLoader from "../components/SkeletonLoader"
 import { Link, useLocation, useNavigate } from "react-router-dom"
 import { loginUser, signInWithGoogle } from "../services/authService"
@@ -14,6 +14,7 @@ function Login() {
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [message, setMessage] = useState("")
+  const [messageType, setMessageType] = useState("error")
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
   const [fadeOut, setFadeOut] = useState(false)
@@ -22,15 +23,25 @@ function Login() {
 
   const redirectPath = location.state?.from || "/userdashboard"
 
+  useEffect(() => {
+    const params = new URLSearchParams(location.search)
+    if (params.get("verified") === "1") {
+      setMessage("Email verified successfully. You can now sign in.")
+      setMessageType("success")
+    }
+  }, [location.search])
+
   const handleLogin = async (event) => {
     event.preventDefault()
     setMessage("")
+    setMessageType("error")
     setLoading(true)
 
     try {
       const { error } = await loginUser(email, password)
       if (error) {
         setMessage(error.message)
+        setMessageType("error")
         return
       }
 
@@ -48,11 +59,13 @@ function Login() {
 
   const handleGoogleSignIn = async () => {
     setMessage("")
+    setMessageType("error")
     setGoogleLoading(true)
     try {
       const { error } = await signInWithGoogle()
       if (error) {
         setMessage(error.message)
+        setMessageType("error")
       }
     } finally {
       setGoogleLoading(false)
@@ -71,7 +84,7 @@ function Login() {
           </p>
 
           {message ? (
-            <div className="alert alert-error">
+            <div className={messageType === "success" ? "alert alert-success" : "alert alert-error"}>
               {message}
             </div>
           ) : null}

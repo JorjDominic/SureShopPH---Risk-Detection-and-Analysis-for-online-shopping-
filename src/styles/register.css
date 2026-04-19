@@ -52,6 +52,15 @@
   overflow: hidden;
 }
 
+.register-page .auth-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid rgba(249, 115, 22, 0.18);
+  pointer-events: none;
+}
+
 .register-page .auth-card::before {
   content: "";
   position: absolute;
@@ -76,9 +85,11 @@
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  font-family: var(--font-accent);
 }
 
 .register-page .auth-card h1 {
+  font-family: var(--font-display);
   margin-bottom: 0.65rem;
   text-align: center;
   font-size: 2rem;
@@ -88,6 +99,7 @@
 }
 
 .register-subtitle {
+  font-family: var(--font-body);
   margin-bottom: 1.6rem;
   text-align: center;
   color: #475569;
@@ -99,6 +111,7 @@
 }
 
 .register-page .form-group label {
+  font-family: var(--font-accent);
   margin-bottom: 0.45rem;
   font-size: 0.92rem;
   font-weight: 700;
@@ -144,6 +157,7 @@
   font-weight: 700;
   cursor: pointer;
   font-size: 0.82rem;
+  font-family: var(--font-mono);
 }
 
 .register-page .password-toggle-btn:hover {
@@ -161,6 +175,7 @@
   font-weight: 700;
   font-size: 1rem;
   letter-spacing: 0.01em;
+  font-family: var(--font-accent);
   box-shadow: 0 14px 28px -16px rgba(249, 115, 22, 0.65);
 }
 
@@ -187,6 +202,7 @@
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
+  font-family: var(--font-accent);
   box-shadow: 0 14px 28px -20px rgba(15, 23, 42, 0.25);
 }
 
@@ -227,6 +243,41 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
+  font-family: var(--font-mono);
+}
+
+.register-verify-panel {
+  margin-bottom: 1rem;
+  padding: 0.95rem;
+  border: 1px solid rgba(14, 165, 164, 0.24);
+  border-radius: 14px;
+  background: linear-gradient(145deg, rgba(236, 253, 245, 0.9), rgba(240, 249, 255, 0.88));
+}
+
+.register-verify-panel p {
+  margin-bottom: 0.7rem;
+  color: #0f172a;
+  font-size: 0.9rem;
+}
+
+.register-verify-panel p strong {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: #0f766e;
+}
+
+.register-verify-panel .btn.btn-secondary {
+  min-height: 44px;
+  border-radius: 12px;
+  border: 1px solid rgba(15, 118, 110, 0.36);
+  background: rgba(255, 255, 255, 0.82);
+  color: #0f766e;
+  font-family: var(--font-accent);
+}
+
+.register-verify-panel .btn.btn-secondary:hover:not(:disabled) {
+  background: #0f766e;
+  color: #ffffff;
 }
 
 .register-page .auth-divider::before,

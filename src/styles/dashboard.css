@@ -49,6 +49,7 @@
 }
 
 .ss-dashboard-brand strong {
+  font-family: var(--font-accent);
   display: block;
   font-size: 1.02rem;
   line-height: 1.1;
@@ -79,6 +80,7 @@
 }
 
 .ss-dashboard-nav a {
+  font-family: var(--font-accent);
   color: #334155;
   text-decoration: none;
   font-weight: 600;
@@ -99,6 +101,7 @@
   border: 1px solid rgba(220, 38, 38, 0.12);
   background: rgba(255, 255, 255, 0.9);
   color: #b91c1c;
+  font-family: var(--font-accent);
   font-weight: 700;
   cursor: pointer;
 }
@@ -188,6 +191,7 @@
   letter-spacing: 0.04em;
   text-transform: uppercase;
   font-size: 0.72rem;
+  font-family: var(--font-accent);
 }
 
 .ss-dashboard-chip {
@@ -202,6 +206,7 @@
 .ss-dashboard-panel h2,
 .ss-dashboard-section-heading h2,
 .ss-dashboard-hero-side h2 {
+  font-family: var(--font-display);
   color: var(--ss-dashboard-text);
   letter-spacing: -0.03em;
 }
@@ -236,6 +241,7 @@
   align-items: center;
   justify-content: center;
   text-decoration: none;
+  font-family: var(--font-accent);
   font-weight: 700;
 }
 
@@ -290,6 +296,7 @@
 
 .ss-dashboard-side-score {
   font-size: 2.25rem;
+  font-family: var(--font-mono);
   font-weight: 800;
   color: var(--ss-dashboard-text);
 }
@@ -502,10 +509,12 @@ body.ss-theme-dark .ss-dashboard-btn-secondary {
   text-transform: uppercase;
   font-size: 0.74rem;
   letter-spacing: 0.06em;
+  font-family: var(--font-accent);
   font-weight: 800;
 }
 
 .ss-dashboard-stat-top h3 {
+  font-family: var(--font-mono);
   font-size: 2rem;
 }
 

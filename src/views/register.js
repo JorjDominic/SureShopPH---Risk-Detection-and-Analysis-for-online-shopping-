@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { Link } from "react-router-dom"
-import { registerUser, signInWithGoogle, validateEmailFormat, validatePasswordRules } from "../services/authService"
+import { normalizeEmail, registerUser, resendVerificationEmail, signInWithGoogle, validateEmailFormat, validatePasswordRules } from "../services/authService"
 import GoogleLogo from "../components/GoogleLogo"
 import "../styles/register.css"
 import LandingHeader from "../components/LandingHeader"
@@ -13,26 +13,33 @@ function Register() {
 	const [showPassword, setShowPassword] = useState(false)
 	const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 	const [message, setMessage] = useState("")
+	const [messageType, setMessageType] = useState("error")
 	const [loading, setLoading] = useState(false)
 	const [googleLoading, setGoogleLoading] = useState(false)
+	const [resendLoading, setResendLoading] = useState(false)
+	const [pendingVerificationEmail, setPendingVerificationEmail] = useState("")
 
 	const handleRegister = async (event) => {
 		event.preventDefault()
 		setMessage("")
+		setMessageType("error")
 
 		if (!validateEmailFormat(email)) {
 			setMessage("Please enter a valid email address")
+			setMessageType("error")
 			return
 		}
 
 		const passwordValidationError = validatePasswordRules(password)
 		if (passwordValidationError) {
 			setMessage(passwordValidationError)
+			setMessageType("error")
 			return
 		}
 
 		if (password !== confirmPassword) {
 			setMessage("Passwords do not match.")
+			setMessageType("error")
 			return
 		}
 
@@ -43,10 +50,13 @@ function Register() {
 
 			if (error) {
 				setMessage(error.message)
+				setMessageType("error")
 				return
 			}
 
-			setMessage("Registration successful. Check your email for verification.")
+			setPendingVerificationEmail(normalizeEmail(email))
+			setMessage("Registration successful. We sent a verification link to your inbox.")
+			setMessageType("success")
 			setPassword("")
 			setConfirmPassword("")
 		} finally {
@@ -54,13 +64,33 @@ function Register() {
 		}
 	}
 
+	const handleResendVerification = async () => {
+		if (!pendingVerificationEmail) return
+		setResendLoading(true)
+		try {
+			const { error } = await resendVerificationEmail(pendingVerificationEmail)
+			if (error) {
+				setMessage(error.message)
+				setMessageType("error")
+				return
+			}
+
+			setMessage("Verification email sent again. Please check your inbox and spam folder.")
+			setMessageType("success")
+		} finally {
+			setResendLoading(false)
+		}
+	}
+
 	const handleGoogleSignUp = async () => {
 		setMessage("")
+		setMessageType("error")
 		setGoogleLoading(true)
 		try {
 			const { error } = await signInWithGoogle()
 			if (error) {
 				setMessage(error.message)
+				setMessageType("error")
 			}
 		} finally {
 			setGoogleLoading(false)
@@ -81,12 +111,28 @@ function Register() {
 					{message ? (
 						<div
 							className={
-								message.startsWith("Registration successful")
+								messageType === "success"
 									? "alert alert-success"
 									: "alert alert-error"
 							}
 						>
 							{message}
+						</div>
+					) : null}
+
+					{pendingVerificationEmail ? (
+						<div className="register-verify-panel">
+							<p>
+								Verification pending for <strong>{pendingVerificationEmail}</strong>
+							</p>
+							<button
+								type="button"
+								className="btn btn-secondary btn-block"
+								onClick={handleResendVerification}
+								disabled={resendLoading || loading || googleLoading}
+							>
+								{resendLoading ? "Resending verification email..." : "Resend verification email"}
+							</button>
 						</div>
 					) : null}
 

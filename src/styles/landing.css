@@ -942,15 +942,26 @@ html {
 }
 
 body {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: var(--font-body);
     color: var(--ss-soft-ink);
     background: radial-gradient(circle at 8% -10%, #dbeafe 0, transparent 28%), radial-gradient(circle at 92% 0, #dcfce7 0, transparent 24%), var(--ss-paper);
 }
 
 h1, h2, h3, .ss-landing-logo-text {
-    font-family: 'Sora', sans-serif;
+    font-family: var(--font-display);
     letter-spacing: -0.02em;
     color: var(--ss-ink);
+}
+
+.ss-landing-logo-text,
+.ss-landing-nav-links a,
+.ss-landing-nav-link,
+.ss-landing-btn-primary,
+.ss-landing-btn-secondary,
+.ss-landing-btn-tertiary,
+.ss-landing-kicker,
+.ss-landing-eyebrow {
+    font-family: var(--font-accent);
 }
 
 .ss-landing-header {
@@ -1011,7 +1022,8 @@ h1, h2, h3, .ss-landing-logo-text {
     font-size: 0.76rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.06em;
+    font-family: var(--font-mono);
 }
 
 .ss-landing-live-dot {
@@ -1058,6 +1070,8 @@ h1, h2, h3, .ss-landing-logo-text {
 .ss-landing-hero-title {
     font-size: clamp(2.4rem, 5vw, 4rem);
     margin-bottom: 1rem;
+    text-wrap: balance;
+    text-shadow: 0 14px 28px rgba(15, 23, 42, 0.14);
 }
 
 .ss-landing-hero-subtitle {
@@ -1108,7 +1122,7 @@ h1, h2, h3, .ss-landing-logo-text {
 
 .ss-landing-risk-meter strong {
     color: #b91c1c;
-    font-family: 'Sora', sans-serif;
+    font-family: var(--font-mono);
 }
 
 .ss-landing-meter-bar {
@@ -1213,7 +1227,9 @@ h1, h2, h3, .ss-landing-logo-text {
 .ss-landing-community-content {
     border-radius: var(--ss-radius-xl);
     border: 1px solid var(--ss-outline);
-    box-shadow: 0 20px 40px -32px rgba(15, 23, 42, 0.6);
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.78));
+    backdrop-filter: blur(10px);
+    box-shadow: 0 22px 42px -32px rgba(15, 23, 42, 0.62);
 }
 
 .ss-landing-feature-card:hover,
@@ -1596,7 +1612,7 @@ body.ss-theme-dark .ss-landing-cta-content p {
     position: absolute;
     top: 18px;
     left: clamp(12px, 2.5vw, 36px);
-    font-family: 'Sora', sans-serif;
+    font-family: var(--font-display);
     font-size: clamp(2.2rem, 4vw, 4rem);
     font-weight: 800;
     color: rgba(15, 23, 42, 0.08);

@@ -35,7 +35,7 @@ function DashboardHeader({ user, onLogout, logoutBusy }) {
             {/* Logo and label */}
             <div className="ss-landing-nav-logo" style={{display: 'flex', alignItems: 'center', gap: 8}}>
               <Link to="/" className="ss-landing-logo-link" style={{display: 'flex', alignItems: 'center', gap: 8}}>
-                <div className="ss-landing-logo-icon"><DashboardIcon type="shield" /></div>
+                <div className="ss-landing-logo-icon"><img src="/favicon.ico" alt="SureShop logo" className="ss-landing-logo-img" /></div>
                 <span className="ss-landing-logo-text">SureShop</span>
                 <span className="ss-dashboard-header-label" style={{fontWeight: 500, fontSize: 18, marginLeft: 6, color: '#6b7280'}}>User Dashboard</span>
               </Link>

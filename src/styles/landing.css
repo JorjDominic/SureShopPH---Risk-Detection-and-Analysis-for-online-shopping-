@@ -1000,9 +1000,9 @@ h1, h2, h3, .ss-landing-logo-text {
     height: 36px;
     border-radius: 12px;
     margin-right: 0.65rem;
-    background: linear-gradient(130deg, var(--ss-primary), var(--ss-secondary));
-    color: #fff;
-    box-shadow: 0 8px 20px -8px rgba(15, 118, 110, 0.7);
+    background: transparent;
+    color: inherit;
+    box-shadow: none;
 }
 
 .ss-landing-nav-links a {

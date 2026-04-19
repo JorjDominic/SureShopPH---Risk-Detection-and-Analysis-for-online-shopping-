@@ -32,9 +32,9 @@ function LandingHeader({ session }) {
             <div className="ss-landing-nav-logo">
               <Link to="/" className="ss-landing-logo-link">
                 <div className="ss-landing-logo-icon">
-                  <i className="fas fa-shield-check"></i>
+                  <img src="/favicon.ico" alt="SureShop logo" className="ss-landing-logo-img" />
                 </div>
-                <span className="ss-landing-logo-text">SureShop</span>
+                <span className="ss-landing-logo-text">SureShopPH</span>
               </Link>
             </div>
 

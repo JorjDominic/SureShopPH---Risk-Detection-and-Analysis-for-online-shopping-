@@ -1,27 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 function LandingFooter() {
-  const logoOptions = useMemo(
-    () => [
-      '/assets/images/logo.png',
-      '/assets/images/logo.svg',
-      '/assets/images/logo.jpg'
-    ],
-    []
-  );
-  const [logoIndex, setLogoIndex] = useState(0);
-  const [showIconFallback, setShowIconFallback] = useState(false);
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
-
-  const handleLogoError = () => {
-    if (logoIndex < logoOptions.length - 1) {
-      setLogoIndex((prev) => prev + 1);
-      return;
-    }
-    setShowIconFallback(true);
-  };
 
   const handleSubscribe = (event) => {
     event.preventDefault();
@@ -39,18 +21,11 @@ function LandingFooter() {
           <div className="ss-landing-footer-column">
             <div className="ss-landing-footer-logo">
               <div className="ss-landing-logo-image">
-                {!showIconFallback ? (
-                  <img
-                    src={logoOptions[logoIndex]}
-                    alt="SureShop Logo"
-                    className="ss-landing-logo-img"
-                    onError={handleLogoError}
-                  />
-                ) : (
-                  <div className="ss-landing-logo-icon">
-                    <i className="fas fa-shield-check"></i>
-                  </div>
-                )}
+                <img
+                  src="/favicon.ico"
+                  alt="SureShop logo"
+                  className="ss-landing-logo-img"
+                />
               </div>
               <span className="ss-landing-logo-text">SureShop</span>
             </div>

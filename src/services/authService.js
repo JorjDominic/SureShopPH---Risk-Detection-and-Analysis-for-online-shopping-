@@ -3,6 +3,12 @@ import { supabase } from "../config/supabase"
 const MAX_EMAIL_LENGTH = 255
 const MAX_PASSWORD_LENGTH = 255
 
+const getAppBaseUrl = () => {
+	const configured = (process.env.REACT_APP_PUBLIC_APP_URL || "").trim()
+	const fallback = typeof window !== "undefined" ? window.location.origin : ""
+	return (configured || fallback).replace(/\/$/, "")
+}
+
 const RATE_LIMITS = {
 login: {
 keyPrefix: "ss_rate_login_",
@@ -105,6 +111,14 @@ const { key } = getRateLimitState(action, email)
 localStorage.removeItem(key)
 }
 
+const lockRateLimit = (action, email, lockMs = RATE_LIMITS[action]?.lockMs || 60 * 1000) => {
+const now = Date.now()
+const { key, attempts } = getRateLimitState(action, email)
+const config = RATE_LIMITS[action]
+const recentAttempts = attempts.filter((ts) => now - ts <= config.windowMs)
+saveRateLimitState(key, recentAttempts, now + lockMs)
+}
+
 export const getRateLimitStatus = (action, email) => {
 if (!email || !RATE_LIMITS[action]) return { isLocked: false, waitSeconds: 0 }
 
@@ -188,7 +202,7 @@ const { data, error } = await supabase.auth.signUp({
 email: normalizedEmail,
 password,
 options: {
-emailRedirectTo: `${window.location.origin}/login?verified=1`,
+emailRedirectTo: `${getAppBaseUrl()}/login?verified=1`,
 },
 })
 
@@ -208,6 +222,22 @@ error: createClientError("This email is already registered. Please sign in inste
 if (error) {
 const errorMessage = (error.message || "").toLowerCase()
 const isExpectedRegisterCase = errorMessage.includes("user already registered")
+const isBackendThrottled =
+errorMessage.includes("too many requests") ||
+errorMessage.includes("rate limit") ||
+errorMessage.includes("email rate limit exceeded")
+
+if (isBackendThrottled) {
+lockRateLimit("register", normalizedEmail)
+const status = getRateLimitStatus("register", normalizedEmail)
+return {
+data: null,
+error: createClientError(`Too many registration attempts. Try again in ${status.waitSeconds}s.`, {
+waitSeconds: status.waitSeconds,
+action: "register",
+}),
+}
+}
 
 if (!isExpectedRegisterCase) {
 markFailedAttempt("register", normalizedEmail)
@@ -248,7 +278,7 @@ const { error } = await supabase.auth.resend({
 type: "signup",
 email: normalizedEmail,
 options: {
-emailRedirectTo: `${window.location.origin}/login?verified=1`,
+emailRedirectTo: `${getAppBaseUrl()}/login?verified=1`,
 },
 })
 
@@ -309,7 +339,7 @@ export const signInWithGoogle = async () => {
 const { data, error } = await supabase.auth.signInWithOAuth({
 provider: "google",
 options: {
-redirectTo: `${window.location.origin}/userdashboard`,
+redirectTo: `${getAppBaseUrl()}/userdashboard`,
 },
 })
 
@@ -340,7 +370,7 @@ action: "reset",
 }
 
 const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
-redirectTo: `${window.location.origin}/reset-password`,
+redirectTo: `${getAppBaseUrl()}/reset-password`,
 })
 
 if (error) markFailedAttempt("reset", normalizedEmail)

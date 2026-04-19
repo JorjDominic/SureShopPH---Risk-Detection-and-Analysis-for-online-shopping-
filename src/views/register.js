@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Link } from "react-router-dom"
 import { getRateLimitStatus, normalizeEmail, registerUser, resendVerificationEmail, signInWithGoogle, validateEmailFormat, validatePasswordRules } from "../services/authService"
 import GoogleLogo from "../components/GoogleLogo"
@@ -19,6 +19,7 @@ function Register() {
 	const [resendLoading, setResendLoading] = useState(false)
 	const [pendingVerificationEmail, setPendingVerificationEmail] = useState("")
 	const [lockSeconds, setLockSeconds] = useState(0)
+	const submittingRef = useRef(false)
 
 	useEffect(() => {
 		const { waitSeconds } = getRateLimitStatus("register", email)
@@ -43,6 +44,7 @@ function Register() {
 
 	const handleRegister = async (event) => {
 		event.preventDefault()
+		if (submittingRef.current || loading) return
 		if (lockSeconds > 0) {
 			setMessage(`Too many registration attempts. Try again in ${formatLockTimer(lockSeconds)}.`)
 			setMessageType("error")
@@ -72,6 +74,7 @@ function Register() {
 		}
 
 		setLoading(true)
+		submittingRef.current = true
 
 		try {
 			const { error } = await registerUser(email, password, confirmPassword)
@@ -94,6 +97,7 @@ function Register() {
 			setConfirmPassword("")
 		} finally {
 			setLoading(false)
+			submittingRef.current = false
 		}
 	}
 

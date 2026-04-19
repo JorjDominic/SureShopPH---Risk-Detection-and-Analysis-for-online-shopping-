@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import SkeletonLoader from "../components/SkeletonLoader"
 import { Link, useLocation, useNavigate } from "react-router-dom"
-import { loginUser, signInWithGoogle } from "../services/authService"
+import { getRateLimitStatus, loginUser, signInWithGoogle } from "../services/authService"
 import GoogleLogo from "../components/GoogleLogo"
 import "../styles/login.css"
 import "../styles/fadeout.css"
@@ -18,6 +18,7 @@ function Login() {
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
   const [fadeOut, setFadeOut] = useState(false)
+  const [lockSeconds, setLockSeconds] = useState(0)
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -31,8 +32,36 @@ function Login() {
     }
   }, [location.search])
 
+  useEffect(() => {
+    const { waitSeconds } = getRateLimitStatus("login", email)
+    setLockSeconds(waitSeconds)
+  }, [email])
+
+  useEffect(() => {
+    if (lockSeconds <= 0) return undefined
+
+    const timer = setInterval(() => {
+      setLockSeconds((prev) => (prev <= 1 ? 0 : prev - 1))
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [lockSeconds])
+
+  const formatLockTimer = (seconds) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`
+  }
+
   const handleLogin = async (event) => {
     event.preventDefault()
+
+    if (lockSeconds > 0) {
+      setMessage(`Too many login attempts. Try again in ${formatLockTimer(lockSeconds)}.`)
+      setMessageType("error")
+      return
+    }
+
     setMessage("")
     setMessageType("error")
     setLoading(true)
@@ -42,6 +71,9 @@ function Login() {
       if (error) {
         setMessage(error.message)
         setMessageType("error")
+
+        const status = getRateLimitStatus("login", email)
+        if (status.isLocked) setLockSeconds(status.waitSeconds)
         return
       }
 
@@ -86,6 +118,12 @@ function Login() {
           {message ? (
             <div className={messageType === "success" ? "alert alert-success" : "alert alert-error"}>
               {message}
+            </div>
+          ) : null}
+
+          {lockSeconds > 0 ? (
+            <div className="auth-lock-timer" role="status" aria-live="polite">
+              Login locked for {formatLockTimer(lockSeconds)}
             </div>
           ) : null}
 
@@ -151,8 +189,8 @@ function Login() {
                 <Link to="/forgot-password">Forgot password?</Link>
               </div>
 
-              <button className="btn btn-primary btn-block" type="submit" disabled={loading}>
-                {loading ? "Signing in..." : "Login"}
+              <button className="btn btn-primary btn-block" type="submit" disabled={loading || lockSeconds > 0}>
+                {loading ? "Signing in..." : lockSeconds > 0 ? `Try again in ${formatLockTimer(lockSeconds)}` : "Login"}
               </button>
               </form>
             </>

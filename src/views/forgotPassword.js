@@ -1,6 +1,6 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
-import { requestPasswordReset } from "../services/authService"
+import { getRateLimitStatus, requestPasswordReset } from "../services/authService"
 import "../styles/login.css"
 import LandingHeader from "../components/LandingHeader"
 import LandingFooter from "../components/LandingFooter"
@@ -11,9 +11,37 @@ function ForgotPassword() {
   const [email, setEmail] = useState("")
   const [message, setMessage] = useState("")
   const [loading, setLoading] = useState(false)
+  const [lockSeconds, setLockSeconds] = useState(0)
+
+  useEffect(() => {
+    const { waitSeconds } = getRateLimitStatus("reset", email)
+    setLockSeconds(waitSeconds)
+  }, [email])
+
+  useEffect(() => {
+    if (lockSeconds <= 0) return undefined
+
+    const timer = setInterval(() => {
+      setLockSeconds((prev) => (prev <= 1 ? 0 : prev - 1))
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [lockSeconds])
+
+  const formatLockTimer = (seconds) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`
+  }
 
   const handleSubmit = async (event) => {
     event.preventDefault()
+
+    if (lockSeconds > 0) {
+      setMessage(`Too many reset attempts. Try again in ${formatLockTimer(lockSeconds)}.`)
+      return
+    }
+
     setMessage("")
     setLoading(true)
 
@@ -21,6 +49,8 @@ function ForgotPassword() {
       const { error } = await requestPasswordReset(email)
       if (error) {
         setMessage(error.message)
+        const status = getRateLimitStatus("reset", email)
+        if (status.isLocked) setLockSeconds(status.waitSeconds)
         return
       }
 
@@ -54,6 +84,12 @@ function ForgotPassword() {
             </div>
           ) : null}
 
+          {lockSeconds > 0 ? (
+            <div className="auth-lock-timer" role="status" aria-live="polite">
+              Reset locked for {formatLockTimer(lockSeconds)}
+            </div>
+          ) : null}
+
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label htmlFor="forgot-email">Email</label>
@@ -70,8 +106,8 @@ function ForgotPassword() {
               />
             </div>
 
-            <button className="btn btn-primary btn-block" type="submit" disabled={loading}>
-              {loading ? "Sending..." : "Send reset link"}
+            <button className="btn btn-primary btn-block" type="submit" disabled={loading || lockSeconds > 0}>
+              {loading ? "Sending..." : lockSeconds > 0 ? `Try again in ${formatLockTimer(lockSeconds)}` : "Send reset link"}
             </button>
           </form>
 

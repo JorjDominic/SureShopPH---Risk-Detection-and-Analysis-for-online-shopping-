@@ -1,9 +1,31 @@
 import { supabase } from "../config/supabase"
 
-const LOGIN_WINDOW_MS = 10 * 60 * 1000
-const LOGIN_MAX_ATTEMPTS = 5
-const LOGIN_LOCK_MS = 5 * 60 * 1000
-const RATE_KEY_PREFIX = "ss_rate_"
+const RATE_LIMITS = {
+login: {
+keyPrefix: "ss_rate_login_",
+windowMs: 10 * 60 * 1000,
+maxAttempts: 8,
+lockMs: 2 * 60 * 1000,
+},
+register: {
+keyPrefix: "ss_rate_register_",
+windowMs: 15 * 60 * 1000,
+maxAttempts: 6,
+lockMs: 2 * 60 * 1000,
+},
+reset: {
+keyPrefix: "ss_rate_reset_",
+windowMs: 15 * 60 * 1000,
+maxAttempts: 6,
+lockMs: 2 * 60 * 1000,
+},
+resend: {
+keyPrefix: "ss_rate_resend_",
+windowMs: 15 * 60 * 1000,
+maxAttempts: 6,
+lockMs: 2 * 60 * 1000,
+},
+}
 
 const createClientError = (message) => ({ message, __client: true })
 
@@ -11,7 +33,7 @@ export const normalizeEmail = (email = "") => email.trim().toLowerCase()
 
 export const validateEmailFormat = (email = "") => {
 const value = normalizeEmail(email)
-return /^[^\s@]+@[^\s@]+.[^\s@]+$/.test(value)
+return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
 }
 
 export const validatePasswordRules = (password = "") => {
@@ -24,8 +46,9 @@ return ""
 
 // ================= RATE LIMIT =================
 
-const getRateLimitState = (email) => {
-const key = `${RATE_KEY_PREFIX}${normalizeEmail(email)}`
+const getRateLimitState = (action, email) => {
+const config = RATE_LIMITS[action]
+const key = `${config.keyPrefix}${normalizeEmail(email)}`
 try {
 const parsed = JSON.parse(localStorage.getItem(key) || "{}")
 const attempts = Array.isArray(parsed.attempts) ? parsed.attempts : []
@@ -40,9 +63,10 @@ const saveRateLimitState = (key, attempts, lockUntil) => {
 localStorage.setItem(key, JSON.stringify({ attempts, lockUntil }))
 }
 
-const checkRateLimit = (email) => {
+const checkRateLimit = (action, email) => {
+const config = RATE_LIMITS[action]
 const now = Date.now()
-const { key, attempts, lockUntil } = getRateLimitState(email)
+const { key, attempts, lockUntil } = getRateLimitState(action, email)
 
 if (lockUntil > now) {
 return {
@@ -51,29 +75,45 @@ waitSeconds: Math.ceil((lockUntil - now) / 1000),
 }
 }
 
-const recentAttempts = attempts.filter((ts) => now - ts <= LOGIN_WINDOW_MS)
+const recentAttempts = attempts.filter((ts) => now - ts <= config.windowMs)
 saveRateLimitState(key, recentAttempts, 0)
 
 return { allowed: true, recentAttempts }
 }
 
-const markFailedAttempt = (email) => {
+const markFailedAttempt = (action, email) => {
+const config = RATE_LIMITS[action]
 const now = Date.now()
-const { key, attempts } = getRateLimitState(email)
+const { key, attempts } = getRateLimitState(action, email)
 
-const recentAttempts = attempts.filter((ts) => now - ts <= LOGIN_WINDOW_MS)
+const recentAttempts = attempts.filter((ts) => now - ts <= config.windowMs)
 recentAttempts.push(now)
 
-if (recentAttempts.length >= LOGIN_MAX_ATTEMPTS) {
-saveRateLimitState(key, recentAttempts, now + LOGIN_LOCK_MS)
+if (recentAttempts.length >= config.maxAttempts) {
+saveRateLimitState(key, recentAttempts, now + config.lockMs)
 } else {
 saveRateLimitState(key, recentAttempts, 0)
 }
 }
 
-const clearAttempts = (email) => {
-const { key } = getRateLimitState(email)
+const clearAttempts = (action, email) => {
+const { key } = getRateLimitState(action, email)
 localStorage.removeItem(key)
+}
+
+export const getRateLimitStatus = (action, email) => {
+if (!email || !RATE_LIMITS[action]) return { isLocked: false, waitSeconds: 0 }
+
+const now = Date.now()
+const { lockUntil } = getRateLimitState(action, email)
+if (lockUntil > now) {
+return {
+isLocked: true,
+waitSeconds: Math.ceil((lockUntil - now) / 1000),
+}
+}
+
+return { isLocked: false, waitSeconds: 0 }
 }
 
 // ================= ERROR HANDLING =================
@@ -115,11 +155,11 @@ return { data: null, error: createClientError(passError) }
 if (password !== confirmPassword)
 return { data: null, error: createClientError("Passwords do not match.") }
 
-const rate = checkRateLimit(normalizedEmail)
+const rate = checkRateLimit("register", normalizedEmail)
 if (!rate.allowed)
 return {
 data: null,
-error: createClientError(`Too many attempts. Try again in ${rate.waitSeconds}s.`),
+error: createClientError(`Too many registration attempts. Try again in ${rate.waitSeconds}s.`),
 }
 
 const { data, error } = await supabase.auth.signUp({
@@ -130,8 +170,8 @@ emailRedirectTo: `${window.location.origin}/login?verified=1`,
 },
 })
 
-if (error) markFailedAttempt(normalizedEmail)
-else clearAttempts(normalizedEmail)
+if (error) markFailedAttempt("register", normalizedEmail)
+else clearAttempts("register", normalizedEmail)
 
 return { data, error: mapAuthError(error, "Unable to register right now.") }
 }
@@ -144,10 +184,10 @@ const normalizedEmail = normalizeEmail(email)
 if (!validateEmailFormat(normalizedEmail))
 return { error: createClientError("Please enter a valid email address.") }
 
-const rate = checkRateLimit(normalizedEmail)
+const rate = checkRateLimit("resend", normalizedEmail)
 if (!rate.allowed)
 return {
-error: createClientError(`Too many attempts. Try again in ${rate.waitSeconds}s.`),
+error: createClientError(`Too many resend attempts. Try again in ${rate.waitSeconds}s.`),
 }
 
 const { error } = await supabase.auth.resend({
@@ -158,8 +198,8 @@ emailRedirectTo: `${window.location.origin}/login?verified=1`,
 },
 })
 
-if (error) markFailedAttempt(normalizedEmail)
-else clearAttempts(normalizedEmail)
+if (error) markFailedAttempt("resend", normalizedEmail)
+else clearAttempts("resend", normalizedEmail)
 
 return { error: mapAuthError(error, "Unable to resend verification email.") }
 }
@@ -175,11 +215,11 @@ return { data: null, error: createClientError("Please enter a valid email addres
 if (!password)
 return { data: null, error: createClientError("Please enter your password.") }
 
-const rate = checkRateLimit(normalizedEmail)
+const rate = checkRateLimit("login", normalizedEmail)
 if (!rate.allowed)
 return {
 data: null,
-error: createClientError(`Too many attempts. Try again in ${rate.waitSeconds}s.`),
+error: createClientError(`Too many login attempts. Try again in ${rate.waitSeconds}s.`),
 }
 
 const { data, error } = await supabase.auth.signInWithPassword({
@@ -188,11 +228,11 @@ password,
 })
 
 if (error) {
-markFailedAttempt(normalizedEmail)
+markFailedAttempt("login", normalizedEmail)
 return { data: null, error: mapAuthError(error, "Unable to sign in right now.") }
 }
 
-clearAttempts(normalizedEmail)
+clearAttempts("login", normalizedEmail)
 
 return { data, error: null }
 }
@@ -218,18 +258,18 @@ const normalizedEmail = normalizeEmail(email)
 if (!validateEmailFormat(normalizedEmail))
 return { error: createClientError("Please enter a valid email address.") }
 
-const rate = checkRateLimit(normalizedEmail)
+const rate = checkRateLimit("reset", normalizedEmail)
 if (!rate.allowed)
 return {
-error: createClientError(`Too many attempts. Try again in ${rate.waitSeconds}s.`),
+error: createClientError(`Too many reset attempts. Try again in ${rate.waitSeconds}s.`),
 }
 
 const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
 redirectTo: `${window.location.origin}/reset-password`,
 })
 
-if (error) markFailedAttempt(normalizedEmail)
-else clearAttempts(normalizedEmail)
+if (error) markFailedAttempt("reset", normalizedEmail)
+else clearAttempts("reset", normalizedEmail)
 
 return { error: mapAuthError(error, "Unable to process request right now.") }
 }

@@ -347,6 +347,18 @@
   color: #991b1b;
 }
 
+.auth-lock-timer {
+  margin: -0.15rem 0 0.95rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 10px;
+  border: 1px solid rgba(217, 119, 6, 0.28);
+  background: rgba(255, 247, 237, 0.9);
+  color: #9a3412;
+  font-size: 0.86rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+
 .login-page .auth-links {
   margin-top: 1.4rem;
 }

@@ -1,6 +1,6 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
-import { normalizeEmail, registerUser, resendVerificationEmail, signInWithGoogle, validateEmailFormat, validatePasswordRules } from "../services/authService"
+import { getRateLimitStatus, normalizeEmail, registerUser, resendVerificationEmail, signInWithGoogle, validateEmailFormat, validatePasswordRules } from "../services/authService"
 import GoogleLogo from "../components/GoogleLogo"
 import "../styles/register.css"
 import LandingHeader from "../components/LandingHeader"
@@ -18,9 +18,37 @@ function Register() {
 	const [googleLoading, setGoogleLoading] = useState(false)
 	const [resendLoading, setResendLoading] = useState(false)
 	const [pendingVerificationEmail, setPendingVerificationEmail] = useState("")
+	const [lockSeconds, setLockSeconds] = useState(0)
+
+	useEffect(() => {
+		const { waitSeconds } = getRateLimitStatus("register", email)
+		setLockSeconds(waitSeconds)
+	}, [email])
+
+	useEffect(() => {
+		if (lockSeconds <= 0) return undefined
+
+		const timer = setInterval(() => {
+			setLockSeconds((prev) => (prev <= 1 ? 0 : prev - 1))
+		}, 1000)
+
+		return () => clearInterval(timer)
+	}, [lockSeconds])
+
+	const formatLockTimer = (seconds) => {
+		const mins = Math.floor(seconds / 60)
+		const secs = seconds % 60
+		return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`
+	}
 
 	const handleRegister = async (event) => {
 		event.preventDefault()
+		if (lockSeconds > 0) {
+			setMessage(`Too many registration attempts. Try again in ${formatLockTimer(lockSeconds)}.`)
+			setMessageType("error")
+			return
+		}
+
 		setMessage("")
 		setMessageType("error")
 
@@ -51,6 +79,8 @@ function Register() {
 			if (error) {
 				setMessage(error.message)
 				setMessageType("error")
+				const status = getRateLimitStatus("register", email)
+				if (status.isLocked) setLockSeconds(status.waitSeconds)
 				return
 			}
 
@@ -117,6 +147,12 @@ function Register() {
 							}
 						>
 							{message}
+						</div>
+					) : null}
+
+					{lockSeconds > 0 ? (
+						<div className="auth-lock-timer" role="status" aria-live="polite">
+							Registration locked for {formatLockTimer(lockSeconds)}
 						</div>
 					) : null}
 
@@ -212,8 +248,8 @@ function Register() {
 							</div>
 						</div>
 
-						<button className="btn btn-primary btn-block" type="submit" disabled={loading}>
-							{loading ? "Creating account..." : "Create Account"}
+						<button className="btn btn-primary btn-block" type="submit" disabled={loading || lockSeconds > 0}>
+							{loading ? "Creating account..." : lockSeconds > 0 ? `Try again in ${formatLockTimer(lockSeconds)}` : "Create Account"}
 						</button>
 					</form>
 

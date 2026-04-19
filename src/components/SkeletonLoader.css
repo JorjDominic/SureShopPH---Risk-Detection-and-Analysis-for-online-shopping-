@@ -1,0 +1,35 @@
+.skeleton-loader {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  align-items: center;
+  margin: 2rem 0;
+}
+.skeleton {
+  background: linear-gradient(90deg, #ececec 25%, #f3f3f3 50%, #ececec 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.2s infinite linear;
+  border-radius: 6px;
+}
+.skeleton-title {
+  width: 120px;
+  height: 32px;
+  margin-bottom: 1rem;
+}
+.skeleton-input {
+  width: 220px;
+  height: 38px;
+}
+.skeleton-button {
+  width: 220px;
+  height: 44px;
+  margin-top: 1rem;
+}
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}

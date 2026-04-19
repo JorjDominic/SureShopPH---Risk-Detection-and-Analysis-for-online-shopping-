@@ -194,14 +194,16 @@
 .auth-inline-links a {
   color: #0f766e;
   font-weight: 700;
-  text-decoration: none;
+  text-decoration-line: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 2px;
   font-size: 0.9rem;
+  transition: color 0.2s ease, text-decoration-color 0.2s ease;
 }
 
 .auth-inline-links a:hover {
   color: #0ea5a4;
-  animation: ssAuthRise 0.75s ease both;
-  text-decoration: underline;
+  text-decoration-color: currentColor;
 }
 
 .login-page .btn.btn-primary.btn-block {

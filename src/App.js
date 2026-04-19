@@ -11,6 +11,17 @@ import ForgotPassword from './views/forgotPassword';
 import ResetPassword from './views/resetPassword';
 import { getCurrentSession, onAuthStateChange } from './services/authService';
 
+const hasOAuthParamsInUrl = () => {
+  const params = new URLSearchParams(window.location.search);
+  return (
+    params.has('code') ||
+    params.has('access_token') ||
+    params.has('refresh_token') ||
+    params.has('provider_token') ||
+    params.has('provider_refresh_token')
+  );
+};
+
 function DeferredSectionContent({ children, minHeight = 420 }) {
   const [isVisible, setIsVisible] = useState(false);
   const containerRef = useRef(null);
@@ -374,20 +385,46 @@ function App() {
 
   useEffect(() => {
     let active = true;
-
-    const loadSession = async () => {
-      const { data } = await getCurrentSession();
-      if (!active) return;
-      setSession(data?.session ?? null);
-      setAuthLoading(false);
-    };
-
-    loadSession();
+    let authEventHandled = false;
 
     const { data } = onAuthStateChange((_event, nextSession) => {
+      if (!active) return;
+      authEventHandled = true;
       setSession(nextSession ?? null);
       setAuthLoading(false);
     });
+
+    const loadSession = async () => {
+      const { data: initialData } = await getCurrentSession();
+      if (!active) return;
+
+      if (initialData?.session) {
+        setSession(initialData.session);
+        setAuthLoading(false);
+        return;
+      }
+
+      if (hasOAuthParamsInUrl()) {
+        for (let attempt = 0; attempt < 8; attempt += 1) {
+          if (!active || authEventHandled) return;
+          await new Promise((resolve) => setTimeout(resolve, 180));
+          const { data: retryData } = await getCurrentSession();
+          if (!active) return;
+          if (retryData?.session) {
+            setSession(retryData.session);
+            setAuthLoading(false);
+            return;
+          }
+        }
+      }
+
+      if (!authEventHandled) {
+        setSession(null);
+        setAuthLoading(false);
+      }
+    };
+
+    loadSession();
 
     return () => {
       active = false;

@@ -1,6 +1,6 @@
 
 import { useEffect, useMemo, useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
 import { logoutUser } from '../../services/authService';
 import DashboardHeader from '../../components/DashboardHeader';
@@ -195,28 +195,28 @@ function UserDashboard() {
         text: 'Analyze suspicious shopping links before you click or buy.',
         icon: 'scan',
         badge: 'Fast check',
-        href: '#'
+        href: '/tools/url-scan'
       },
       {
         title: 'Check a seller',
         text: 'Review seller signals such as age, trust, and behavior patterns.',
         icon: 'user',
         badge: 'Seller insights',
-        href: '#'
+        href: '/tools/seller-check'
       },
       {
         title: 'Saved warnings',
         text: 'Go back to flagged listings and review previous risk findings.',
         icon: 'warning',
         badge: 'Recent alerts',
-        href: '#'
+        href: '/tools/saved-warnings'
       },
       {
         title: 'Account settings',
         text: 'Update your profile, notification settings, and protection tools.',
         icon: 'lock',
         badge: 'Manage account',
-        href: '#'
+        href: '/tools/account-settings'
       }
     ],
     []
@@ -317,14 +317,14 @@ function UserDashboard() {
 
             <div className="ss-dashboard-actions-grid">
               {quickActions.map((action) => (
-                <a className="ss-dashboard-action-card" href={action.href} key={action.title}>
+                <Link className="ss-dashboard-action-card" to={action.href} key={action.title}>
                   <div className="ss-dashboard-action-top">
                     <span className="ss-dashboard-action-icon"><DashboardIcon type={action.icon} /></span>
                     <span className="ss-dashboard-action-badge">{action.badge}</span>
                   </div>
                   <h3>{action.title}</h3>
                   <p>{action.text}</p>
-                </a>
+                </Link>
               ))}
             </div>
           </div>

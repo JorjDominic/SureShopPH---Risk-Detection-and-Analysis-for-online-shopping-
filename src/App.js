@@ -443,9 +443,24 @@ function App() {
         <Route path="/forgot-password" element={<PublicOnlyRoute session={session}><ForgotPassword /></PublicOnlyRoute>} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/help-center" element={<InfoPage title="Help Center" subtitle="Support articles and guidance are coming soon. For now, use account recovery and dashboard support actions." session={session} />} />
+        <Route path="/documentation" element={<InfoPage title="Documentation" subtitle="Technical documentation is being prepared. A public knowledge base will be available soon." session={session} />} />
+        <Route path="/api-reference" element={<InfoPage title="API Reference" subtitle="API reference content is coming soon. Public endpoints and usage examples will be published here." session={session} />} />
+        <Route path="/contact-support" element={<InfoPage title="Contact Support" subtitle="Direct support channels are being finalized. Please use your dashboard and account recovery options for now." session={session} />} />
         <Route path="/status" element={<InfoPage title="System Status" subtitle="All core authentication services are operational." session={session} />} />
         <Route path="/privacy-policy" element={<InfoPage title="Privacy Policy" subtitle="SureShop respects your privacy and secures account and scan data with modern safeguards." session={session} />} />
         <Route path="/terms-of-service" element={<InfoPage title="Terms of Service" subtitle="Use SureShop responsibly and comply with platform and local regulations." session={session} />} />
+        <Route path="/cookie-policy" element={<InfoPage title="Cookie Policy" subtitle="Cookie and tracking disclosures will be published here before public release." session={session} />} />
+        <Route path="/gdpr-compliance" element={<InfoPage title="GDPR Compliance" subtitle="Compliance details are being reviewed and will be documented in this section." session={session} />} />
+        <Route path="/security" element={<InfoPage title="Security" subtitle="Security architecture and disclosure practices will be posted here soon." session={session} />} />
+        <Route path="/sitemap" element={<InfoPage title="Sitemap" subtitle="A complete sitemap is coming soon. Use the landing page navigation for now." session={session} />} />
+        <Route path="/social/twitter" element={<InfoPage title="Twitter" subtitle="Official social profiles are not yet public. This placeholder prevents dead links during deployment." session={session} />} />
+        <Route path="/social/github" element={<InfoPage title="GitHub" subtitle="Official social profiles are not yet public. This placeholder prevents dead links during deployment." session={session} />} />
+        <Route path="/social/discord" element={<InfoPage title="Discord" subtitle="Official social profiles are not yet public. This placeholder prevents dead links during deployment." session={session} />} />
+        <Route path="/social/linkedin" element={<InfoPage title="LinkedIn" subtitle="Official social profiles are not yet public. This placeholder prevents dead links during deployment." session={session} />} />
+        <Route path="/tools/url-scan" element={<InfoPage title="URL Scan" subtitle="The URL scan tool UI is coming soon. This placeholder keeps navigation working in production." session={session} />} />
+        <Route path="/tools/seller-check" element={<InfoPage title="Seller Check" subtitle="The seller assessment tool UI is coming soon. This placeholder keeps navigation working in production." session={session} />} />
+        <Route path="/tools/saved-warnings" element={<InfoPage title="Saved Warnings" subtitle="Saved warning history is coming soon. This placeholder keeps navigation working in production." session={session} />} />
+        <Route path="/tools/account-settings" element={<InfoPage title="Account Settings" subtitle="Account settings management is coming soon. This placeholder keeps navigation working in production." session={session} />} />
         <Route path="/userdashboard" element={<ProtectedRoute session={session}><UserDashboard /></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

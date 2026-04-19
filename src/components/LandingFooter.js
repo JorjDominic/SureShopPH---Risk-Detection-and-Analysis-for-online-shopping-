@@ -76,10 +76,10 @@ function LandingFooter() {
               <span><i className="fas fa-globe"></i> 120+ countries protected</span>
             </div>
             <div className="ss-landing-footer-social">
-              <a href="#" aria-label="Twitter"><i className="fab fa-twitter"></i></a>
-              <a href="#" aria-label="GitHub"><i className="fab fa-github"></i></a>
-              <a href="#" aria-label="Discord"><i className="fab fa-discord"></i></a>
-              <a href="#" aria-label="LinkedIn"><i className="fab fa-linkedin"></i></a>
+              <Link to="/social/twitter" aria-label="Twitter"><i className="fab fa-twitter"></i></Link>
+              <Link to="/social/github" aria-label="GitHub"><i className="fab fa-github"></i></Link>
+              <Link to="/social/discord" aria-label="Discord"><i className="fab fa-discord"></i></Link>
+              <Link to="/social/linkedin" aria-label="LinkedIn"><i className="fab fa-linkedin"></i></Link>
             </div>
           </div>
 
@@ -98,9 +98,9 @@ function LandingFooter() {
             <h3 className="ss-landing-footer-heading">Support</h3>
             <ul className="ss-landing-footer-links">
               <li><Link to="/help-center">Help Center</Link></li>
-              <li><a href="/#how">Documentation</a></li>
-              <li><a href="https://github.com/JorjDominic/Browser-Extension" target="_blank" rel="noopener noreferrer">API Reference</a></li>
-              <li><Link to="/forgot-password">Forgot Password</Link></li>
+              <li><Link to="/documentation">Documentation</Link></li>
+              <li><Link to="/api-reference">API Reference</Link></li>
+              <li><Link to="/contact-support">Contact Support</Link></li>
               <li><Link to="/status">Status</Link></li>
             </ul>
           </div>
@@ -110,9 +110,9 @@ function LandingFooter() {
             <ul className="ss-landing-footer-links">
               <li><Link to="/privacy-policy">Privacy Policy</Link></li>
               <li><Link to="/terms-of-service">Terms of Service</Link></li>
-              <li><Link to="/privacy-policy">Cookie Policy</Link></li>
-              <li><Link to="/privacy-policy">GDPR Compliance</Link></li>
-              <li><Link to="/help-center">Security</Link></li>
+              <li><Link to="/cookie-policy">Cookie Policy</Link></li>
+              <li><Link to="/gdpr-compliance">GDPR Compliance</Link></li>
+              <li><Link to="/security">Security</Link></li>
             </ul>
           </div>
         </div>
@@ -126,9 +126,9 @@ function LandingFooter() {
             <span className="ss-landing-footer-divider">•</span>
             <Link to="/terms-of-service">Terms</Link>
             <span className="ss-landing-footer-divider">•</span>
-            <Link to="/privacy-policy">Cookies</Link>
+            <Link to="/cookie-policy">Cookies</Link>
             <span className="ss-landing-footer-divider">•</span>
-            <a href="/#home">Sitemap</a>
+            <Link to="/sitemap">Sitemap</Link>
           </div>
         </div>
       </div>

@@ -4,7 +4,6 @@ import './styles/styles.css';
 import './styles/landing.css';
 import LandingHeader from './components/LandingHeader';
 import LandingFooter from './components/LandingFooter';
-import GradientPanel from './components/GradientPanel';
 import Login from './views/login';
 import Register from './views/register';
 import UserDashboard from './views/user/userdashboard';

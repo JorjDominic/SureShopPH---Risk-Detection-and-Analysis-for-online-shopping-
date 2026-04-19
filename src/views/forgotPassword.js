@@ -48,7 +48,21 @@ function ForgotPassword() {
     try {
       const { error } = await requestPasswordReset(email)
       if (error) {
-        setMessage(error.message)
+        if (typeof error.waitSeconds === "number" && error.waitSeconds > 0) {
+          setMessage(error.message)
+          setLockSeconds(error.waitSeconds)
+          return
+        }
+
+        if (error.__client) {
+          setMessage(error.message)
+          return
+        }
+
+        setMessage(NEUTRAL_MESSAGE)
+        if (typeof error.waitSeconds === "number" && error.waitSeconds > 0) {
+          setLockSeconds(error.waitSeconds)
+        }
         const status = getRateLimitStatus("reset", email)
         if (status.isLocked) setLockSeconds(status.waitSeconds)
         return

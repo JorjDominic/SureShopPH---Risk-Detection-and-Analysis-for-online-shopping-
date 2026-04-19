@@ -1,5 +1,8 @@
 import { supabase } from "../config/supabase"
 
+const MAX_EMAIL_LENGTH = 255
+const MAX_PASSWORD_LENGTH = 255
+
 const RATE_LIMITS = {
 login: {
 keyPrefix: "ss_rate_login_",
@@ -27,13 +30,13 @@ lockMs: 2 * 60 * 1000,
 },
 }
 
-const createClientError = (message) => ({ message, __client: true })
+const createClientError = (message, meta = {}) => ({ message, __client: true, ...meta })
 
 export const normalizeEmail = (email = "") => email.trim().toLowerCase()
 
 export const validateEmailFormat = (email = "") => {
 const value = normalizeEmail(email)
-return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+return /^[^\s@]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(value)
 }
 
 export const validatePasswordRules = (password = "") => {
@@ -72,6 +75,7 @@ if (lockUntil > now) {
 return {
 allowed: false,
 waitSeconds: Math.ceil((lockUntil - now) / 1000),
+lockUntil,
 }
 }
 
@@ -145,6 +149,21 @@ return createClientError(error.message || fallback)
 export const registerUser = async (email, password, confirmPassword) => {
 const normalizedEmail = normalizeEmail(email)
 
+if (!normalizedEmail)
+return { data: null, error: createClientError("Email is required.") }
+
+if (normalizedEmail.length > MAX_EMAIL_LENGTH)
+return { data: null, error: createClientError(`Email is too long (max ${MAX_EMAIL_LENGTH} characters).`) }
+
+if (!password)
+return { data: null, error: createClientError("Password is required.") }
+
+if (password.length > MAX_PASSWORD_LENGTH)
+return { data: null, error: createClientError(`Password is too long (max ${MAX_PASSWORD_LENGTH} characters).`) }
+
+if ((confirmPassword ?? "").length > MAX_PASSWORD_LENGTH)
+return { data: null, error: createClientError(`Confirm password is too long (max ${MAX_PASSWORD_LENGTH} characters).`) }
+
 if (!validateEmailFormat(normalizedEmail))
 return { data: null, error: createClientError("Please enter a valid email address.") }
 
@@ -159,7 +178,10 @@ const rate = checkRateLimit("register", normalizedEmail)
 if (!rate.allowed)
 return {
 data: null,
-error: createClientError(`Too many registration attempts. Try again in ${rate.waitSeconds}s.`),
+error: createClientError(`Too many registration attempts. Try again in ${rate.waitSeconds}s.`, {
+waitSeconds: rate.waitSeconds,
+action: "register",
+}),
 }
 
 const { data, error } = await supabase.auth.signUp({
@@ -170,8 +192,23 @@ emailRedirectTo: `${window.location.origin}/login?verified=1`,
 },
 })
 
-if (error) markFailedAttempt("register", normalizedEmail)
-else clearAttempts("register", normalizedEmail)
+const isExistingEmailSignup =
+!error &&
+Boolean(data?.user) &&
+Array.isArray(data.user.identities) &&
+data.user.identities.length === 0
+
+if (error || isExistingEmailSignup) {
+markFailedAttempt("register", normalizedEmail)
+if (isExistingEmailSignup) {
+return {
+data: null,
+error: createClientError("This email is already registered. Please sign in instead."),
+}
+}
+} else {
+clearAttempts("register", normalizedEmail)
+}
 
 return { data, error: mapAuthError(error, "Unable to register right now.") }
 }
@@ -181,13 +218,22 @@ return { data, error: mapAuthError(error, "Unable to register right now.") }
 export const resendVerificationEmail = async (email) => {
 const normalizedEmail = normalizeEmail(email)
 
+if (!normalizedEmail)
+return { error: createClientError("Email is required.") }
+
+if (normalizedEmail.length > MAX_EMAIL_LENGTH)
+return { error: createClientError(`Email is too long (max ${MAX_EMAIL_LENGTH} characters).`) }
+
 if (!validateEmailFormat(normalizedEmail))
 return { error: createClientError("Please enter a valid email address.") }
 
 const rate = checkRateLimit("resend", normalizedEmail)
 if (!rate.allowed)
 return {
-error: createClientError(`Too many resend attempts. Try again in ${rate.waitSeconds}s.`),
+error: createClientError(`Too many resend attempts. Try again in ${rate.waitSeconds}s.`, {
+waitSeconds: rate.waitSeconds,
+action: "resend",
+}),
 }
 
 const { error } = await supabase.auth.resend({
@@ -209,17 +255,29 @@ return { error: mapAuthError(error, "Unable to resend verification email.") }
 export const loginUser = async (email, password) => {
 const normalizedEmail = normalizeEmail(email)
 
+if (!normalizedEmail)
+return { data: null, error: createClientError("Email is required.") }
+
+if (normalizedEmail.length > MAX_EMAIL_LENGTH)
+return { data: null, error: createClientError(`Email is too long (max ${MAX_EMAIL_LENGTH} characters).`) }
+
 if (!validateEmailFormat(normalizedEmail))
 return { data: null, error: createClientError("Please enter a valid email address.") }
 
 if (!password)
 return { data: null, error: createClientError("Please enter your password.") }
 
+if (password.length > MAX_PASSWORD_LENGTH)
+return { data: null, error: createClientError(`Password is too long (max ${MAX_PASSWORD_LENGTH} characters).`) }
+
 const rate = checkRateLimit("login", normalizedEmail)
 if (!rate.allowed)
 return {
 data: null,
-error: createClientError(`Too many login attempts. Try again in ${rate.waitSeconds}s.`),
+error: createClientError(`Too many login attempts. Try again in ${rate.waitSeconds}s.`, {
+waitSeconds: rate.waitSeconds,
+action: "login",
+}),
 }
 
 const { data, error } = await supabase.auth.signInWithPassword({
@@ -255,13 +313,22 @@ return { data, error: mapAuthError(error, "Unable to start Google sign-in.") }
 export const requestPasswordReset = async (email) => {
 const normalizedEmail = normalizeEmail(email)
 
+if (!normalizedEmail)
+return { error: createClientError("Email is required.") }
+
+if (normalizedEmail.length > MAX_EMAIL_LENGTH)
+return { error: createClientError(`Email is too long (max ${MAX_EMAIL_LENGTH} characters).`) }
+
 if (!validateEmailFormat(normalizedEmail))
 return { error: createClientError("Please enter a valid email address.") }
 
 const rate = checkRateLimit("reset", normalizedEmail)
 if (!rate.allowed)
 return {
-error: createClientError(`Too many reset attempts. Try again in ${rate.waitSeconds}s.`),
+error: createClientError(`Too many reset attempts. Try again in ${rate.waitSeconds}s.`, {
+waitSeconds: rate.waitSeconds,
+action: "reset",
+}),
 }
 
 const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
@@ -277,6 +344,12 @@ return { error: mapAuthError(error, "Unable to process request right now.") }
 // ================= UPDATE PASSWORD =================
 
 export const updateUserPassword = async (password, confirmPassword) => {
+if (!password)
+return { error: createClientError("Password is required.") }
+
+if ((password ?? "").length > MAX_PASSWORD_LENGTH || (confirmPassword ?? "").length > MAX_PASSWORD_LENGTH)
+return { error: createClientError(`Password is too long (max ${MAX_PASSWORD_LENGTH} characters).`) }
+
 const passError = validatePasswordRules(password)
 if (passError) return { error: createClientError(passError) }
 
@@ -284,7 +357,14 @@ if (password !== confirmPassword)
 return { error: createClientError("Passwords do not match.") }
 
 const { error } = await supabase.auth.updateUser({ password })
+if (error) {
 return { error: mapAuthError(error, "Unable to reset password right now.") }
+}
+
+// Best-effort hardening: revoke other active sessions after password change.
+await supabase.auth.signOut({ scope: "others" })
+
+return { error: null }
 }
 
 // ================= SESSION =================

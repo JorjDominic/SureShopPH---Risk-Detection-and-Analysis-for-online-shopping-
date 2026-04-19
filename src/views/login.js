@@ -72,6 +72,10 @@ function Login() {
         setMessage(error.message)
         setMessageType("error")
 
+        if (typeof error.waitSeconds === "number" && error.waitSeconds > 0) {
+          setLockSeconds(error.waitSeconds)
+        }
+
         const status = getRateLimitStatus("login", email)
         if (status.isLocked) setLockSeconds(status.waitSeconds)
         return

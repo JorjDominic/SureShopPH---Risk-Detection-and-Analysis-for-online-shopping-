@@ -24,6 +24,16 @@
 /* ===== Base Styles ===== */
 .ss-landing-main {
     overflow-x: hidden;
+    animation: ssPageFadeIn 0.55s ease both;
+}
+
+@keyframes ssPageFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 @keyframes ssSoftRise {
@@ -1165,6 +1175,24 @@ h1, h2, h3, .ss-landing-logo-text {
 
 .ss-landing-hero-text {
     max-width: 620px;
+    animation: ssSoftRise 0.78s ease both;
+}
+
+.ss-landing-kicker,
+.ss-landing-hero-title,
+.ss-landing-hero-subtitle,
+.ss-landing-hero-stats,
+.ss-landing-hero-buttons,
+.ss-landing-hero-visual {
+    animation: ssSoftRise 0.78s ease both;
+}
+
+.ss-landing-kicker {
+    animation-delay: 0.05s;
+}
+
+.ss-landing-hero-title {
+    animation-delay: 0.1s;
 }
 .ss-landing-hero-subtitle {
     animation-delay: 0.16s;
@@ -1180,6 +1208,11 @@ h1, h2, h3, .ss-landing-logo-text {
 
 .ss-landing-hero-visual {
     animation-delay: 0.12s;
+}
+
+.ss-landing-trust-strip {
+    animation: ssSoftRise 0.72s ease both;
+    animation-delay: 0.22s;
 }
 
 .ss-landing-hero-title {
@@ -1369,6 +1402,13 @@ h1, h2, h3, .ss-landing-logo-text {
 }
 
 @media (prefers-reduced-motion: reduce) {
+    .ss-landing-main,
+    .ss-landing-kicker,
+    .ss-landing-hero-title,
+    .ss-landing-hero-subtitle,
+    .ss-landing-hero-stats,
+    .ss-landing-hero-buttons,
+    .ss-landing-trust-strip,
     .ss-landing-glass-card,
     .ss-landing-live-dot,
     .ss-landing-meter-fill,

@@ -1117,48 +1117,54 @@ h1, h2, h3, .ss-landing-logo-text {
 }
 
 .ss-landing-hero {
-        position: relative;
-        padding: 10.5rem 0 5.5rem;
-        margin-top: 0;
-        overflow: hidden;
-        background:
-            radial-gradient(circle at 10% 0%, #dcfce7 0, transparent 24%),
-            radial-gradient(circle at 92% 12%, #dbeafe 0, transparent 28%),
-            linear-gradient(160deg, #f0fdfa 0%, #eff6ff 50%, #fff7ed 100%);
-}
-
-.ss-landing-hero::before {
-    content: none;
-}
-
-.ss-landing-hero-bg {
-    opacity: 0.16;
+    position: relative;
+    padding: 10.5rem 0 5.5rem;
+    margin-top: 0;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 10% 0%, #dcfce7 0, transparent 24%),
+        radial-gradient(circle at 92% 12%, #dbeafe 0, transparent 28%),
+        linear-gradient(160deg, #f0fdfa 0%, #eff6ff 50%, #fff7ed 100%);
 }
 
 .ss-landing-hero::before,
 .ss-landing-hero::after {
     content: "";
     position: absolute;
-    border-radius: 50%;
-    filter: blur(40px);
-    opacity: 0.38;
+    inset: 0;
+    pointer-events: none;
     z-index: 0;
 }
 
 .ss-landing-hero::before {
-    width: 340px;
-    height: 340px;
-    background: radial-gradient(circle, #4fd1c5 0%, transparent 80%);
-    top: 8%;
-    left: -80px;
+    background:
+        radial-gradient(circle at 74% 24%, rgba(56, 189, 248, 0.2), transparent 42%),
+        radial-gradient(circle at 80% 78%, rgba(45, 212, 191, 0.24), transparent 36%),
+        linear-gradient(112deg, transparent 0 56%, rgba(56, 189, 248, 0.14) 56%, rgba(20, 184, 166, 0.24) 100%);
+    clip-path: polygon(58% 0, 100% 0, 100% 100%, 50% 100%);
 }
 
 .ss-landing-hero::after {
-    width: 220px;
-    height: 220px;
-    background: radial-gradient(circle, #38b2ac 0%, transparent 80%);
-    bottom: -60px;
-    right: 10%;
+    background:
+        linear-gradient(171deg, transparent 18%, rgba(56, 189, 248, 0.32) 27%, rgba(249, 115, 22, 0.2) 30%, transparent 35%),
+        linear-gradient(171deg, transparent 49%, rgba(20, 184, 166, 0.24) 57%, rgba(249, 115, 22, 0.18) 60%, transparent 66%);
+    opacity: 0.48;
+}
+
+.ss-landing-hero .container {
+    position: relative;
+    z-index: 2;
+}
+
+.ss-landing-hero-content {
+    display: grid;
+    grid-template-columns: minmax(0, 1.06fr) minmax(320px, 0.94fr);
+    align-items: start;
+    column-gap: clamp(2.5rem, 5vw, 5rem);
+}
+
+.ss-landing-hero-text {
+    max-width: 620px;
 }
 .ss-landing-hero-subtitle {
     animation-delay: 0.16s;
@@ -1190,7 +1196,34 @@ h1, h2, h3, .ss-landing-logo-text {
 
 .ss-landing-hero-visual {
     position: relative;
-    min-height: 370px;
+    min-height: 420px;
+    isolation: isolate;
+}
+
+.ss-landing-hero-visual::before,
+.ss-landing-hero-visual::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(36px);
+    z-index: -1;
+    pointer-events: none;
+}
+
+.ss-landing-hero-visual::before {
+    width: 230px;
+    height: 230px;
+    top: 54px;
+    right: -44px;
+    background: radial-gradient(circle, rgba(56, 189, 248, 0.34), transparent 72%);
+}
+
+.ss-landing-hero-visual::after {
+    width: 290px;
+    height: 290px;
+    bottom: -72px;
+    right: 34px;
+    background: radial-gradient(circle, rgba(34, 197, 94, 0.2), rgba(249, 115, 22, 0.18) 55%, transparent 72%);
 }
 
 .ss-landing-glass-card {
@@ -1204,8 +1237,8 @@ h1, h2, h3, .ss-landing-logo-text {
 
 .ss-landing-glass-main {
     width: min(100%, 370px);
-    top: 18px;
-    right: 0;
+    top: 12px;
+    right: 8px;
     padding: 1.25rem;
     animation-duration: 6.6s;
 }
@@ -1259,14 +1292,14 @@ h1, h2, h3, .ss-landing-logo-text {
 }
 
 .ss-landing-glass-alert {
-    left: 4%;
-    top: 205px;
+    left: -24px;
+    top: 200px;
     animation-delay: 0.35s;
 }
 
 .ss-landing-glass-safe {
-    right: 8%;
-    top: 282px;
+    right: 40px;
+    top: 278px;
     animation-delay: 0.8s;
 }
 
@@ -1450,8 +1483,22 @@ h1, h2, h3, .ss-landing-logo-text {
     }
 
     .ss-landing-hero-visual {
-        min-height: 330px;
-        margin-top: 1rem;
+        min-height: 360px;
+        margin-top: 1.25rem;
+    }
+
+    .ss-landing-glass-main {
+        right: 0;
+    }
+
+    .ss-landing-glass-alert {
+        left: 16px;
+        top: 206px;
+    }
+
+    .ss-landing-glass-safe {
+        right: 12px;
+        top: 282px;
     }
 }
 
@@ -1473,7 +1520,7 @@ h1, h2, h3, .ss-landing-logo-text {
     }
 
     .ss-landing-hero-visual {
-        min-height: 290px;
+        min-height: 320px;
     }
 
     .ss-landing-hero-text,
@@ -1488,12 +1535,12 @@ h1, h2, h3, .ss-landing-logo-text {
 
     .ss-landing-glass-alert {
         left: 0;
-        top: 200px;
+        top: 198px;
     }
 
     .ss-landing-glass-safe {
         right: 0;
-        top: 258px;
+        top: 256px;
     }
 
     .ss-landing-newsletter-row {
@@ -1875,5 +1922,69 @@ body.ss-theme-dark .ss-landing-cta-content {
     .ss-landing-orb-b {
         transform: none !important;
         transition: none !important;
+    }
+}
+
+/* ===== Landing Card Fixes ===== */
+.ss-landing-features-grid {
+    align-items: stretch;
+}
+
+.ss-landing-features-grid-mosaic .ss-landing-feature-card {
+    transform: none;
+    min-height: 270px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 0.55rem;
+}
+
+.ss-landing-features-grid-mosaic .ss-landing-feature-card:nth-child(1),
+.ss-landing-features-grid-mosaic .ss-landing-feature-card:nth-child(2),
+.ss-landing-features-grid-mosaic .ss-landing-feature-card:nth-child(3),
+.ss-landing-features-grid-mosaic .ss-landing-feature-card:nth-child(4),
+.ss-landing-features-grid-mosaic .ss-landing-feature-card:nth-child(5),
+.ss-landing-features-grid-mosaic .ss-landing-feature-card:nth-child(6) {
+    transform: none;
+}
+
+.ss-landing-features-grid-mosaic .ss-landing-feature-card:hover {
+    transform: translateY(-6px);
+}
+
+.ss-landing-feature-card h3,
+.ss-landing-step-card h3 {
+    margin-top: 0;
+    margin-bottom: 0.7rem;
+}
+
+.ss-landing-feature-card p,
+.ss-landing-step-card p {
+    margin: 0;
+    line-height: 1.65;
+}
+
+.ss-landing-step-card {
+    min-height: 290px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    padding-top: 3.35rem;
+}
+
+.ss-landing-step-number {
+    top: 12px;
+    left: 12px;
+    transform: none;
+}
+
+@media (max-width: 1024px) {
+    .ss-landing-features-grid-mosaic .ss-landing-feature-card {
+        min-height: 0;
+    }
+
+    .ss-landing-step-card {
+        min-height: 0;
     }
 }

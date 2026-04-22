@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react"
 import SkeletonLoader from "../components/SkeletonLoader"
 import { Link, useLocation, useNavigate } from "react-router-dom"
-import { getRateLimitStatus, loginUser, signInWithGoogle } from "../services/authService"
+import { getRateLimitStatus, loginUser, signInWithGoogle, validateEmailFormat } from "../services/authService"
 import GoogleLogo from "../components/GoogleLogo"
 import "../styles/login.css"
 import "../styles/fadeout.css"
 import LandingHeader from "../components/LandingHeader"
 import LandingFooter from "../components/LandingFooter"
+
+const MAX_EMAIL_LENGTH = 255
+const MAX_PASSWORD_LENGTH = 255
 
 function Login() {
 
@@ -19,6 +22,8 @@ function Login() {
   const [googleLoading, setGoogleLoading] = useState(false)
   const [fadeOut, setFadeOut] = useState(false)
   const [lockSeconds, setLockSeconds] = useState(0)
+  const [errors, setErrors] = useState({})
+  const [touched, setTouched] = useState({})
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -53,8 +58,48 @@ function Login() {
     return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`
   }
 
+  const validateField = (field, value) => {
+    if (field === "email") {
+      const nextValue = (value || "").trim()
+      if (!nextValue) return "Email is required."
+      if (nextValue.length > MAX_EMAIL_LENGTH) return `Email must not exceed ${MAX_EMAIL_LENGTH} characters.`
+      if (!validateEmailFormat(nextValue)) return "Please enter a valid email address."
+      return ""
+    }
+
+    if (field === "password") {
+      if (!value) return "Password is required."
+      if (value.length > MAX_PASSWORD_LENGTH) return `Password must not exceed ${MAX_PASSWORD_LENGTH} characters.`
+      return ""
+    }
+
+    return ""
+  }
+
+  const validateForm = () => {
+    const nextErrors = {
+      email: validateField("email", email),
+      password: validateField("password", password),
+    }
+
+    setErrors(nextErrors)
+    return !nextErrors.email && !nextErrors.password
+  }
+
+  const handleBlur = (field, value) => {
+    setTouched((prev) => ({ ...prev, [field]: true }))
+    setErrors((prev) => ({ ...prev, [field]: validateField(field, value) }))
+  }
+
   const handleLogin = async (event) => {
     event.preventDefault()
+
+    const isValid = validateForm()
+    if (!isValid) {
+      setMessage("Please correct the highlighted fields and try again.")
+      setMessageType("error")
+      return
+    }
 
     if (lockSeconds > 0) {
       setMessage(`Too many login attempts. Try again in ${formatLockTimer(lockSeconds)}.`)
@@ -156,13 +201,21 @@ function Login() {
                   id="login-email"
                   type="email"
                   placeholder="Email"
+                  autoComplete="email"
                   value={email}
                   onChange={(event) => {
                     setEmail(event.target.value)
                     if (message) setMessage("")
+                    if (errors.email) {
+                      setErrors((prev) => ({ ...prev, email: validateField("email", event.target.value) }))
+                    }
                   }}
+                  onBlur={(event) => handleBlur("email", event.target.value)}
+                  aria-invalid={Boolean(touched.email && errors.email)}
+                  aria-describedby={touched.email && errors.email ? "login-email-error" : undefined}
                   required
                 />
+                {touched.email && errors.email ? <p className="auth-field-error" id="login-email-error">{errors.email}</p> : null}
               </div>
 
               <div className="form-group">
@@ -172,11 +225,18 @@ function Login() {
                     id="login-password"
                     type={showPassword ? "text" : "password"}
                     placeholder="Password"
+                    autoComplete="current-password"
                     value={password}
                     onChange={(event) => {
                       setPassword(event.target.value)
                       if (message) setMessage("")
+                      if (errors.password) {
+                        setErrors((prev) => ({ ...prev, password: validateField("password", event.target.value) }))
+                      }
                     }}
+                    onBlur={(event) => handleBlur("password", event.target.value)}
+                    aria-invalid={Boolean(touched.password && errors.password)}
+                    aria-describedby={touched.password && errors.password ? "login-password-error" : undefined}
                     required
                   />
                   <button
@@ -187,6 +247,7 @@ function Login() {
                     {showPassword ? "Hide" : "Show"}
                   </button>
                 </div>
+                {touched.password && errors.password ? <p className="auth-field-error" id="login-password-error">{errors.password}</p> : null}
               </div>
 
               <div className="auth-inline-links">

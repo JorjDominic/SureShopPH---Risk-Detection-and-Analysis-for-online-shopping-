@@ -616,6 +616,210 @@ body.ss-theme-dark .ss-dashboard-btn-secondary {
   border: 1px solid rgba(148, 163, 184, 0.12);
 }
 
+/* ==============================================
+   DASHBOARD ALIVE LAYER — Interactions & Motion
+   ============================================== */
+
+/* ── Hero card entrance animations ── */
+.ss-dashboard-hero-main {
+  animation: ssDbRise 0.72s cubic-bezier(0.34, 1.35, 0.64, 1) both;
+}
+
+.ss-dashboard-hero-side {
+  animation: ssDbRise 0.72s cubic-bezier(0.34, 1.35, 0.64, 1) 0.14s both;
+}
+
+@keyframes ssDbRise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 20px, 0) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ── Animated meter fill ── */
+.ss-dashboard-meter span {
+  animation: ssDbMeterFill 1.5s cubic-bezier(0.34, 1.1, 0.64, 1) 0.65s both;
+}
+
+@keyframes ssDbMeterFill {
+  from { width: 0 !important; }
+}
+
+/* ── Action cards: staggered entrance + enhanced hover ── */
+.ss-dashboard-action-card:nth-child(1) { animation: ssDbRise 0.6s cubic-bezier(0.34, 1.4, 0.64, 1) 0.04s both; }
+.ss-dashboard-action-card:nth-child(2) { animation: ssDbRise 0.6s cubic-bezier(0.34, 1.4, 0.64, 1) 0.11s both; }
+.ss-dashboard-action-card:nth-child(3) { animation: ssDbRise 0.6s cubic-bezier(0.34, 1.4, 0.64, 1) 0.18s both; }
+.ss-dashboard-action-card:nth-child(4) { animation: ssDbRise 0.6s cubic-bezier(0.34, 1.4, 0.64, 1) 0.25s both; }
+
+.ss-dashboard-action-card {
+  transition:
+    transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.35s ease,
+    border-color 0.3s ease;
+}
+
+.ss-dashboard-action-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 36px 64px -28px rgba(14, 165, 164, 0.38);
+  border-color: rgba(14, 165, 164, 0.3);
+}
+
+.ss-dashboard-action-icon {
+  transition:
+    transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.3s ease;
+}
+
+.ss-dashboard-action-card:hover .ss-dashboard-action-icon {
+  transform: scale(1.14) rotate(-4deg);
+  box-shadow: 0 8px 20px -8px rgba(14, 165, 164, 0.48);
+}
+
+/* ── Stat cards: staggered entrance + hover lift ── */
+.ss-dashboard-stat-card:nth-child(1) { animation: ssDbRise 0.6s cubic-bezier(0.34, 1.4, 0.64, 1) 0.06s both; }
+.ss-dashboard-stat-card:nth-child(2) { animation: ssDbRise 0.6s cubic-bezier(0.34, 1.4, 0.64, 1) 0.13s both; }
+.ss-dashboard-stat-card:nth-child(3) { animation: ssDbRise 0.6s cubic-bezier(0.34, 1.4, 0.64, 1) 0.20s both; }
+.ss-dashboard-stat-card:nth-child(4) { animation: ssDbRise 0.6s cubic-bezier(0.34, 1.4, 0.64, 1) 0.27s both; }
+
+.ss-dashboard-stat-card {
+  transition:
+    transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.35s ease;
+  cursor: default;
+}
+
+.ss-dashboard-stat-card:hover {
+  transform: translateY(-5px) scale(1.01);
+  box-shadow: 0 28px 56px -26px rgba(15, 23, 42, 0.45);
+}
+
+.ss-dashboard-stat-icon {
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.ss-dashboard-stat-card:hover .ss-dashboard-stat-icon {
+  transform: scale(1.12) rotate(-5deg);
+}
+
+/* ── Alert card left-border accent ── */
+.ss-dashboard-alert-card {
+  position: relative;
+  padding: 1rem 1rem 1rem 1.25rem;
+  border-radius: 14px;
+  background: rgba(249, 115, 22, 0.07);
+  border: 1px solid rgba(249, 115, 22, 0.18);
+  margin-top: 1.2rem;
+  transition: background 0.3s ease;
+}
+
+.ss-dashboard-alert-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 10%;
+  bottom: 10%;
+  width: 3px;
+  background: var(--ss-dashboard-orange);
+  border-radius: 3px 0 0 3px;
+}
+
+.ss-dashboard-alert-card:hover {
+  background: rgba(249, 115, 22, 0.12);
+}
+
+.ss-dashboard-alert-icon {
+  background: rgba(249, 115, 22, 0.14);
+  color: #c2410c;
+  flex-shrink: 0;
+}
+
+/* ── Tip list article hover ── */
+.ss-dashboard-tip-list article {
+  transition: background 0.25s ease;
+}
+
+.ss-dashboard-tip-list article:hover {
+  background: rgba(14, 165, 164, 0.07);
+}
+
+/* ── Checklist item hover ── */
+.ss-dashboard-checklist li {
+  padding: 0.45rem 0.5rem;
+  border-radius: 8px;
+  transition: background 0.25s ease;
+}
+
+.ss-dashboard-checklist li:hover {
+  background: rgba(14, 165, 164, 0.08);
+}
+
+/* ── Primary button shine sweep ── */
+.ss-dashboard-btn-primary {
+  position: relative;
+  overflow: hidden;
+}
+
+.ss-dashboard-btn-primary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    108deg,
+    transparent 36%,
+    rgba(255, 255, 255, 0.22) 50%,
+    transparent 64%
+  );
+  transform: translateX(-130%);
+  transition: transform 0.55s ease;
+  pointer-events: none;
+}
+
+.ss-dashboard-btn-primary:not(:disabled):hover::after {
+  transform: translateX(130%);
+}
+
+/* ── Dark mode overrides for alive layer ── */
+body.ss-theme-dark .ss-dashboard-alert-card {
+  background: rgba(249, 115, 22, 0.09);
+  border-color: rgba(249, 115, 22, 0.22);
+}
+
+body.ss-theme-dark .ss-dashboard-alert-card:hover {
+  background: rgba(249, 115, 22, 0.14);
+}
+
+body.ss-theme-dark .ss-dashboard-tip-list article:hover {
+  background: rgba(14, 165, 164, 0.1);
+}
+
+body.ss-theme-dark .ss-dashboard-checklist li:hover {
+  background: rgba(14, 165, 164, 0.12);
+}
+
+body.ss-theme-dark .ss-dashboard-tip-list article {
+  background: rgba(15, 23, 42, 0.62);
+  border-color: rgba(148, 163, 184, 0.14);
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .ss-dashboard-hero-main,
+  .ss-dashboard-hero-side,
+  .ss-dashboard-stat-card,
+  .ss-dashboard-action-card {
+    animation: none !important;
+  }
+  .ss-dashboard-meter span { animation: none !important; }
+  .ss-dashboard-btn-primary::after { transition: none !important; transform: none !important; }
+  .ss-dashboard-action-card:hover { transform: translateY(-2px) !important; }
+  .ss-dashboard-stat-card:hover { transform: translateY(-2px) !important; }
+  .ss-dashboard-action-card:hover .ss-dashboard-action-icon { transform: none !important; }
+}
+
 .ss-dashboard-tip-list article > span,
 .ss-dashboard-alert-icon {
   flex: 0 0 auto;
@@ -681,7 +885,7 @@ body.ss-theme-dark .ss-dashboard-btn-secondary {
 
 @media (max-width: 720px) {
   .ss-dashboard-main {
-    padding-top: 1.2rem;
+    padding-top: 1.4rem;
   }
 
   .ss-dashboard-actions-grid,
@@ -699,7 +903,16 @@ body.ss-theme-dark .ss-dashboard-btn-secondary {
   }
 
   .ss-dashboard-nav {
-    display: none;
+    display: flex;
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 0.2rem;
+    gap: 0.9rem;
+    scrollbar-width: thin;
+  }
+
+  .ss-dashboard-nav a {
+    white-space: nowrap;
   }
 
   .ss-dashboard-topbar-inner {

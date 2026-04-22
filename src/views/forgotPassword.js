@@ -1,17 +1,20 @@
 import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
-import { getRateLimitStatus, requestPasswordReset } from "../services/authService"
+import { getRateLimitStatus, requestPasswordReset, validateEmailFormat } from "../services/authService"
 import "../styles/login.css"
 import LandingHeader from "../components/LandingHeader"
 import LandingFooter from "../components/LandingFooter"
 
 const NEUTRAL_MESSAGE = "If the email is registered, a reset link will be sent shortly."
+const MAX_EMAIL_LENGTH = 255
 
 function ForgotPassword() {
   const [email, setEmail] = useState("")
   const [message, setMessage] = useState("")
   const [loading, setLoading] = useState(false)
   const [lockSeconds, setLockSeconds] = useState(0)
+  const [error, setError] = useState("")
+  const [touched, setTouched] = useState(false)
 
   useEffect(() => {
     const { waitSeconds } = getRateLimitStatus("reset", email)
@@ -34,8 +37,24 @@ function ForgotPassword() {
     return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`
   }
 
+  const validateEmail = (value) => {
+    const nextValue = (value || "").trim()
+    if (!nextValue) return "Email is required."
+    if (nextValue.length > MAX_EMAIL_LENGTH) return `Email must not exceed ${MAX_EMAIL_LENGTH} characters.`
+    if (!validateEmailFormat(nextValue)) return "Please enter a valid email address."
+    return ""
+  }
+
   const handleSubmit = async (event) => {
     event.preventDefault()
+
+    const nextError = validateEmail(email)
+    setTouched(true)
+    setError(nextError)
+    if (nextError) {
+      setMessage("Please correct the highlighted email field.")
+      return
+    }
 
     if (lockSeconds > 0) {
       setMessage(`Too many reset attempts. Try again in ${formatLockTimer(lockSeconds)}.`)
@@ -111,13 +130,22 @@ function ForgotPassword() {
                 id="forgot-email"
                 type="email"
                 placeholder="Email"
+                autoComplete="email"
                 value={email}
                 onChange={(event) => {
                   setEmail(event.target.value)
                   if (message) setMessage("")
+                  if (error) setError(validateEmail(event.target.value))
                 }}
+                onBlur={(event) => {
+                  setTouched(true)
+                  setError(validateEmail(event.target.value))
+                }}
+                aria-invalid={Boolean(touched && error)}
+                aria-describedby={touched && error ? "forgot-email-error" : undefined}
                 required
               />
+              {touched && error ? <p className="auth-field-error" id="forgot-email-error">{error}</p> : null}
             </div>
 
             <button className="btn btn-primary btn-block" type="submit" disabled={loading || lockSeconds > 0}>

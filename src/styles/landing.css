@@ -1473,6 +1473,11 @@ h1, h2, h3, .ss-landing-logo-text {
     padding: 0.65rem 0.75rem;
 }
 
+.ss-landing-newsletter-row input[aria-invalid="true"] {
+    border-color: rgba(248, 113, 113, 0.85);
+    box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.16);
+}
+
 .ss-landing-newsletter-row button {
     border: none;
     border-radius: 10px;
@@ -1485,6 +1490,11 @@ h1, h2, h3, .ss-landing-logo-text {
 
 .ss-landing-newsletter-success {
     color: #86efac;
+    font-size: 0.8rem;
+}
+
+.ss-landing-newsletter-error {
+    color: #fca5a5;
     font-size: 0.8rem;
 }
 
@@ -1741,6 +1751,268 @@ body.ss-theme-dark .ss-landing-mobile-menu {
 
 body.ss-theme-dark .ss-landing-mobile-nav-links a:hover {
     background: rgba(30, 41, 59, 0.75);
+}
+
+/* ==========================================================
+   ALIVE LAYER — Interactions, Micro-animations, Expressiveness
+   ========================================================== */
+
+/* ── Hero title gradient highlight ── */
+.ss-hero-highlight {
+  background: linear-gradient(130deg, var(--ss-primary) 0%, var(--ss-secondary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: inline;
+  position: relative;
+}
+
+.ss-hero-highlight::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--ss-primary), var(--ss-secondary));
+  opacity: 0.5;
+  animation: ssSoftPulse 2.8s ease-in-out infinite;
+}
+
+body.ss-theme-dark .ss-hero-highlight {
+  background: linear-gradient(130deg, #5eead4, #fb923c);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ── Button shine sweep ── */
+.ss-landing-btn-primary,
+.ss-landing-btn-secondary {
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.ss-landing-btn-primary::after,
+.ss-landing-btn-secondary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    108deg,
+    transparent 36%,
+    rgba(255, 255, 255, 0.22) 50%,
+    transparent 64%
+  );
+  transform: translateX(-120%);
+  transition: transform 0.58s ease;
+  pointer-events: none;
+}
+
+.ss-landing-btn-primary:not(:disabled):hover::after,
+.ss-landing-btn-secondary:not(:disabled):hover::after {
+  transform: translateX(120%);
+}
+
+/* ── Tertiary button arrow nudge ── */
+.ss-landing-btn-tertiary i {
+  display: inline-block;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.ss-landing-btn-tertiary:hover i {
+  transform: translateX(5px);
+}
+
+/* ── Feature card elevated 3D hover ── */
+.ss-landing-feature-card {
+  transition:
+    transform 0.38s cubic-bezier(0.34, 1.4, 0.64, 1),
+    box-shadow 0.38s ease,
+    border-color 0.3s ease !important;
+}
+
+.ss-landing-feature-card:hover {
+  transform: translateY(-10px) perspective(900px) rotateX(2deg) !important;
+  box-shadow: 0 34px 64px -26px rgba(14, 165, 164, 0.32) !important;
+  border-color: rgba(14, 165, 164, 0.28) !important;
+}
+
+.ss-landing-feature-icon {
+  transition:
+    background 0.35s ease,
+    box-shadow 0.35s ease,
+    transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.ss-landing-feature-card:hover .ss-landing-feature-icon {
+  background: rgba(14, 165, 164, 0.22);
+  box-shadow: 0 0 0 10px rgba(14, 165, 164, 0.1);
+  transform: scale(1.1) rotate(-5deg);
+}
+
+/* ── Step card bounce on hover ── */
+.ss-landing-step-card {
+  transition:
+    transform 0.38s cubic-bezier(0.34, 1.4, 0.64, 1),
+    box-shadow 0.38s ease !important;
+}
+
+.ss-landing-step-card:hover {
+  transform: translateY(-10px) !important;
+  box-shadow: 0 28px 56px -22px rgba(14, 165, 164, 0.28) !important;
+}
+
+.ss-landing-step-number {
+  transition:
+    transform 0.38s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.3s ease;
+}
+
+.ss-landing-step-card:hover .ss-landing-step-number {
+  transform: translateX(-50%) scale(1.18);
+  box-shadow: 0 8px 22px -8px rgba(14, 165, 164, 0.55);
+}
+
+.ss-landing-step-icon {
+  transition:
+    background 0.35s ease,
+    transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.ss-landing-step-card:hover .ss-landing-step-icon {
+  background: rgba(14, 165, 164, 0.18);
+  transform: scale(1.07);
+}
+
+/* ── CTA animated gradient ── */
+.ss-landing-cta {
+  background: linear-gradient(-45deg, #ccfbf1, #ecfccb, #ffedd5, #ede9fe) !important;
+  background-size: 400% 400% !important;
+  animation: ssGradientShift 10s ease infinite !important;
+}
+
+body.ss-theme-dark .ss-landing-cta {
+  background: linear-gradient(-45deg, #0d2b26, #162041, #1a2e08, #160d35) !important;
+  background-size: 400% 400% !important;
+}
+
+/* ── Trust strip seamless marquee ── */
+.ss-landing-trust-strip {
+  overflow: hidden !important;
+}
+
+.ss-landing-trust-track {
+  flex-wrap: nowrap !important;
+  justify-content: flex-start !important;
+  width: max-content !important;
+  gap: 3rem !important;
+  animation: ssTrustMarquee 34s linear infinite !important;
+  will-change: transform;
+}
+
+.ss-landing-trust-strip:hover .ss-landing-trust-track {
+  animation-play-state: paused;
+}
+
+@keyframes ssTrustMarquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* ── Scroll-reveal classes ── */
+.ss-reveal {
+  opacity: 0;
+  transform: translate3d(0, 26px, 0);
+  transition:
+    opacity 0.65s ease,
+    transform 0.65s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+.ss-reveal.is-revealed {
+  opacity: 1;
+  transform: none;
+}
+
+.ss-reveal:nth-child(2) { transition-delay: 0.09s; }
+.ss-reveal:nth-child(3) { transition-delay: 0.18s; }
+.ss-reveal:nth-child(4) { transition-delay: 0.26s; }
+.ss-reveal:nth-child(5) { transition-delay: 0.33s; }
+.ss-reveal:nth-child(6) { transition-delay: 0.40s; }
+
+/* ── Section title underline animation ── */
+.ss-landing-section-header .ss-landing-section-title::after {
+  content: '';
+  display: block;
+  width: 0;
+  height: 3px;
+  margin: 8px auto 0;
+  background: linear-gradient(90deg, var(--ss-primary), var(--ss-secondary));
+  border-radius: 999px;
+  transition: width 0.75s cubic-bezier(0.34, 1.3, 0.64, 1);
+}
+
+.in-view .ss-landing-section-header .ss-landing-section-title::after {
+  width: 72px;
+}
+
+/* ── Community stat hover ── */
+.ss-landing-community-number {
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.3s ease;
+}
+
+.ss-landing-community-stat:hover .ss-landing-community-number {
+  transform: scale(1.08);
+  color: var(--ss-primary-dark);
+}
+
+/* ── Glass card interactivity ── */
+.ss-landing-glass-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+.ss-landing-glass-card:hover {
+  transform: translateY(-4px) scale(1.01) !important;
+  box-shadow: 0 22px 44px -22px rgba(15, 23, 42, 0.42) !important;
+}
+
+/* ── Footer social icon pop ── */
+.ss-landing-footer-social a {
+  transition: background 0.3s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease !important;
+}
+
+.ss-landing-footer-social a:hover {
+  transform: translateY(-3px) scale(1.1) !important;
+  box-shadow: 0 8px 18px -8px rgba(14, 165, 164, 0.55) !important;
+}
+
+/* ── Section eyebrow hover glow ── */
+.ss-landing-eyebrow {
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.ss-landing-section-header:hover .ss-landing-eyebrow {
+  background: rgba(14, 165, 164, 0.18);
+  color: var(--ss-primary);
+}
+
+/* ── Reduced motion overrides ── */
+@media (prefers-reduced-motion: reduce) {
+  .ss-landing-trust-track { animation: none !important; }
+  .ss-landing-cta { animation: none !important; }
+  .ss-landing-btn-primary::after,
+  .ss-landing-btn-secondary::after { transition: none !important; transform: none !important; }
+  .ss-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  .ss-hero-highlight::after { animation: none !important; }
+  .ss-landing-feature-card:hover { transform: translateY(-3px) !important; }
+  .ss-landing-step-card:hover { transform: translateY(-3px) !important; }
+  .ss-landing-feature-card:hover .ss-landing-feature-icon { transform: none !important; }
+  .ss-landing-step-card:hover .ss-landing-step-number { transform: translateX(-50%) !important; }
 }
 
 body.ss-theme-dark .ss-landing-hero-subtitle,

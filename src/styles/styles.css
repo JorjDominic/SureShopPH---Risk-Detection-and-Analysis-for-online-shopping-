@@ -139,6 +139,32 @@ h1, h2, h3, h4, h5, h6 {
     display: inline-block;
     transition: all 0.3s;
     font-weight: 500;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        108deg,
+        transparent 36%,
+        rgba(255, 255, 255, 0.18) 50%,
+        transparent 64%
+    );
+    transform: translateX(-130%);
+    transition: transform 0.55s ease;
+    pointer-events: none;
+    border-radius: inherit;
+}
+
+.btn:not(:disabled):hover::after {
+    transform: translateX(130%);
+}
+
+.btn:not(:disabled):active {
+    transform: scale(0.97) translateY(1px) !important;
 }
 
 .btn-primary {

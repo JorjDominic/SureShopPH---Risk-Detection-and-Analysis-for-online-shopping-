@@ -4,12 +4,27 @@ import { Link } from 'react-router-dom';
 function LandingFooter() {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
+  const [newsletterError, setNewsletterError] = useState('');
+
+  const validateNewsletterEmail = (value) => {
+    const nextValue = (value || '').trim();
+    if (!nextValue) return 'Please enter your email address.';
+    if (!/^[^\s@]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(nextValue)) {
+      return 'Please enter a valid email address.';
+    }
+    return '';
+  };
 
   const handleSubscribe = (event) => {
     event.preventDefault();
-    if (!email.trim()) {
+    const validationError = validateNewsletterEmail(email);
+    if (validationError) {
+      setSubscribed(false);
+      setNewsletterError(validationError);
       return;
     }
+
+    setNewsletterError('');
     setSubscribed(true);
     setEmail('');
   };
@@ -44,10 +59,22 @@ function LandingFooter() {
                   type="email"
                   placeholder="you@example.com"
                   value={email}
-                  onChange={(event) => setEmail(event.target.value)}
+                  onChange={(event) => {
+                    setEmail(event.target.value);
+                    if (newsletterError) {
+                      setNewsletterError(validateNewsletterEmail(event.target.value));
+                    }
+                    if (subscribed) {
+                      setSubscribed(false);
+                    }
+                  }}
+                  onBlur={(event) => setNewsletterError(validateNewsletterEmail(event.target.value))}
+                  aria-invalid={Boolean(newsletterError)}
+                  aria-describedby={newsletterError ? 'footer-news-email-error' : undefined}
                 />
                 <button type="submit">Subscribe</button>
               </div>
+              {newsletterError ? <p id="footer-news-email-error" className="ss-landing-newsletter-error">{newsletterError}</p> : null}
               {subscribed && <p className="ss-landing-newsletter-success">You are in. Watch your inbox.</p>}
             </form>
             <div className="ss-landing-trust-row">

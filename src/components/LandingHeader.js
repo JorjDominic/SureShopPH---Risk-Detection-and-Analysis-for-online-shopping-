@@ -17,6 +17,35 @@ function LandingHeader({ session }) {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  useEffect(() => {
+    if (!mobileOpen) {
+      document.body.style.overflow = '';
+      return undefined;
+    }
+
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setMobileOpen(false);
+      }
+    };
+
+    const onResize = () => {
+      if (window.innerWidth > 900) {
+        setMobileOpen(false);
+      }
+    };
+
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('resize', onResize);
+
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('resize', onResize);
+    };
+  }, [mobileOpen]);
+
   const closeMobileMenu = () => setMobileOpen(false);
 
   const handleLogout = async () => {
@@ -80,13 +109,15 @@ function LandingHeader({ session }) {
             <button
               className="ss-landing-mobile-menu-btn"
               aria-label="Toggle navigation"
+              aria-expanded={mobileOpen}
+              aria-controls="ss-landing-mobile-menu"
               onClick={() => setMobileOpen((prev) => !prev)}
             >
               <i className="fas fa-bars"></i>
             </button>
           </div>
 
-          <div className={`ss-landing-mobile-menu${mobileOpen ? ' active' : ''}`}>
+          <div id="ss-landing-mobile-menu" className={`ss-landing-mobile-menu${mobileOpen ? ' active' : ''}`}>
             <ul className="ss-landing-mobile-nav-links">
               <li><a href="/#features" onClick={closeMobileMenu}><i className="fas fa-star"></i> Features</a></li>
               <li><a href="/#how" onClick={closeMobileMenu}><i className="fas fa-play-circle"></i> How It Works</a></li>

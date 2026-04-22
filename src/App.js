@@ -76,6 +76,36 @@ function PublicOnlyRoute({ session, children }) {
 }
 
 function LandingPage({ session }) {
+  useEffect(() => {
+    let ticking = false;
+
+    const reveal = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const vh = window.innerHeight;
+        document.querySelectorAll('.ss-landing-section').forEach((s) => {
+          const rect = s.getBoundingClientRect();
+          if (rect.top < vh * 0.9) {
+            s.classList.add('in-view');
+            s.querySelectorAll('.ss-reveal:not(.is-revealed)').forEach((el) => {
+              el.classList.add('is-revealed');
+            });
+          }
+        });
+        ticking = false;
+      });
+    };
+
+    reveal();
+    window.addEventListener('scroll', reveal, { passive: true });
+    window.addEventListener('resize', reveal, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', reveal);
+      window.removeEventListener('resize', reveal);
+    };
+  }, []);
+
   return (
     <div className="App">
       <LandingHeader session={session} />
@@ -87,7 +117,7 @@ function LandingPage({ session }) {
             <div className="ss-landing-hero-content">
               <div className="ss-landing-hero-text">
                   <div className="ss-landing-kicker">AI-Powered Risk Detection for Filipino Shoppers</div>
-                  <h1 className="ss-landing-hero-title">Shop Smarter. Stay Protected.</h1>
+                  <h1 className="ss-landing-hero-title">Shop <span className="ss-hero-highlight">Smarter</span>. Stay Protected.</h1>
                   <p className="ss-landing-hero-subtitle">
                     SureshopPH analyzes listings, sellers, and URLs in real-time to help you identify
                     fraudulent activity before you buy — powered by localized AI built for the Philippine
@@ -148,11 +178,15 @@ function LandingPage({ session }) {
 
         <section className="ss-landing-trust-strip" aria-label="Trust signals">
           <div className="container">
-            <div className="ss-landing-trust-track">
+            <div className="ss-landing-trust-track" aria-hidden="true">
               <span><i className="fas fa-bolt"></i> Real-time risk analysis on every listing</span>
               <span><i className="fas fa-shield-heart"></i> Dual Risk Score and Confidence Rating</span>
               <span><i className="fas fa-users"></i> Built for Filipino online shoppers</span>
-              <span><i className="fas fa-bug-slash"></i> Supports Shopee, Lazada & Facebook Marketplace</span>
+              <span><i className="fas fa-bug-slash"></i> Supports Shopee, Lazada &amp; Facebook Marketplace</span>
+              <span><i className="fas fa-bolt"></i> Real-time risk analysis on every listing</span>
+              <span><i className="fas fa-shield-heart"></i> Dual Risk Score and Confidence Rating</span>
+              <span><i className="fas fa-users"></i> Built for Filipino online shoppers</span>
+              <span><i className="fas fa-bug-slash"></i> Supports Shopee, Lazada &amp; Facebook Marketplace</span>
             </div>
           </div>
         </section>
@@ -166,42 +200,42 @@ function LandingPage({ session }) {
               <p className="ss-landing-section-subtitle">Analyze every layer of a listing before you commit to a purchase</p>
             </div>
             <div className="ss-landing-features-grid ss-landing-features-grid-mosaic">
-              <div className="ss-landing-feature-card" data-chip="Domain Shield">
+              <div className="ss-landing-feature-card ss-reveal" data-chip="Domain Shield">
                 <div className="ss-landing-feature-icon">
                   <i className="fas fa-globe"></i>
                 </div>
                 <h3>URL & Domain Analysis</h3>
                 <p>Detect typosquatting and domain spoofing in real-time — catching fake websites designed to look like Shopee, Lazada, or other trusted platforms.</p>
               </div>
-              <div className="ss-landing-feature-card" data-chip="Price Anomaly Radar">
+              <div className="ss-landing-feature-card ss-reveal" data-chip="Price Anomaly Radar">
                 <div className="ss-landing-feature-icon">
                   <i className="fas fa-shopping-bag"></i>
                 </div>
                 <h3>Listing Metadata Scan</h3>
                 <p>Flags suspicious pricing, low ratings, and abnormal sales figures — identifying "too good to be true" offers before they cost you.</p>
               </div>
-              <div className="ss-landing-feature-card" data-chip="Seller DNA">
+              <div className="ss-landing-feature-card ss-reveal" data-chip="Seller DNA">
                 <div className="ss-landing-feature-icon">
                   <i className="fas fa-user-shield"></i>
                 </div>
                 <h3>Seller Assessment</h3>
                 <p>Evaluates seller account age, response rate, and aggregate ratings to surface fraudulent or newly created seller profiles.</p>
               </div>
-              <div className="ss-landing-feature-card" data-chip="Taglish NLP">
+              <div className="ss-landing-feature-card ss-reveal" data-chip="Taglish NLP">
                 <div className="ss-landing-feature-icon">
                   <i className="fas fa-language"></i>
                 </div>
                 <h3>Localized NLP Analysis</h3>
                 <p>Powered by calamanCy, our engine detects social engineering cues and deceptive phrasing in Tagalog and Taglish product descriptions and reviews.</p>
               </div>
-              <div className="ss-landing-feature-card" data-chip="Risk Lens">
+              <div className="ss-landing-feature-card ss-reveal" data-chip="Risk Lens">
                 <div className="ss-landing-feature-icon">
                   <i className="fas fa-chart-bar"></i>
                 </div>
                 <h3>Risk & Confidence Scores</h3>
                 <p>Every scan produces a probabilistic Risk Score (0–100%) and a Confidence Rating based on data completeness — never a forced safe or scam label.</p>
               </div>
-              <div className="ss-landing-feature-card" data-chip="Community Shield">
+              <div className="ss-landing-feature-card ss-reveal" data-chip="Community Shield">
                 <div className="ss-landing-feature-icon">
                   <i className="fas fa-flag"></i>
                 </div>
@@ -222,7 +256,7 @@ function LandingPage({ session }) {
               <p className="ss-landing-section-subtitle">Three steps to safer online shopping</p>
             </div>
             <div className="ss-landing-steps">
-              <div className="ss-landing-step-card">
+              <div className="ss-landing-step-card ss-reveal">
                 <div className="ss-landing-step-number">01</div>
                 <div className="ss-landing-step-icon">
                   <i className="fas fa-puzzle-piece"></i>
@@ -230,7 +264,7 @@ function LandingPage({ session }) {
                 <h3>Install the Extension</h3>
                 <p>Add SureshopPH to any Chromium-based browser — Chrome, Edge, Brave, or Opera — in seconds.</p>
               </div>
-              <div className="ss-landing-step-card">
+              <div className="ss-landing-step-card ss-reveal">
                 <div className="ss-landing-step-number">02</div>
                 <div className="ss-landing-step-icon">
                   <i className="fas fa-search"></i>
@@ -238,7 +272,7 @@ function LandingPage({ session }) {
                 <h3>Browse Normally</h3>
                 <p>Shop on Shopee, Lazada, or Facebook Marketplace as you normally would. The extension automatically extracts listing data in the background.</p>
               </div>
-              <div className="ss-landing-step-card">
+              <div className="ss-landing-step-card ss-reveal">
                 <div className="ss-landing-step-number">03</div>
                 <div className="ss-landing-step-icon">
                   <i className="fas fa-shield-alt"></i>

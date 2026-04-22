@@ -1,5 +1,5 @@
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
 import { logoutUser } from '../../services/authService';
@@ -52,6 +52,39 @@ function DashboardIcon({ type }) {
   };
 
   return <span className="ss-dashboard-icon-svg">{icons[type] || icons.shield}</span>;
+}
+
+function AnimatedCounter({ value }) {
+  const numericValue = parseInt(String(value), 10);
+  const suffix = String(value).replace(/[0-9]/g, '');
+  const [current, setCurrent] = useState(0);
+  const rafRef = useRef(null);
+
+  useEffect(() => {
+    if (Number.isNaN(numericValue)) {
+      setCurrent(numericValue);
+      return undefined;
+    }
+    const duration = 1100;
+    const startTime = performance.now();
+
+    const tick = (now) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setCurrent(Math.round(numericValue * eased));
+      if (progress < 1) {
+        rafRef.current = requestAnimationFrame(tick);
+      }
+    };
+
+    rafRef.current = requestAnimationFrame(tick);
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, [numericValue]);
+
+  return <>{current}{suffix}</>;
 }
 
 function UserDashboard() {
@@ -345,7 +378,7 @@ function UserDashboard() {
                   <div className="ss-dashboard-stat-top">
                     <div>
                       <p>{stat.label}</p>
-                      <h3>{stat.value}</h3>
+                      <h3><AnimatedCounter value={stat.value} /></h3>
                     </div>
                     <span className="ss-dashboard-stat-icon"><DashboardIcon type={stat.icon} /></span>
                   </div>

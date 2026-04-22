@@ -18,6 +18,8 @@ function ResetPassword() {
   const [loading, setLoading] = useState(false)
   const [tokenValidating, setTokenValidating] = useState(true)
   const [tokenValid, setTokenValid] = useState(false)
+  const [errors, setErrors] = useState({})
+  const [touched, setTouched] = useState({})
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -47,14 +49,15 @@ function ResetPassword() {
     event.preventDefault()
     setMessage("")
 
-    const passwordError = validatePasswordRules(password)
-    if (passwordError) {
-      setMessage(passwordError)
-      return
+    const nextErrors = {
+      password: validatePasswordRules(password),
+      confirmPassword: !confirmPassword ? "Please confirm your new password." : password !== confirmPassword ? "Passwords do not match." : "",
     }
+    setErrors(nextErrors)
+    setTouched({ password: true, confirmPassword: true })
 
-    if (password !== confirmPassword) {
-      setMessage("Passwords do not match.")
+    if (nextErrors.password || nextErrors.confirmPassword) {
+      setMessage("Please fix the highlighted password fields.")
       return
     }
 
@@ -121,11 +124,27 @@ function ResetPassword() {
                       id="reset-password"
                       type={showPassword ? "text" : "password"}
                       placeholder="New password"
+                      autoComplete="new-password"
                       value={password}
                       onChange={(event) => {
                         setPassword(event.target.value)
                         if (message) setMessage("")
+                        if (errors.password) {
+                          setErrors((prev) => ({ ...prev, password: validatePasswordRules(event.target.value) }))
+                        }
+                        if (touched.confirmPassword && confirmPassword) {
+                          setErrors((prev) => ({
+                            ...prev,
+                            confirmPassword: confirmPassword !== event.target.value ? "Passwords do not match." : "",
+                          }))
+                        }
                       }}
+                      onBlur={(event) => {
+                        setTouched((prev) => ({ ...prev, password: true }))
+                        setErrors((prev) => ({ ...prev, password: validatePasswordRules(event.target.value) }))
+                      }}
+                      aria-invalid={Boolean(touched.password && errors.password)}
+                      aria-describedby={touched.password && errors.password ? "reset-password-error" : undefined}
                       required
                     />
                     <button
@@ -136,6 +155,7 @@ function ResetPassword() {
                       {showPassword ? "Hide" : "Show"}
                     </button>
                   </div>
+                  {touched.password && errors.password ? <p className="auth-field-error" id="reset-password-error">{errors.password}</p> : null}
                 </div>
 
                 <div className="form-group">
@@ -145,11 +165,27 @@ function ResetPassword() {
                       id="reset-confirm-password"
                       type={showConfirmPassword ? "text" : "password"}
                       placeholder="Confirm new password"
+                      autoComplete="new-password"
                       value={confirmPassword}
                       onChange={(event) => {
                         setConfirmPassword(event.target.value)
                         if (message) setMessage("")
+                        if (errors.confirmPassword) {
+                          setErrors((prev) => ({
+                            ...prev,
+                            confirmPassword: !event.target.value ? "Please confirm your new password." : event.target.value !== password ? "Passwords do not match." : "",
+                          }))
+                        }
                       }}
+                      onBlur={(event) => {
+                        setTouched((prev) => ({ ...prev, confirmPassword: true }))
+                        setErrors((prev) => ({
+                          ...prev,
+                          confirmPassword: !event.target.value ? "Please confirm your new password." : event.target.value !== password ? "Passwords do not match." : "",
+                        }))
+                      }}
+                      aria-invalid={Boolean(touched.confirmPassword && errors.confirmPassword)}
+                      aria-describedby={touched.confirmPassword && errors.confirmPassword ? "reset-confirm-password-error" : undefined}
                       required
                     />
                     <button
@@ -160,6 +196,7 @@ function ResetPassword() {
                       {showConfirmPassword ? "Hide" : "Show"}
                     </button>
                   </div>
+                  {touched.confirmPassword && errors.confirmPassword ? <p className="auth-field-error" id="reset-confirm-password-error">{errors.confirmPassword}</p> : null}
                 </div>
 
                 <button className="btn btn-primary btn-block" type="submit" disabled={loading}>

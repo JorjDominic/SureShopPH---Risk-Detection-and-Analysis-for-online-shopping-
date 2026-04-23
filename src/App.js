@@ -13,6 +13,11 @@ import SettingsPage from './views/user/settings';
 import ScanDetailsPage from './views/user/scanDetails';
 import ForgotPassword from './views/forgotPassword';
 import ResetPassword from './views/resetPassword';
+import AdminDashboard from './views/admin/admindashboard';
+import AdminReports from './views/admin/adminReports';
+import AdminBlacklist from './views/admin/adminBlacklist';
+import AdminLogs from './views/admin/adminLogs';
+import AdminSettings from './views/admin/adminSettings';
 import { getCurrentSession, onAuthStateChange } from './services/authService';
 
 const hasOAuthParamsInUrl = () => {
@@ -73,6 +78,24 @@ function ProtectedRoute({ session, children }) {
 
 function PublicOnlyRoute({ session, children }) {
   if (session) {
+    return <Navigate to="/userdashboard" replace />;
+  }
+
+  return children;
+}
+
+function AdminRoute({ session, children }) {
+  const location = useLocation();
+
+  if (!session) {
+    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+  }
+
+  const role =
+    session.user?.app_metadata?.role ||
+    session.user?.user_metadata?.role;
+
+  if (role !== 'admin') {
     return <Navigate to="/userdashboard" replace />;
   }
 
@@ -533,6 +556,12 @@ function App() {
         <Route path="/scan-history" element={<ProtectedRoute session={session}><ScanHistoryPage /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute session={session}><SettingsPage /></ProtectedRoute>} />
         <Route path="/scan-details/:id" element={<ProtectedRoute session={session}><ScanDetailsPage /></ProtectedRoute>} />
+        <Route path="/admindashboard" element={<Navigate to="/admin" replace />} />
+        <Route path="/admin" element={<AdminRoute session={session}><AdminDashboard /></AdminRoute>} />
+        <Route path="/admin/reports" element={<AdminRoute session={session}><AdminReports /></AdminRoute>} />
+        <Route path="/admin/blacklist" element={<AdminRoute session={session}><AdminBlacklist /></AdminRoute>} />
+        <Route path="/admin/logs" element={<AdminRoute session={session}><AdminLogs /></AdminRoute>} />
+        <Route path="/admin/settings" element={<AdminRoute session={session}><AdminSettings /></AdminRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 

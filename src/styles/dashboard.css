@@ -1428,6 +1428,135 @@ body.ss-theme-dark .ss-dashboard-tip-list article {
   align-items: center;
 }
 
+/* ==============================================
+   ADMIN PANEL — Specific Styles
+   ============================================== */
+
+/* ── Admin badge (next to logo) ── */
+.ss-admin-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.22rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.63rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, #f97316, #ef4444);
+  color: #fff;
+  margin-left: 0.4rem;
+  vertical-align: middle;
+  line-height: 1;
+}
+
+/* ── Status badges for Reports table ── */
+.ss-admin-status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.32rem 0.68rem;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.ss-admin-status-badge.pending {
+  background: rgba(249, 115, 22, 0.14);
+  color: #c2410c;
+}
+
+.ss-admin-status-badge.verified {
+  background: rgba(34, 197, 94, 0.14);
+  color: #166534;
+}
+
+.ss-admin-status-badge.dismissed {
+  background: rgba(148, 163, 184, 0.18);
+  color: #64748b;
+}
+
+/* ── Log feed entries ── */
+.ss-admin-log-entry {
+  display: flex;
+  gap: 0.85rem;
+  padding: 0.85rem 0;
+  border-top: 1px solid rgba(148, 163, 184, 0.14);
+  align-items: flex-start;
+}
+
+.ss-admin-log-entry:first-child {
+  border-top: none;
+}
+
+.ss-admin-log-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.82rem;
+}
+
+/* ── Inline search bar ── */
+.ss-admin-search {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 14px;
+  padding: 0.6rem 1rem;
+  min-width: 220px;
+  max-width: 340px;
+}
+
+.ss-admin-search input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.88rem;
+  color: var(--ss-dashboard-text);
+  width: 100%;
+  font-family: inherit;
+}
+
+.ss-admin-search input::placeholder {
+  color: #94a3b8;
+}
+
+/* ── Chart container ── */
+.ss-admin-chart-wrap {
+  overflow: hidden;
+  border-radius: 10px;
+}
+
+/* ── Dark mode admin ── */
+body.ss-theme-dark .ss-admin-search {
+  background: rgba(15, 23, 42, 0.72);
+  border-color: rgba(148, 163, 184, 0.2);
+}
+
+body.ss-theme-dark .ss-admin-search input {
+  color: #f8fafc;
+}
+
+body.ss-theme-dark .ss-admin-status-badge.dismissed {
+  color: #94a3b8;
+}
+
+body.ss-theme-dark .ss-admin-log-entry {
+  border-top-color: rgba(148, 163, 184, 0.16);
+}
+
+/* ── Chart responsive ── */
+@media (max-width: 980px) {
+  .ss-admin-chart-row {
+    grid-template-columns: 1fr !important;
+  }
+}
+
 .udb-footer-links a {
   color: #9ca3af;
   text-decoration: none;

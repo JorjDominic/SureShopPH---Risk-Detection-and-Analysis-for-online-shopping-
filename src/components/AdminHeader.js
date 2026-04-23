@@ -65,6 +65,15 @@ function AdminHeader({ user, onLogout, logoutBusy }) {
               <Link to="/admin/settings" className={isActive('/admin/settings') ? 'active' : ''}>
                 Settings
               </Link>
+              <Link
+                to="/userdashboard"
+                className={location.pathname.startsWith('/userdashboard') || location.pathname.startsWith('/scan') || location.pathname.startsWith('/settings') ? 'active' : ''}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', opacity: 0.75 }}
+                title="Switch to User View"
+              >
+                <i className="fas fa-user" style={{ fontSize: '0.78rem' }}></i>
+                User View
+              </Link>
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>

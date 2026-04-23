@@ -26,6 +26,13 @@ function UserDashboard() {
 
       if (!active) return;
       if (!currentUser) { setLoading(false); return; }
+
+      const role = currentUser.app_metadata?.role || currentUser.user_metadata?.role;
+      if (role === 'admin') {
+        navigate('/admin', { replace: true });
+        return;
+      }
+
       setUser(currentUser);
 
       try {

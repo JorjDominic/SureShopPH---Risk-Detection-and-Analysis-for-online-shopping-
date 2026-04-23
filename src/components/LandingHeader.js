@@ -88,6 +88,16 @@ function LandingHeader({ session }) {
                 {session ? (
                   <>
                     <Link to="/userdashboard" className="ss-landing-nav-link">Dashboard</Link>
+                    {(session.user?.app_metadata?.role === 'admin' || session.user?.user_metadata?.role === 'admin') && (
+                      <Link
+                        to="/admin"
+                        className="ss-landing-nav-link"
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+                      >
+                        <i className="fas fa-shield-halved" style={{ fontSize: '0.8rem' }}></i>
+                        Admin
+                      </Link>
+                    )}
                     <button
                       type="button"
                       className="btn btn-primary ss-landing-btn-small"
@@ -126,6 +136,9 @@ function LandingHeader({ session }) {
               {session ? (
                 <>
                   <li><Link to="/userdashboard" onClick={closeMobileMenu}><i className="fas fa-columns"></i> Dashboard</Link></li>
+                  {(session.user?.app_metadata?.role === 'admin' || session.user?.user_metadata?.role === 'admin') && (
+                    <li><Link to="/admin" onClick={closeMobileMenu}><i className="fas fa-shield-halved"></i> Admin Panel</Link></li>
+                  )}
                   <li>
                     <button type="button" onClick={handleLogout} disabled={logoutBusy}>
                       <i className="fas fa-sign-out-alt"></i> {logoutBusy ? 'Signing out...' : 'Logout'}

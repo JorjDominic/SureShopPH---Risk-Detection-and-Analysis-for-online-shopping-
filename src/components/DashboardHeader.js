@@ -9,6 +9,10 @@ function DashboardHeader({ user, onLogout, logoutBusy }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
 
+  const isAdmin =
+    user?.app_metadata?.role === 'admin' ||
+    user?.user_metadata?.role === 'admin';
+
   const displayName = useMemo(() => {
     if (!user) return 'User';
     const name =
@@ -61,6 +65,16 @@ function DashboardHeader({ user, onLogout, logoutBusy }) {
               <Link to="/settings" className={isActive('/settings') ? 'active' : ''}>
                 Settings
               </Link>
+              {isAdmin && (
+                <Link
+                  to="/admin"
+                  className={location.pathname.startsWith('/admin') ? 'active' : ''}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+                >
+                  <i className="fas fa-shield-halved" style={{ fontSize: '0.8rem' }}></i>
+                  Admin
+                </Link>
+              )}
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>

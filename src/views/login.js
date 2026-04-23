@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react"
 import SkeletonLoader from "../components/SkeletonLoader"
 import { Link, useLocation, useNavigate } from "react-router-dom"
-import { getCurrentSession, getRateLimitStatus, loginUser, signInWithGoogle, validateEmailFormat } from "../services/authService"
+import { getRateLimitStatus, loginUser, signInWithGoogle, validateEmailFormat } from "../services/authService"
+import { supabase } from "../config/supabase"
 import GoogleLogo from "../components/GoogleLogo"
 import "../styles/login.css"
 import "../styles/fadeout.css"
@@ -126,8 +127,8 @@ function Login() {
         return
       }
 
-      const { data: sessionData } = await getCurrentSession()
-      const freshUser = sessionData?.session?.user
+      const { data: authData } = await supabase.auth.getUser()
+      const freshUser = authData?.user
       const role =
         freshUser?.app_metadata?.role ||
         freshUser?.user_metadata?.role

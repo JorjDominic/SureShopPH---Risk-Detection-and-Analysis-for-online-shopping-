@@ -27,7 +27,7 @@ function Login() {
   const navigate = useNavigate()
   const location = useLocation()
 
-  const redirectPath = location.state?.from || "/userdashboard"
+  const redirectPath = location.state?.from || null
 
   useEffect(() => {
     const params = new URLSearchParams(location.search)
@@ -129,7 +129,11 @@ function Login() {
       setTimeout(() => {
         setFadeOut(true)
         setTimeout(() => {
-          navigate(redirectPath, { replace: true })
+          const role =
+            data?.user?.app_metadata?.role ||
+            data?.user?.user_metadata?.role
+          const destination = redirectPath || (role === 'admin' ? '/admin' : '/userdashboard')
+          navigate(destination, { replace: true })
           setFadeOut(false)
         }, 350)
       }, 350)

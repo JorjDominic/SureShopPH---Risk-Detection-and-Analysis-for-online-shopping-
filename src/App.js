@@ -78,7 +78,10 @@ function ProtectedRoute({ session, children }) {
 
 function PublicOnlyRoute({ session, children }) {
   if (session) {
-    return <Navigate to="/userdashboard" replace />;
+    const role =
+      session.user?.app_metadata?.role ||
+      session.user?.user_metadata?.role;
+    return <Navigate to={role === 'admin' ? '/admin' : '/userdashboard'} replace />;
   }
 
   return children;

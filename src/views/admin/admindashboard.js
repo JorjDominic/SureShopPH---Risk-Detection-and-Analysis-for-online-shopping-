@@ -262,7 +262,14 @@ function AdminDashboard() {
     return 'ss-dashboard-risk-low';
   };
 
-  if (loading) return null;
+  if (loading) {
+    return (
+      <div className="ss-dashboard-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', flexDirection: 'column', gap: '1rem', color: '#475569' }}>
+        <i className="fas fa-shield-halved" style={{ fontSize: '2.5rem', color: '#0ea5a4' }}></i>
+        <p style={{ margin: 0 }}>Loading admin dashboard…</p>
+      </div>
+    );
+  }
   if (!user) return <Navigate to="/login" replace />;
 
   return (

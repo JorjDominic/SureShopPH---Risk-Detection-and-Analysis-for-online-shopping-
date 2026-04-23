@@ -67,6 +67,7 @@ function AdminHeader({ user, onLogout, logoutBusy }) {
               </Link>
               <Link
                 to="/userdashboard"
+                state={{ adminView: true }}
                 className={location.pathname.startsWith('/userdashboard') || location.pathname.startsWith('/scan') || location.pathname.startsWith('/settings') ? 'active' : ''}
                 style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', opacity: 0.75 }}
                 title="Switch to User View"

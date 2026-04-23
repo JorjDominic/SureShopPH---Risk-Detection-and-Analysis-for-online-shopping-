@@ -1,6 +1,6 @@
 
 import { useEffect, useMemo, useState } from 'react';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
 import { logoutUser } from '../../services/authService';
 import DashboardHeader from '../../components/DashboardHeader';
@@ -10,6 +10,8 @@ import '../../styles/dashboard.css';
 
 function UserDashboard() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const isAdminView = location.state?.adminView ?? false;
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [stats, setStats] = useState({ total: 0, highRisk: 0, protected: 0 });
@@ -28,7 +30,7 @@ function UserDashboard() {
       if (!currentUser) { setLoading(false); return; }
 
       const role = currentUser.app_metadata?.role || currentUser.user_metadata?.role;
-      if (role === 'admin') {
+      if (role === 'admin' && !isAdminView) {
         navigate('/admin', { replace: true });
         return;
       }
@@ -71,7 +73,7 @@ function UserDashboard() {
 
     loadData();
     return () => { active = false; };
-  }, [navigate]);
+  }, [navigate, isAdminView]);
 
   const displayName = useMemo(() => {
     if (!user) return 'Shopper';

@@ -1,259 +1,78 @@
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
 import { logoutUser } from '../../services/authService';
 import DashboardHeader from '../../components/DashboardHeader';
-import DashboardFooter from '../../components/DashboardFooter';
 import '../../styles/dashboard.css';
-
-function DashboardIcon({ type }) {
-  const icons = {
-    shield: (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M12 2.5 4.5 5.6v5.95c0 4.87 3.18 9.28 7.5 10.95 4.32-1.67 7.5-6.08 7.5-10.95V5.6L12 2.5Zm0 2.04 5.5 2.27v4.74c0 3.91-2.36 7.39-5.5 8.81-3.14-1.42-5.5-4.9-5.5-8.81V6.81L12 4.54Zm-1.18 10.78-2.65-2.65-1.42 1.41 4.07 4.08 6.51-6.51-1.41-1.42-5.1 5.09Z" />
-      </svg>
-    ),
-    scan: (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M4 7a3 3 0 0 1 3-3h3v2H7a1 1 0 0 0-1 1v3H4V7Zm10-3h3a3 3 0 0 1 3 3v3h-2V7a1 1 0 0 0-1-1h-3V4ZM4 14h2v3a1 1 0 0 0 1 1h3v2H7a3 3 0 0 1-3-3v-3Zm14 0h2v3a3 3 0 0 1-3 3h-3v-2h3a1 1 0 0 0 1-1v-3Zm-9-3h6v2H9v-2Z" />
-      </svg>
-    ),
-    warning: (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M12 3.75c.46 0 .88.24 1.1.65l8 14a1.25 1.25 0 0 1-1.1 1.85H4a1.25 1.25 0 0 1-1.1-1.85l8-14c.22-.41.64-.65 1.1-.65Zm0 5.25a1 1 0 0 0-1 1v4.25a1 1 0 1 0 2 0V10a1 1 0 0 0-1-1Zm0 8a1.12 1.12 0 1 0 0-2.24A1.12 1.12 0 0 0 12 17Z" />
-      </svg>
-    ),
-    spark: (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="m12 2 1.92 5.08L19 9l-5.08 1.92L12 16l-1.92-5.08L5 9l5.08-1.92L12 2Zm7 12 1 2.65L22.65 18 20 19l-1 2.65L18 19l-2.65-1L18 16.65 19 14Zm-14 1 1.2 3.2L9.4 19.4 6.2 20.6 5 23.8 3.8 20.6.6 19.4l3.2-1.2L5 15Z" />
-      </svg>
-    ),
-    user: (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M12 12a4.25 4.25 0 1 0 0-8.5 4.25 4.25 0 0 0 0 8.5Zm0 2c-4.42 0-8 2.35-8 5.25 0 .69.56 1.25 1.25 1.25h13.5c.69 0 1.25-.56 1.25-1.25C20 16.35 16.42 14 12 14Z" />
-      </svg>
-    ),
-    logout: (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M11 4a1 1 0 1 0 0 2h5a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-5a1 1 0 1 0 0 2h5a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3h-5Zm-1.29 3.29a1 1 0 0 1 1.41 1.42L9.83 10H15a1 1 0 1 1 0 2H9.83l1.29 1.29a1 1 0 0 1-1.41 1.42l-3-3a1 1 0 0 1 0-1.42l3-3Z" />
-      </svg>
-    ),
-    trend: (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M5 17.5a1 1 0 0 1-1-1v-9a1 1 0 1 1 2 0v6.59l3.8-3.79a1 1 0 0 1 1.4 0l2.3 2.29 4.79-4.79H16.5a1 1 0 1 1 0-2H21a1 1 0 0 1 1 1v4.5a1 1 0 1 1-2 0V8.71l-5.5 5.5a1 1 0 0 1-1.4 0l-2.3-2.3L7 15.71V16.5a1 1 0 0 1-1 1Z" />
-      </svg>
-    ),
-    lock: (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M8 10V8a4 4 0 1 1 8 0v2h.75A2.25 2.25 0 0 1 19 12.25v6.5A2.25 2.25 0 0 1 16.75 21h-9.5A2.25 2.25 0 0 1 5 18.75v-6.5A2.25 2.25 0 0 1 7.25 10H8Zm2 0h4V8a2 2 0 1 0-4 0v2Zm2 3a1.5 1.5 0 0 0-.75 2.8V17a.75.75 0 0 0 1.5 0v-1.2A1.5 1.5 0 0 0 12 13Z" />
-      </svg>
-    )
-  };
-
-  return <span className="ss-dashboard-icon-svg">{icons[type] || icons.shield}</span>;
-}
-
-function AnimatedCounter({ value }) {
-  const numericValue = parseInt(String(value), 10);
-  const suffix = String(value).replace(/[0-9]/g, '');
-  const [current, setCurrent] = useState(0);
-  const rafRef = useRef(null);
-
-  useEffect(() => {
-    if (Number.isNaN(numericValue)) {
-      setCurrent(numericValue);
-      return undefined;
-    }
-    const duration = 1100;
-    const startTime = performance.now();
-
-    const tick = (now) => {
-      const elapsed = now - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setCurrent(Math.round(numericValue * eased));
-      if (progress < 1) {
-        rafRef.current = requestAnimationFrame(tick);
-      }
-    };
-
-    rafRef.current = requestAnimationFrame(tick);
-    return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    };
-  }, [numericValue]);
-
-  return <>{current}{suffix}</>;
-}
 
 function UserDashboard() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
-  const [profile, setProfile] = useState(null);
+  const [stats, setStats] = useState({ total: 0, highRisk: 0, protected: 0 });
+  const [recentScans, setRecentScans] = useState([]);
+  const [extensionActive, setExtensionActive] = useState(false);
   const [logoutBusy, setLogoutBusy] = useState(false);
 
   useEffect(() => {
     let active = true;
 
-    const loadUser = async () => {
+    const loadData = async () => {
       const { data: authData } = await supabase.auth.getUser();
       const currentUser = authData?.user ?? null;
 
       if (!active) return;
-
-      if (!currentUser) {
-        setLoading(false);
-        return;
-      }
-
+      if (!currentUser) { setLoading(false); return; }
       setUser(currentUser);
 
       try {
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', currentUser.id)
-          .maybeSingle();
+        const [scansRes, tokenRes] = await Promise.all([
+          supabase
+            .from('scans')
+            .select('risk_level, scan_type, product_name, created_at, id')
+            .eq('user_id', currentUser.id)
+            .order('created_at', { ascending: false })
+            .limit(50),
+          supabase
+            .from('access_tokens')
+            .select('id')
+            .eq('user_id', currentUser.id)
+            .eq('revoked', false)
+            .limit(1),
+        ]);
 
         if (!active) return;
-        setProfile(profileData ?? null);
-      } catch (error) {
-        if (!active) return;
-        setProfile(null);
+
+        const allScans = scansRes.data ?? [];
+        const high = allScans.filter((s) => s.risk_level === 'High').length;
+        setStats({
+          total: allScans.length,
+          highRisk: high,
+          protected: allScans.length - high,
+        });
+        setRecentScans(allScans.slice(0, 10));
+        setExtensionActive((tokenRes.data?.length ?? 0) > 0);
+      } catch {
+        // non-critical: leave defaults
       } finally {
         if (active) setLoading(false);
       }
     };
 
-    loadUser();
-
-    return () => {
-      active = false;
-    };
+    loadData();
+    return () => { active = false; };
   }, []);
 
   const displayName = useMemo(() => {
     if (!user) return 'Shopper';
-
-    const maybeName =
-      profile?.full_name ||
-      profile?.username ||
-      profile?.name ||
+    const name =
       user.user_metadata?.full_name ||
-      user.user_metadata?.name;
-
-    if (maybeName) return maybeName;
-
-    const emailName = user.email?.split('@')[0] || 'Shopper';
-    return emailName.charAt(0).toUpperCase() + emailName.slice(1);
-  }, [profile, user]);
-
-  const recentActivity = useMemo(
-    () => [
-      {
-        item: 'Gaming Headset Marketplace Listing',
-        category: 'Product Scan',
-        risk: 'Low',
-        note: 'Seller history and price behavior look normal.',
-        time: '10 mins ago'
-      },
-      {
-        item: 'Flash deal gadget page',
-        category: 'URL Scan',
-        risk: 'High',
-        note: 'Possible spoofed domain and suspicious urgency terms.',
-        time: '42 mins ago'
-      },
-      {
-        item: 'Fashion seller profile',
-        category: 'Seller Check',
-        risk: 'Medium',
-        note: 'New account with limited review history.',
-        time: '1 hr ago'
-      },
-      {
-        item: 'Beauty product listing',
-        category: 'Product Scan',
-        risk: 'Low',
-        note: 'Healthy review pattern and trusted store signals.',
-        time: 'Today'
-      }
-    ],
-    []
-  );
-
-  const stats = useMemo(() => {
-    const highRisk = recentActivity.filter((entry) => entry.risk === 'High').length;
-    const mediumRisk = recentActivity.filter((entry) => entry.risk === 'Medium').length;
-    const protectedItems = recentActivity.filter((entry) => entry.risk === 'Low').length;
-
-    return [
-      {
-        label: 'Total scans',
-        value: recentActivity.length + 12,
-        meta: 'Across URLs, sellers, and product listings',
-        icon: 'scan',
-        tone: 'teal'
-      },
-      {
-        label: 'High-risk found',
-        value: highRisk,
-        meta: 'Listings you avoided because of warning signs',
-        icon: 'warning',
-        tone: 'danger'
-      },
-      {
-        label: 'Protected items',
-        value: protectedItems + 8,
-        meta: 'Safer checks completed with better confidence',
-        icon: 'shield',
-        tone: 'success'
-      },
-      {
-        label: 'Confidence score',
-        value: `${96 - mediumRisk}%`,
-        meta: 'Current safety confidence based on recent scans',
-        icon: 'trend',
-        tone: 'blue'
-      }
-    ];
-  }, [recentActivity]);
-
-  const quickActions = useMemo(
-    () => [
-      {
-        title: 'Start a URL scan',
-        text: 'Analyze suspicious shopping links before you click or buy.',
-        icon: 'scan',
-        badge: 'Fast check',
-        href: '/tools/url-scan'
-      },
-      {
-        title: 'Check a seller',
-        text: 'Review seller signals such as age, trust, and behavior patterns.',
-        icon: 'user',
-        badge: 'Seller insights',
-        href: '/tools/seller-check'
-      },
-      {
-        title: 'Saved warnings',
-        text: 'Go back to flagged listings and review previous risk findings.',
-        icon: 'warning',
-        badge: 'Recent alerts',
-        href: '/tools/saved-warnings'
-      },
-      {
-        title: 'Account settings',
-        text: 'Update your profile, notification settings, and protection tools.',
-        icon: 'lock',
-        badge: 'Manage account',
-        href: '/tools/account-settings'
-      }
-    ],
-    []
-  );
+      user.user_metadata?.name ||
+      user.email?.split('@')[0] ||
+      'Shopper';
+    return name.charAt(0).toUpperCase() + name.slice(1);
+  }, [user]);
 
   const handleLogout = async () => {
     setLogoutBusy(true);
@@ -261,219 +80,204 @@ function UserDashboard() {
     navigate('/login');
   };
 
+  const formatDate = (iso) => {
+    if (!iso) return '—';
+    return new Date(iso).toLocaleString('en-PH', {
+      month: 'short', day: 'numeric', year: 'numeric',
+      hour: '2-digit', minute: '2-digit',
+    });
+  };
+
+  const riskClass = (level) => {
+    if (!level) return 'udb-risk-low';
+    const l = level.toLowerCase();
+    if (l === 'high') return 'udb-risk-high';
+    if (l === 'medium') return 'udb-risk-medium';
+    return 'udb-risk-low';
+  };
+
   if (loading) {
     return (
-      <div className="ss-dashboard-page">
-        <main className="ss-dashboard-main">
-          <section className="ss-dashboard-hero">
-            <div className="container">
-              <div className="ss-dashboard-hero-card ss-dashboard-hero-main">
-                <div className="ss-dashboard-chip">Loading dashboard</div>
-                <h1>Preparing your SureShop workspace...</h1>
-                <p>Please wait while we load your account details and recent protection summary.</p>
-              </div>
-            </div>
-          </section>
-        </main>
+      <div className="udb-page">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1, minHeight: '100vh', color: '#6b7280', flexDirection: 'column', gap: '1rem' }}>
+          <i className="fas fa-shield-check" style={{ fontSize: '2.5rem', color: '#22c55e' }}></i>
+          <p style={{ margin: 0 }}>Loading your dashboard...</p>
+        </div>
       </div>
     );
   }
 
-  if (!loading && !user) {
-    return <Navigate to="/login" replace />;
-  }
+  if (!user) return <Navigate to="/login" replace />;
 
   return (
-    <div className="ss-dashboard-page">
+    <div className="udb-page">
       <DashboardHeader user={user} onLogout={handleLogout} logoutBusy={logoutBusy} />
-      <main className="ss-dashboard-main">
-        <section className="ss-dashboard-hero" id="overview">
-          <div className="container ss-dashboard-hero-grid">
-            <div className="ss-dashboard-hero-card ss-dashboard-hero-main">
-              <div className="ss-dashboard-chip">Live user protection</div>
-              <h1>Welcome back, {displayName}.</h1>
-              <p>
-                Here is your personal safety hub for tracking scans, reviewing suspicious activity,
-                and checking sellers before every purchase.
-              </p>
 
-              <div className="ss-dashboard-hero-actions">
-                <a href="#activity" className="ss-dashboard-btn ss-dashboard-btn-primary">
-                  Review recent scans
-                </a>
-                <a href="#tips" className="ss-dashboard-btn ss-dashboard-btn-secondary">
-                  See protection tips
-                </a>
-              </div>
+      <main className="udb-main">
+        <div className="udb-container">
 
-              <div className="ss-dashboard-user-pill-row">
-                <span className="ss-dashboard-user-pill">
-                  <DashboardIcon type="user" />
-                  {user?.email || 'Signed in user'}
-                </span>
-                <span className="ss-dashboard-user-pill alt">
-                  <DashboardIcon type="spark" />
-                  Shield active
-                </span>
-              </div>
-            </div>
-
-            <aside className="ss-dashboard-hero-card ss-dashboard-hero-side">
-              <div className="ss-dashboard-side-header">
-                <span className="ss-dashboard-side-badge">Status</span>
-                <span className="ss-dashboard-side-score">96%</span>
-              </div>
-              <h2>Protection level is strong</h2>
-              <p>
-                Your recent activity shows healthy scan behavior with early detection on suspicious pages.
-              </p>
-              <div className="ss-dashboard-meter">
-                <span style={{ width: '96%' }}></span>
-              </div>
-              <ul className="ss-dashboard-checklist">
-                <li><DashboardIcon type="shield" /> Risk scoring enabled</li>
-                <li><DashboardIcon type="warning" /> Alerts highlighted instantly</li>
-                <li><DashboardIcon type="lock" /> Account session secured</li>
-              </ul>
-            </aside>
+          {/* Page Title */}
+          <div className="udb-page-title">
+            <h1><i className="fas fa-tachometer-alt"></i> Your Dashboard</h1>
+            <p className="udb-welcome-text">Welcome back, {displayName}! Here's your security overview.</p>
           </div>
-        </section>
 
-        <section className="ss-dashboard-section">
-          <div className="container">
-            <div className="ss-dashboard-section-heading">
+          {/* Quick Actions */}
+          <section className="udb-section">
+            <h2 className="udb-section-title"><i className="fas fa-bolt"></i> Quick Actions</h2>
+            <div className="udb-actions-grid">
+              <Link to="/scan" className="udb-action-card">
+                <i className="fas fa-search"></i>
+                <h3>New Scan</h3>
+                <p>Scan a website, product, or seller</p>
+              </Link>
+              <Link to="/scan-history" className="udb-action-card">
+                <i className="fas fa-history"></i>
+                <h3>Scan History</h3>
+                <p>View your previous scans</p>
+              </Link>
+              <Link to="/settings" className="udb-action-card">
+                <i className="fas fa-cog"></i>
+                <h3>Settings</h3>
+                <p>Manage your account</p>
+              </Link>
+              <a
+                href="https://github.com/JorjDominic/Browser-Extension"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="udb-action-card"
+              >
+                <i className="fas fa-puzzle-piece"></i>
+                <h3>Extension</h3>
+                <p>Install browser extension</p>
+              </a>
+            </div>
+          </section>
+
+          {/* Browser Extension */}
+          <section className="udb-section">
+            <h2 className="udb-section-title"><i className="fas fa-puzzle-piece"></i> Browser Extension</h2>
+
+            {extensionActive ? (
+              <div className="udb-extension-activated">
+                <p><strong>✅ Extension Activated</strong></p>
+                <p>Your browser extension is successfully linked to your account.</p>
+              </div>
+            ) : (
               <div>
-                <p className="ss-dashboard-eyebrow">Quick actions</p>
-                <h2>Start from the tools you use most</h2>
+                <p style={{ color: '#6b7280', marginBottom: '1rem', fontSize: '0.9rem' }}>
+                  Activate your browser extension to scan Shopee products in real time.
+                </p>
+                <a
+                  href="https://github.com/JorjDominic/Browser-Extension"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="udb-btn udb-btn-primary"
+                >
+                  <i className="fas fa-download"></i> Download Extension
+                </a>
               </div>
-            </div>
+            )}
+          </section>
 
-            <div className="ss-dashboard-actions-grid">
-              {quickActions.map((action) => (
-                <Link className="ss-dashboard-action-card" to={action.href} key={action.title}>
-                  <div className="ss-dashboard-action-top">
-                    <span className="ss-dashboard-action-icon"><DashboardIcon type={action.icon} /></span>
-                    <span className="ss-dashboard-action-badge">{action.badge}</span>
-                  </div>
-                  <h3>{action.title}</h3>
-                  <p>{action.text}</p>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="ss-dashboard-section">
-          <div className="container">
-            <div className="ss-dashboard-section-heading">
-              <div>
-                <p className="ss-dashboard-eyebrow">Scan summary</p>
-                <h2>Your dashboard at a glance</h2>
-              </div>
-            </div>
-
-            <div className="ss-dashboard-stats-grid">
-              {stats.map((stat) => (
-                <article className={`ss-dashboard-stat-card tone-${stat.tone}`} key={stat.label}>
-                  <div className="ss-dashboard-stat-top">
-                    <div>
-                      <p>{stat.label}</p>
-                      <h3><AnimatedCounter value={stat.value} /></h3>
-                    </div>
-                    <span className="ss-dashboard-stat-icon"><DashboardIcon type={stat.icon} /></span>
-                  </div>
-                  <small>{stat.meta}</small>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="ss-dashboard-section" id="activity">
-          <div className="container ss-dashboard-content-grid">
-            <div className="ss-dashboard-panel ss-dashboard-table-panel">
-              <div className="ss-dashboard-panel-header">
-                <div>
-                  <p className="ss-dashboard-eyebrow">Recent activity</p>
-                  <h2>Latest scan results</h2>
+          {/* Stats */}
+          <section className="udb-section">
+            <h2 className="udb-section-title"><i className="fas fa-chart-bar"></i> Your Stats</h2>
+            <div className="udb-stats-grid">
+              <div className="udb-stat-card">
+                <div className="udb-stat-card-header">
+                  <h3>Total Scans</h3>
+                  <span className="udb-stat-icon teal"><i className="fas fa-search"></i></span>
                 </div>
-                <span className="ss-dashboard-panel-pill">Last 24 hours</span>
+                <div className="udb-stat-number">{stats.total}</div>
+                <div className="udb-stat-meta">{stats.total} products scanned</div>
               </div>
 
-              <div className="ss-dashboard-table-wrap">
-                <table className="ss-dashboard-table">
+              <div className={`udb-stat-card${stats.highRisk > 0 ? ' risk-high' : ' risk-low'}`}>
+                <div className="udb-stat-card-header">
+                  <h3>High Risk</h3>
+                  <span className="udb-stat-icon danger"><i className="fas fa-shield-alt"></i></span>
+                </div>
+                <div className="udb-stat-number">{stats.highRisk}</div>
+                <div className="udb-stat-meta">Potential scams detected</div>
+              </div>
+
+              <div className="udb-stat-card">
+                <div className="udb-stat-card-header">
+                  <h3>Protected Items</h3>
+                  <span className="udb-stat-icon success"><i className="fas fa-check-circle"></i></span>
+                </div>
+                <div className="udb-stat-number">{stats.protected}</div>
+                <div className="udb-stat-meta">Safe items verified</div>
+              </div>
+            </div>
+          </section>
+
+          {/* Recent Scans */}
+          <section className="udb-section">
+            <h2 className="udb-section-title"><i className="fas fa-clock"></i> Recent Scans</h2>
+
+            {recentScans.length === 0 ? (
+              <div className="udb-empty-state">
+                <i className="fas fa-search"></i>
+                <h3>No scans yet</h3>
+                <p>
+                  Activate your browser extension and start scanning products to see your history here.
+                </p>
+              </div>
+            ) : (
+              <div className="udb-table-wrap">
+                <table className="udb-table">
                   <thead>
                     <tr>
-                      <th>Item checked</th>
-                      <th>Category</th>
-                      <th>Risk</th>
-                      <th>Notes</th>
+                      <th>Type</th>
+                      <th>Product</th>
+                      <th>Risk Level</th>
                       <th>Time</th>
+                      <th>Action</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {recentActivity.map((entry) => (
-                      <tr key={`${entry.item}-${entry.time}`}>
-                        <td>{entry.item}</td>
-                        <td>{entry.category}</td>
+                    {recentScans.map((scan) => (
+                      <tr key={scan.id}>
+                        <td>{scan.scan_type ? scan.scan_type.charAt(0).toUpperCase() + scan.scan_type.slice(1) : '—'}</td>
+                        <td style={{ maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {scan.product_name || '—'}
+                        </td>
                         <td>
-                          <span className={`ss-dashboard-risk ss-dashboard-risk-${entry.risk.toLowerCase()}`}>
-                            {entry.risk}
+                          <span className={`udb-risk-badge ${riskClass(scan.risk_level)}`}>
+                            {scan.risk_level || 'Unknown'}
                           </span>
                         </td>
-                        <td>{entry.note}</td>
-                        <td>{entry.time}</td>
+                        <td style={{ whiteSpace: 'nowrap' }}>{formatDate(scan.created_at)}</td>
+                        <td>
+                          <Link to={`/scan-details/${scan.id}`} className="udb-btn udb-btn-secondary" style={{ padding: '6px 14px', fontSize: '0.8rem' }}>
+                            <i className="fas fa-eye"></i> View
+                          </Link>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-            </div>
+            )}
+          </section>
 
-            <aside className="ss-dashboard-panel ss-dashboard-side-panel" id="tips">
-              <div className="ss-dashboard-panel-header compact">
-                <div>
-                  <p className="ss-dashboard-eyebrow">Protection tips</p>
-                  <h2>Stay one step ahead</h2>
-                </div>
-              </div>
-
-              <div className="ss-dashboard-tip-list">
-                <article>
-                  <span><DashboardIcon type="warning" /></span>
-                  <div>
-                    <h3>Check urgency language</h3>
-                    <p>Avoid listings that pressure you to pay fast or leave the platform immediately.</p>
-                  </div>
-                </article>
-                <article>
-                  <span><DashboardIcon type="user" /></span>
-                  <div>
-                    <h3>Review seller history</h3>
-                    <p>New accounts with very low activity can be riskier, especially during flash sales.</p>
-                  </div>
-                </article>
-                <article>
-                  <span><DashboardIcon type="lock" /></span>
-                  <div>
-                    <h3>Use secure payment paths</h3>
-                    <p>Prefer official in-app checkout and avoid transactions that move to random chat links.</p>
-                  </div>
-                </article>
-              </div>
-
-              <div className="ss-dashboard-alert-card">
-                <div className="ss-dashboard-alert-icon"><DashboardIcon type="spark" /></div>
-                <div>
-                  <h3>Safety reminder</h3>
-                  <p>When a deal feels unusually cheap, scan both the page and the seller before buying.</p>
-                </div>
-              </div>
-            </aside>
-          </div>
-        </section>
+        </div>
       </main>
-      <DashboardFooter />
+
+      {/* Footer */}
+      <footer className="udb-footer">
+        <div className="udb-footer-inner">
+          <span className="udb-footer-copyright">&copy; 2024 SureShop. Protecting users from online scams.</span>
+          <div className="udb-footer-links">
+            <Link to="/">Home</Link>
+            <Link to="/privacy-policy">Privacy</Link>
+            <Link to="/terms-of-service">Terms</Link>
+            <Link to="/contact-support">Contact</Link>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

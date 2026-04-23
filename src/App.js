@@ -7,6 +7,10 @@ import LandingFooter from './components/LandingFooter';
 import Login from './views/login';
 import Register from './views/register';
 import UserDashboard from './views/user/userdashboard';
+import ScanPage from './views/user/scan';
+import ScanHistoryPage from './views/user/scanHistory';
+import SettingsPage from './views/user/settings';
+import ScanDetailsPage from './views/user/scanDetails';
 import ForgotPassword from './views/forgotPassword';
 import ResetPassword from './views/resetPassword';
 import { getCurrentSession, onAuthStateChange } from './services/authService';
@@ -523,8 +527,12 @@ function App() {
         <Route path="/tools/url-scan" element={<InfoPage title="URL Scan" subtitle="The URL scan tool UI is coming soon. This placeholder keeps navigation working in production." session={session} />} />
         <Route path="/tools/seller-check" element={<InfoPage title="Seller Check" subtitle="The seller assessment tool UI is coming soon. This placeholder keeps navigation working in production." session={session} />} />
         <Route path="/tools/saved-warnings" element={<InfoPage title="Saved Warnings" subtitle="Saved warning history is coming soon. This placeholder keeps navigation working in production." session={session} />} />
-        <Route path="/tools/account-settings" element={<InfoPage title="Account Settings" subtitle="Account settings management is coming soon. This placeholder keeps navigation working in production." session={session} />} />
+        <Route path="/tools/account-settings" element={<Navigate to="/settings" replace />} />
         <Route path="/userdashboard" element={<ProtectedRoute session={session}><UserDashboard /></ProtectedRoute>} />
+        <Route path="/scan" element={<ProtectedRoute session={session}><ScanPage /></ProtectedRoute>} />
+        <Route path="/scan-history" element={<ProtectedRoute session={session}><ScanHistoryPage /></ProtectedRoute>} />
+        <Route path="/settings" element={<ProtectedRoute session={session}><SettingsPage /></ProtectedRoute>} />
+        <Route path="/scan-details/:id" element={<ProtectedRoute session={session}><ScanDetailsPage /></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 

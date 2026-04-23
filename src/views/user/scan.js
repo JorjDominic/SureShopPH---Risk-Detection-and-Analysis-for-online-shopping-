@@ -3,6 +3,7 @@ import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
 import { logoutUser } from '../../services/authService';
 import DashboardHeader from '../../components/DashboardHeader';
+import DashboardFooter from '../../components/DashboardFooter';
 import '../../styles/dashboard.css';
 
 function ScanPage() {
@@ -59,19 +60,34 @@ function ScanPage() {
   if (!user) return <Navigate to="/login" replace />;
 
   return (
-    <div className="udb-page">
+    <div className="ss-dashboard-page">
       <DashboardHeader user={user} onLogout={handleLogout} logoutBusy={logoutBusy} />
 
-      <main className="udb-main">
-        <div className="udb-container">
-          <div className="udb-page-title">
-            <h1><i className="fas fa-search"></i> New Scan</h1>
-            <p className="udb-welcome-text">Analyze a product URL, seller profile, or website for risk indicators.</p>
-          </div>
+      <main className="ss-dashboard-main">
 
-          {/* Scan form */}
-          <section className="udb-section">
-            <h2 className="udb-section-title"><i className="fas fa-link"></i> Scan a URL</h2>
+        {/* Page title */}
+        <div className="ss-dashboard-section">
+          <div className="container">
+            <div className="ss-dashboard-section-heading">
+              <div>
+                <p className="ss-dashboard-eyebrow">Analysis</p>
+                <h2>New Scan</h2>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Scan form */}
+        <div className="ss-dashboard-section">
+          <div className="container">
+            <div className="ss-dashboard-section-heading">
+              <div>
+                <p className="ss-dashboard-eyebrow">Submit</p>
+                <h2>Scan a URL</h2>
+              </div>
+            </div>
+            <div className="ss-dashboard-panel">
+
 
             {error && <div className="udb-alert udb-alert-error">{error}</div>}
 
@@ -104,7 +120,7 @@ function ScanPage() {
               </div>
 
               <div>
-                <button type="submit" className="udb-btn udb-btn-primary" disabled={scanning}>
+                <button type="submit" className="ss-dashboard-btn ss-dashboard-btn-primary" disabled={scanning}>
                   {scanning
                     ? <><i className="fas fa-spinner fa-spin"></i> Scanning...</>
                     : <><i className="fas fa-search"></i> Scan Now</>}
@@ -114,31 +130,28 @@ function ScanPage() {
 
             {/* Scan result */}
             {result && !result.fallback && (
-              <div className="udb-scan-result">
-                <div className="udb-scan-result-header">
-                  <h3>{result.product_name || url}</h3>
-                  <span className={`udb-risk-badge udb-risk-${(result.risk_level || 'low').toLowerCase()}`}>
-                    {result.risk_level || 'Low'}
+              <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--ss-dashboard-border)' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1rem' }}>
+                  <h3 style={{ margin: 0, color: 'var(--ss-dashboard-text)' }}>{result.product_name || url}</h3>
+                  <span className={`ss-dashboard-risk ss-dashboard-risk-${(result.risk_level || 'low').toLowerCase()}`}>
+                    {result.risk_level || 'Low'} Risk
                   </span>
                 </div>
                 {result.risk_score != null && (
                   <>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', color: '#6b7280', marginBottom: 6 }}>
                       <span>Risk Score</span>
-                      <strong style={{ color: '#1f2937' }}>{result.risk_score}%</strong>
+                      <strong style={{ color: 'var(--ss-dashboard-text)' }}>{result.risk_score}%</strong>
                     </div>
-                    <div className="udb-risk-meter">
-                      <div
-                        className={`udb-risk-meter-fill ${(result.risk_level || 'low').toLowerCase()}`}
-                        style={{ width: `${result.risk_score}%` }}
-                      />
+                    <div className="ss-dashboard-meter">
+                      <span style={{ width: `${result.risk_score}%` }} />
                     </div>
                   </>
                 )}
-                {result.notes && <p style={{ fontSize: '0.875rem', color: '#4b5563', margin: '0.75rem 0 0' }}>{result.notes}</p>}
+                {result.notes && <p style={{ fontSize: '0.875rem', margin: '0.75rem 0 0' }}>{result.notes}</p>}
                 {result.id && (
                   <div style={{ marginTop: '1rem' }}>
-                    <Link to={`/scan-details/${result.id}`} className="udb-btn udb-btn-secondary">
+                    <Link to={`/scan-details/${result.id}`} className="ss-dashboard-btn ss-dashboard-btn-secondary">
                       <i className="fas fa-eye"></i> View Full Report
                     </Link>
                   </div>
@@ -147,12 +160,12 @@ function ScanPage() {
             )}
 
             {result?.fallback && (
-              <div className="udb-scan-result">
+              <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--ss-dashboard-border)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
-                  <i className="fas fa-info-circle" style={{ color: '#2563eb', fontSize: '1.2rem' }}></i>
-                  <h3 style={{ margin: 0, fontSize: '0.95rem' }}>Use the Browser Extension for Live Scans</h3>
+                  <i className="fas fa-info-circle" style={{ color: 'var(--ss-dashboard-blue)', fontSize: '1.2rem' }}></i>
+                  <h3 style={{ margin: 0, fontSize: '0.95rem', color: 'var(--ss-dashboard-text)' }}>Use the Browser Extension for Live Scans</h3>
                 </div>
-                <p style={{ fontSize: '0.875rem', color: '#6b7280', margin: '0 0 1rem' }}>
+                <p style={{ fontSize: '0.875rem', margin: '0 0 1rem' }}>
                   Automated URL scanning requires the SureShop browser extension. The extension reads
                   listing data directly from the page and submits it for analysis.
                 </p>
@@ -160,62 +173,68 @@ function ScanPage() {
                   href="https://github.com/JorjDominic/Browser-Extension"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="udb-btn udb-btn-primary"
+                  className="ss-dashboard-btn ss-dashboard-btn-primary"
                 >
                   <i className="fas fa-puzzle-piece"></i> Download Extension
                 </a>
               </div>
             )}
-          </section>
+            </div>
+          </div>
+        </div>
 
-          {/* How it works */}
-          <section className="udb-section">
-            <h2 className="udb-section-title"><i className="fas fa-info-circle"></i> How Scanning Works</h2>
-            <div className="udb-scan-info-grid">
-              <div className="udb-scan-info-card">
-                <i className="fas fa-globe"></i>
-                <h4>URL & Domain Analysis</h4>
-                <p>Detects typosquatting, spoofed domains, and suspicious redirects.</p>
-              </div>
-              <div className="udb-scan-info-card">
-                <i className="fas fa-user-shield"></i>
-                <h4>Seller Assessment</h4>
-                <p>Evaluates account age, response rate, and rating patterns for red flags.</p>
-              </div>
-              <div className="udb-scan-info-card">
-                <i className="fas fa-language"></i>
-                <h4>Localized NLP</h4>
-                <p>Powered by calamanCy to detect deceptive Tagalog and Taglish descriptions.</p>
+        {/* How it works */}
+        <div className="ss-dashboard-section">
+          <div className="container">
+            <div className="ss-dashboard-section-heading">
+              <div>
+                <p className="ss-dashboard-eyebrow">About</p>
+                <h2>How Scanning Works</h2>
               </div>
             </div>
-          </section>
+            <div className="ss-dashboard-tip-list" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))' }}>
+              <article>
+                <span><i className="fas fa-globe"></i></span>
+                <div>
+                  <h3>URL &amp; Domain Analysis</h3>
+                  <p>Detects typosquatting, spoofed domains, and suspicious redirects.</p>
+                </div>
+              </article>
+              <article>
+                <span><i className="fas fa-user-shield"></i></span>
+                <div>
+                  <h3>Seller Assessment</h3>
+                  <p>Evaluates account age, response rate, and rating patterns for red flags.</p>
+                </div>
+              </article>
+              <article>
+                <span><i className="fas fa-language"></i></span>
+                <div>
+                  <h3>Localized NLP</h3>
+                  <p>Powered by calamanCy to detect deceptive Tagalog and Taglish descriptions.</p>
+                </div>
+              </article>
+            </div>
+          </div>
+        </div>
 
-          {/* Quick nav */}
-          <section className="udb-section">
-            <h2 className="udb-section-title"><i className="fas fa-arrow-right"></i> Continue</h2>
+        {/* Nav */}
+        <div className="ss-dashboard-section">
+          <div className="container">
             <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-              <Link to="/userdashboard" className="udb-btn udb-btn-secondary">
+              <Link to="/userdashboard" className="ss-dashboard-btn ss-dashboard-btn-secondary">
                 <i className="fas fa-tachometer-alt"></i> Back to Dashboard
               </Link>
-              <Link to="/scan-history" className="udb-btn udb-btn-secondary">
+              <Link to="/scan-history" className="ss-dashboard-btn ss-dashboard-btn-secondary">
                 <i className="fas fa-history"></i> View Scan History
               </Link>
             </div>
-          </section>
-        </div>
-      </main>
-
-      <footer className="udb-footer">
-        <div className="udb-footer-inner">
-          <span className="udb-footer-copyright">&copy; 2024 SureShop. Protecting users from online scams.</span>
-          <div className="udb-footer-links">
-            <Link to="/">Home</Link>
-            <Link to="/privacy-policy">Privacy</Link>
-            <Link to="/terms-of-service">Terms</Link>
-            <Link to="/contact-support">Contact</Link>
           </div>
         </div>
-      </footer>
+
+      </main>
+
+      <DashboardFooter />
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
 import { logoutUser } from '../../services/authService';
 import DashboardHeader from '../../components/DashboardHeader';
+import DashboardFooter from '../../components/DashboardFooter';
 import '../../styles/dashboard.css';
 
 const PAGE_SIZE = 20;
@@ -82,39 +83,48 @@ function ScanHistoryPage() {
   };
 
   const riskClass = (level) => {
-    if (!level) return 'udb-risk-low';
+    if (!level) return 'ss-dashboard-risk-low';
     const l = level.toLowerCase();
-    if (l === 'high') return 'udb-risk-high';
-    if (l === 'medium') return 'udb-risk-medium';
-    return 'udb-risk-low';
+    if (l === 'high') return 'ss-dashboard-risk-high';
+    if (l === 'medium') return 'ss-dashboard-risk-medium';
+    return 'ss-dashboard-risk-low';
   };
 
   if (!loading && !user) return <Navigate to="/login" replace />;
 
   return (
-    <div className="udb-page">
+    <div className="ss-dashboard-page">
       <DashboardHeader user={user} onLogout={handleLogout} logoutBusy={logoutBusy} />
 
-      <main className="udb-main">
-        <div className="udb-container">
-          <div className="udb-page-title">
-            <h1><i className="fas fa-history"></i> Scan History</h1>
-            <p className="udb-welcome-text">All your past scans in one place.</p>
-          </div>
+      <main className="ss-dashboard-main">
 
-          <section className="udb-section">
-            {/* Filter bar */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1.25rem' }}>
-              <h2 className="udb-section-title" style={{ margin: 0 }}>
-                <i className="fas fa-list"></i> All Scans
-              </h2>
-              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+        {/* Page title */}
+        <div className="ss-dashboard-section">
+          <div className="container">
+            <div className="ss-dashboard-section-heading">
+              <div>
+                <p className="ss-dashboard-eyebrow">Activity</p>
+                <h2>Scan History</h2>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Table section */}
+        <div className="ss-dashboard-section">
+          <div className="container">
+            <div className="ss-dashboard-section-heading">
+              <div>
+                <p className="ss-dashboard-eyebrow">Results</p>
+                <h2>All Scans</h2>
+              </div>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignSelf: 'center' }}>
                 {['all', 'high', 'medium', 'low'].map((f) => (
                   <button
                     key={f}
                     type="button"
-                    className={`udb-btn ${filter === f ? 'udb-btn-primary' : 'udb-btn-secondary'}`}
-                    style={{ padding: '6px 14px', fontSize: '0.8rem' }}
+                    className={`ss-dashboard-btn ${filter === f ? 'ss-dashboard-btn-primary' : 'ss-dashboard-btn-secondary'}`}
+                    style={{ minHeight: 38, padding: '0 1rem', fontSize: '0.82rem' }}
                     onClick={() => setFilter(f)}
                   >
                     {f === 'all' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1) + ' Risk'}
@@ -124,29 +134,33 @@ function ScanHistoryPage() {
             </div>
 
             {loading ? (
-              <div className="udb-empty-state">
-                <i className="fas fa-spinner fa-spin"></i>
-                <h3>Loading scans...</h3>
+              <div className="ss-dashboard-panel">
+                <div className="udb-empty-state">
+                  <i className="fas fa-spinner fa-spin"></i>
+                  <h3>Loading scans...</h3>
+                </div>
               </div>
             ) : scans.length === 0 ? (
-              <div className="udb-empty-state">
-                <i className="fas fa-history"></i>
-                <h3>No scans found</h3>
-                <p>
-                  {filter !== 'all'
-                    ? `No ${filter}-risk scans in your history.`
-                    : 'Start scanning products with the browser extension to build your history.'}
-                </p>
-                <div style={{ marginTop: '1rem' }}>
-                  <Link to="/scan" className="udb-btn udb-btn-primary">
-                    <i className="fas fa-search"></i> New Scan
-                  </Link>
+              <div className="ss-dashboard-panel">
+                <div className="udb-empty-state">
+                  <i className="fas fa-history"></i>
+                  <h3>No scans found</h3>
+                  <p>
+                    {filter !== 'all'
+                      ? `No ${filter}-risk scans in your history.`
+                      : 'Start scanning products with the browser extension to build your history.'}
+                  </p>
+                  <div style={{ marginTop: '1rem' }}>
+                    <Link to="/scan" className="ss-dashboard-btn ss-dashboard-btn-primary">
+                      <i className="fas fa-search"></i> New Scan
+                    </Link>
+                  </div>
                 </div>
               </div>
             ) : (
-              <>
-                <div className="udb-table-wrap">
-                  <table className="udb-table">
+              <div className="ss-dashboard-panel">
+                <div className="ss-dashboard-table-wrap">
+                  <table className="ss-dashboard-table">
                     <thead>
                       <tr>
                         <th>#</th>
@@ -160,13 +174,13 @@ function ScanHistoryPage() {
                     <tbody>
                       {scans.map((scan, i) => (
                         <tr key={scan.id}>
-                          <td style={{ color: '#9ca3af', fontSize: '0.8rem' }}>{i + 1}</td>
+                          <td style={{ color: '#94a3b8', fontSize: '0.8rem' }}>{i + 1}</td>
                           <td>{scan.scan_type ? scan.scan_type.charAt(0).toUpperCase() + scan.scan_type.slice(1) : '—'}</td>
                           <td style={{ maxWidth: 260, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {scan.product_name || '—'}
                           </td>
                           <td>
-                            <span className={`udb-risk-badge ${riskClass(scan.risk_level)}`}>
+                            <span className={`ss-dashboard-risk ${riskClass(scan.risk_level)}`}>
                               {scan.risk_level || 'Unknown'}
                             </span>
                           </td>
@@ -174,8 +188,8 @@ function ScanHistoryPage() {
                           <td>
                             <Link
                               to={`/scan-details/${scan.id}`}
-                              className="udb-btn udb-btn-secondary"
-                              style={{ padding: '5px 12px', fontSize: '0.78rem' }}
+                              className="ss-dashboard-btn ss-dashboard-btn-secondary"
+                              style={{ minHeight: 36, padding: '0 0.85rem', fontSize: '0.78rem' }}
                             >
                               <i className="fas fa-eye"></i> View
                             </Link>
@@ -188,37 +202,28 @@ function ScanHistoryPage() {
 
                 {hasMore && (
                   <div style={{ marginTop: '1.25rem', textAlign: 'center' }}>
-                    <button type="button" className="udb-btn udb-btn-secondary" onClick={handleLoadMore}>
+                    <button type="button" className="ss-dashboard-btn ss-dashboard-btn-secondary" onClick={handleLoadMore}>
                       <i className="fas fa-chevron-down"></i> Load More
                     </button>
                   </div>
                 )}
-              </>
+              </div>
             )}
-          </section>
 
-          <div style={{ display: 'flex', gap: '0.75rem' }}>
-            <Link to="/userdashboard" className="udb-btn udb-btn-secondary">
-              <i className="fas fa-tachometer-alt"></i> Back to Dashboard
-            </Link>
-            <Link to="/scan" className="udb-btn udb-btn-primary">
-              <i className="fas fa-search"></i> New Scan
-            </Link>
+            <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem' }}>
+              <Link to="/userdashboard" className="ss-dashboard-btn ss-dashboard-btn-secondary">
+                <i className="fas fa-tachometer-alt"></i> Back to Dashboard
+              </Link>
+              <Link to="/scan" className="ss-dashboard-btn ss-dashboard-btn-primary">
+                <i className="fas fa-search"></i> New Scan
+              </Link>
+            </div>
           </div>
         </div>
+
       </main>
 
-      <footer className="udb-footer">
-        <div className="udb-footer-inner">
-          <span className="udb-footer-copyright">&copy; 2024 SureShop. Protecting users from online scams.</span>
-          <div className="udb-footer-links">
-            <Link to="/">Home</Link>
-            <Link to="/privacy-policy">Privacy</Link>
-            <Link to="/terms-of-service">Terms</Link>
-            <Link to="/contact-support">Contact</Link>
-          </div>
-        </div>
-      </footer>
+      <DashboardFooter />
     </div>
   );
 }

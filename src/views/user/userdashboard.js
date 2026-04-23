@@ -4,6 +4,8 @@ import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
 import { logoutUser } from '../../services/authService';
 import DashboardHeader from '../../components/DashboardHeader';
+import DashboardFooter from '../../components/DashboardFooter';
+import DashboardIcon from '../../components/DashboardIcon';
 import '../../styles/dashboard.css';
 
 function UserDashboard() {
@@ -89,20 +91,18 @@ function UserDashboard() {
   };
 
   const riskClass = (level) => {
-    if (!level) return 'udb-risk-low';
+    if (!level) return 'ss-dashboard-risk-low';
     const l = level.toLowerCase();
-    if (l === 'high') return 'udb-risk-high';
-    if (l === 'medium') return 'udb-risk-medium';
-    return 'udb-risk-low';
+    if (l === 'high') return 'ss-dashboard-risk-high';
+    if (l === 'medium') return 'ss-dashboard-risk-medium';
+    return 'ss-dashboard-risk-low';
   };
 
   if (loading) {
     return (
-      <div className="udb-page">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1, minHeight: '100vh', color: '#6b7280', flexDirection: 'column', gap: '1rem' }}>
-          <i className="fas fa-shield-check" style={{ fontSize: '2.5rem', color: '#22c55e' }}></i>
-          <p style={{ margin: 0 }}>Loading your dashboard...</p>
-        </div>
+      <div className="ss-dashboard-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', flexDirection: 'column', gap: '1rem', color: '#475569' }}>
+        <i className="fas fa-shield-check" style={{ fontSize: '2.5rem', color: '#0ea5a4' }}></i>
+        <p style={{ margin: 0 }}>Loading your dashboard…</p>
       </div>
     );
   }
@@ -110,174 +110,227 @@ function UserDashboard() {
   if (!user) return <Navigate to="/login" replace />;
 
   return (
-    <div className="udb-page">
+    <div className="ss-dashboard-page">
       <DashboardHeader user={user} onLogout={handleLogout} logoutBusy={logoutBusy} />
 
-      <main className="udb-main">
-        <div className="udb-container">
+      <main className="ss-dashboard-main">
 
-          {/* Page Title */}
-          <div className="udb-page-title">
-            <h1><i className="fas fa-tachometer-alt"></i> Your Dashboard</h1>
-            <p className="udb-welcome-text">Welcome back, {displayName}! Here's your security overview.</p>
+        {/* Welcome */}
+        <div className="ss-dashboard-section">
+          <div className="container">
+            <div className="ss-dashboard-section-heading">
+              <div>
+                <p className="ss-dashboard-eyebrow">Overview</p>
+                <h2>Welcome back, {displayName}!</h2>
+              </div>
+            </div>
           </div>
+        </div>
 
-          {/* Quick Actions */}
-          <section className="udb-section">
-            <h2 className="udb-section-title"><i className="fas fa-bolt"></i> Quick Actions</h2>
-            <div className="udb-actions-grid">
-              <Link to="/scan" className="udb-action-card">
-                <i className="fas fa-search"></i>
+        {/* Quick Actions */}
+        <div className="ss-dashboard-section">
+          <div className="container">
+            <div className="ss-dashboard-section-heading">
+              <div>
+                <p className="ss-dashboard-eyebrow">Tools</p>
+                <h2>Quick Actions</h2>
+              </div>
+            </div>
+            <div className="ss-dashboard-actions-grid">
+              <Link to="/scan" className="ss-dashboard-action-card">
+                <div className="ss-dashboard-action-top">
+                  <span className="ss-dashboard-action-icon"><DashboardIcon type="scan" /></span>
+                  <span className="ss-dashboard-action-badge">New</span>
+                </div>
                 <h3>New Scan</h3>
                 <p>Scan a website, product, or seller</p>
               </Link>
-              <Link to="/scan-history" className="udb-action-card">
-                <i className="fas fa-history"></i>
+              <Link to="/scan-history" className="ss-dashboard-action-card">
+                <div className="ss-dashboard-action-top">
+                  <span className="ss-dashboard-action-icon"><DashboardIcon type="trend" /></span>
+                  <span className="ss-dashboard-action-badge">History</span>
+                </div>
                 <h3>Scan History</h3>
-                <p>View your previous scans</p>
+                <p>Review your previous scans</p>
               </Link>
-              <Link to="/settings" className="udb-action-card">
-                <i className="fas fa-cog"></i>
+              <Link to="/settings" className="ss-dashboard-action-card">
+                <div className="ss-dashboard-action-top">
+                  <span className="ss-dashboard-action-icon"><DashboardIcon type="user" /></span>
+                  <span className="ss-dashboard-action-badge">Account</span>
+                </div>
                 <h3>Settings</h3>
-                <p>Manage your account</p>
+                <p>Manage your profile &amp; security</p>
               </Link>
               <a
                 href="https://github.com/JorjDominic/Browser-Extension"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="udb-action-card"
+                className="ss-dashboard-action-card"
               >
-                <i className="fas fa-puzzle-piece"></i>
+                <div className="ss-dashboard-action-top">
+                  <span className="ss-dashboard-action-icon"><DashboardIcon type="shield" /></span>
+                  <span className="ss-dashboard-action-badge">Install</span>
+                </div>
                 <h3>Extension</h3>
-                <p>Install browser extension</p>
+                <p>Download the browser extension</p>
               </a>
             </div>
-          </section>
-
-          {/* Browser Extension */}
-          <section className="udb-section">
-            <h2 className="udb-section-title"><i className="fas fa-puzzle-piece"></i> Browser Extension</h2>
-
-            {extensionActive ? (
-              <div className="udb-extension-activated">
-                <p><strong>✅ Extension Activated</strong></p>
-                <p>Your browser extension is successfully linked to your account.</p>
-              </div>
-            ) : (
-              <div>
-                <p style={{ color: '#6b7280', marginBottom: '1rem', fontSize: '0.9rem' }}>
-                  Activate your browser extension to scan Shopee products in real time.
-                </p>
-                <a
-                  href="https://github.com/JorjDominic/Browser-Extension"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="udb-btn udb-btn-primary"
-                >
-                  <i className="fas fa-download"></i> Download Extension
-                </a>
-              </div>
-            )}
-          </section>
-
-          {/* Stats */}
-          <section className="udb-section">
-            <h2 className="udb-section-title"><i className="fas fa-chart-bar"></i> Your Stats</h2>
-            <div className="udb-stats-grid">
-              <div className="udb-stat-card">
-                <div className="udb-stat-card-header">
-                  <h3>Total Scans</h3>
-                  <span className="udb-stat-icon teal"><i className="fas fa-search"></i></span>
-                </div>
-                <div className="udb-stat-number">{stats.total}</div>
-                <div className="udb-stat-meta">{stats.total} products scanned</div>
-              </div>
-
-              <div className={`udb-stat-card${stats.highRisk > 0 ? ' risk-high' : ' risk-low'}`}>
-                <div className="udb-stat-card-header">
-                  <h3>High Risk</h3>
-                  <span className="udb-stat-icon danger"><i className="fas fa-shield-alt"></i></span>
-                </div>
-                <div className="udb-stat-number">{stats.highRisk}</div>
-                <div className="udb-stat-meta">Potential scams detected</div>
-              </div>
-
-              <div className="udb-stat-card">
-                <div className="udb-stat-card-header">
-                  <h3>Protected Items</h3>
-                  <span className="udb-stat-icon success"><i className="fas fa-check-circle"></i></span>
-                </div>
-                <div className="udb-stat-number">{stats.protected}</div>
-                <div className="udb-stat-meta">Safe items verified</div>
-              </div>
-            </div>
-          </section>
-
-          {/* Recent Scans */}
-          <section className="udb-section">
-            <h2 className="udb-section-title"><i className="fas fa-clock"></i> Recent Scans</h2>
-
-            {recentScans.length === 0 ? (
-              <div className="udb-empty-state">
-                <i className="fas fa-search"></i>
-                <h3>No scans yet</h3>
-                <p>
-                  Activate your browser extension and start scanning products to see your history here.
-                </p>
-              </div>
-            ) : (
-              <div className="udb-table-wrap">
-                <table className="udb-table">
-                  <thead>
-                    <tr>
-                      <th>Type</th>
-                      <th>Product</th>
-                      <th>Risk Level</th>
-                      <th>Time</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {recentScans.map((scan) => (
-                      <tr key={scan.id}>
-                        <td>{scan.scan_type ? scan.scan_type.charAt(0).toUpperCase() + scan.scan_type.slice(1) : '—'}</td>
-                        <td style={{ maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {scan.product_name || '—'}
-                        </td>
-                        <td>
-                          <span className={`udb-risk-badge ${riskClass(scan.risk_level)}`}>
-                            {scan.risk_level || 'Unknown'}
-                          </span>
-                        </td>
-                        <td style={{ whiteSpace: 'nowrap' }}>{formatDate(scan.created_at)}</td>
-                        <td>
-                          <Link to={`/scan-details/${scan.id}`} className="udb-btn udb-btn-secondary" style={{ padding: '6px 14px', fontSize: '0.8rem' }}>
-                            <i className="fas fa-eye"></i> View
-                          </Link>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </section>
-
-        </div>
-      </main>
-
-      {/* Footer */}
-      <footer className="udb-footer">
-        <div className="udb-footer-inner">
-          <span className="udb-footer-copyright">&copy; 2024 SureShop. Protecting users from online scams.</span>
-          <div className="udb-footer-links">
-            <Link to="/">Home</Link>
-            <Link to="/privacy-policy">Privacy</Link>
-            <Link to="/terms-of-service">Terms</Link>
-            <Link to="/contact-support">Contact</Link>
           </div>
         </div>
-      </footer>
+
+        {/* Browser Extension */}
+        <div className="ss-dashboard-section">
+          <div className="container">
+            <div className="ss-dashboard-section-heading">
+              <div>
+                <p className="ss-dashboard-eyebrow">Integration</p>
+                <h2>Browser Extension</h2>
+              </div>
+            </div>
+            <div className="ss-dashboard-panel">
+              {extensionActive ? (
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
+                  <span className="ss-dashboard-action-icon" style={{ flexShrink: 0 }}><DashboardIcon type="shield" /></span>
+                  <div>
+                    <h3 style={{ margin: '0 0 0.4rem', color: 'var(--ss-dashboard-text)', fontSize: '1.05rem' }}>Extension Activated</h3>
+                    <p style={{ margin: 0 }}>Your browser extension is successfully linked to your account. You can now scan products in real time.</p>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
+                  <span className="ss-dashboard-action-icon" style={{ flexShrink: 0 }}><DashboardIcon type="spark" /></span>
+                  <div>
+                    <h3 style={{ margin: '0 0 0.4rem', color: 'var(--ss-dashboard-text)', fontSize: '1.05rem' }}>Activate the Extension</h3>
+                    <p style={{ margin: '0 0 1.1rem' }}>Install the SureShop browser extension to scan Shopee products directly as you browse.</p>
+                    <a
+                      href="https://github.com/JorjDominic/Browser-Extension"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ss-dashboard-btn ss-dashboard-btn-primary"
+                      style={{ gap: '0.5rem' }}
+                    >
+                      <i className="fas fa-download"></i> Download Extension
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Stats */}
+        <div className="ss-dashboard-section">
+          <div className="container">
+            <div className="ss-dashboard-section-heading">
+              <div>
+                <p className="ss-dashboard-eyebrow">Summary</p>
+                <h2>Your Stats</h2>
+              </div>
+            </div>
+            <div className="ss-dashboard-stats-grid" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
+              <article className="ss-dashboard-stat-card tone-teal">
+                <div className="ss-dashboard-stat-top">
+                  <div>
+                    <p>Total Scans</p>
+                    <h3>{stats.total}</h3>
+                  </div>
+                  <span className="ss-dashboard-stat-icon"><DashboardIcon type="scan" /></span>
+                </div>
+                <small>Products analyzed to date</small>
+              </article>
+              <article className="ss-dashboard-stat-card tone-danger">
+                <div className="ss-dashboard-stat-top">
+                  <div>
+                    <p>High Risk</p>
+                    <h3>{stats.highRisk}</h3>
+                  </div>
+                  <span className="ss-dashboard-stat-icon"><DashboardIcon type="warning" /></span>
+                </div>
+                <small>Potential scams detected</small>
+              </article>
+              <article className="ss-dashboard-stat-card tone-success">
+                <div className="ss-dashboard-stat-top">
+                  <div>
+                    <p>Protected</p>
+                    <h3>{stats.protected}</h3>
+                  </div>
+                  <span className="ss-dashboard-stat-icon"><DashboardIcon type="shield" /></span>
+                </div>
+                <small>Safe items verified</small>
+              </article>
+            </div>
+          </div>
+        </div>
+
+        {/* Recent Scans */}
+        <div className="ss-dashboard-section">
+          <div className="container">
+            <div className="ss-dashboard-section-heading">
+              <div>
+                <p className="ss-dashboard-eyebrow">Activity</p>
+                <h2>Recent Scans</h2>
+              </div>
+              <Link to="/scan-history" className="ss-dashboard-btn ss-dashboard-btn-secondary" style={{ alignSelf: 'center' }}>
+                View All
+              </Link>
+            </div>
+
+            {recentScans.length === 0 ? (
+              <div className="ss-dashboard-panel">
+                <div className="udb-empty-state">
+                  <i className="fas fa-search"></i>
+                  <h3>No scans yet</h3>
+                  <p>Start scanning products with the browser extension to build your history.</p>
+                </div>
+              </div>
+            ) : (
+              <div className="ss-dashboard-panel">
+                <div className="ss-dashboard-table-wrap">
+                  <table className="ss-dashboard-table">
+                    <thead>
+                      <tr>
+                        <th>Type</th>
+                        <th>Product</th>
+                        <th>Risk Level</th>
+                        <th>Time</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {recentScans.map((scan) => (
+                        <tr key={scan.id}>
+                          <td>{scan.scan_type ? scan.scan_type.charAt(0).toUpperCase() + scan.scan_type.slice(1) : '—'}</td>
+                          <td style={{ maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {scan.product_name || '—'}
+                          </td>
+                          <td>
+                            <span className={`ss-dashboard-risk ${riskClass(scan.risk_level)}`}>
+                              {scan.risk_level || 'Unknown'}
+                            </span>
+                          </td>
+                          <td style={{ whiteSpace: 'nowrap', fontSize: '0.82rem' }}>{formatDate(scan.created_at)}</td>
+                          <td>
+                            <Link
+                              to={`/scan-details/${scan.id}`}
+                              className="ss-dashboard-btn ss-dashboard-btn-secondary"
+                              style={{ minHeight: 36, padding: '0 0.85rem', fontSize: '0.8rem' }}
+                            >
+                              <i className="fas fa-eye"></i>&nbsp;View
+                            </Link>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+      </main>
+
+      <DashboardFooter />
     </div>
   );
 }

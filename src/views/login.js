@@ -112,7 +112,7 @@ function Login() {
     setLoading(true)
 
     try {
-      const { error } = await loginUser(email, password)
+      const { data, error } = await loginUser(email, password)
       if (error) {
         setMessage(error.message)
         setMessageType("error")

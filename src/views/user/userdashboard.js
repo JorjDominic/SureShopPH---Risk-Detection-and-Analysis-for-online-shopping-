@@ -71,7 +71,7 @@ function UserDashboard() {
 
     loadData();
     return () => { active = false; };
-  }, []);
+  }, [navigate]);
 
   const displayName = useMemo(() => {
     if (!user) return 'Shopper';

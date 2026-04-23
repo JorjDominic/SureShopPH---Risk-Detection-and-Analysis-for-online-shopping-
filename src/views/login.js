@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import SkeletonLoader from "../components/SkeletonLoader"
 import { Link, useLocation, useNavigate } from "react-router-dom"
-import { getRateLimitStatus, loginUser, signInWithGoogle, validateEmailFormat } from "../services/authService"
+import { getCurrentSession, getRateLimitStatus, loginUser, signInWithGoogle, validateEmailFormat } from "../services/authService"
 import GoogleLogo from "../components/GoogleLogo"
 import "../styles/login.css"
 import "../styles/fadeout.css"
@@ -112,7 +112,7 @@ function Login() {
     setLoading(true)
 
     try {
-      const { data, error } = await loginUser(email, password)
+      const { error } = await loginUser(email, password)
       if (error) {
         setMessage(error.message)
         setMessageType("error")
@@ -126,13 +126,16 @@ function Login() {
         return
       }
 
+      const { data: sessionData } = await getCurrentSession()
+      const freshUser = sessionData?.session?.user
+      const role =
+        freshUser?.app_metadata?.role ||
+        freshUser?.user_metadata?.role
+      const destination = redirectPath || (role === 'admin' ? '/admin' : '/userdashboard')
+
       setTimeout(() => {
         setFadeOut(true)
         setTimeout(() => {
-          const role =
-            data?.user?.app_metadata?.role ||
-            data?.user?.user_metadata?.role
-          const destination = redirectPath || (role === 'admin' ? '/admin' : '/userdashboard')
           navigate(destination, { replace: true })
           setFadeOut(false)
         }, 350)

@@ -1064,8 +1064,7 @@ h1, h2, h3, .ss-landing-logo-text {
 
 .ss-landing-header .container {
     border: 1px solid rgba(255, 255, 255, 0.35);
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.62));
-    backdrop-filter: blur(6px);
+    background: rgba(255, 255, 255, 0.96);
     border-radius: 999px;
     box-shadow: 0 10px 22px -18px rgba(15, 23, 42, 0.42);
 }
@@ -2191,8 +2190,7 @@ body.ss-theme-dark .ss-landing-cta-content p {
     border: 1px solid rgba(15, 23, 42, 0.08);
     border-radius: 28px;
     padding: 2.6rem 1.5rem;
-    background: linear-gradient(145deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.32));
-    backdrop-filter: blur(8px);
+    background: rgba(255, 255, 255, 0.75);
 }
 
 body.ss-theme-dark .ss-landing-section-signature::before {

@@ -58,8 +58,7 @@
   padding: 2.5rem 2rem;
   border-radius: 28px;
   border: 1px solid rgba(15, 23, 42, 0.08);
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.7));
-  backdrop-filter: blur(14px);
+  background: rgba(255, 255, 255, 0.97);
   box-shadow: 0 20px 45px -20px rgba(15, 23, 42, 0.35);
   overflow: hidden;
   animation: ssAuthRise 0.8s ease both;

@@ -18,7 +18,7 @@
     --ss-border: #e5e7eb;
     --ss-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     --ss-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    --ss-transition: all 0.3s ease;
+    --ss-transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
 }
 
 /* ===== Base Styles ===== */
@@ -344,6 +344,9 @@
     border-radius: 50%;
     filter: blur(48px);
     opacity: 0.32;
+    /* Promote to own compositor layer so blur doesn't repaint the page */
+    will-change: transform;
+    transform: translateZ(0);
 }
 .ss-hero-circle.circle1 {
     width: 420px;
@@ -705,10 +708,10 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.15);
     padding: 1rem 1.5rem;
     border-radius: 8px;
-    backdrop-filter: blur(10px);
+    /* backdrop-filter removed — expensive on every demo feature chip */
 }
 
 .ss-landing-demo-feature i {
@@ -1272,7 +1275,8 @@ h1, h2, h3, .ss-landing-logo-text {
     background: rgba(255, 255, 255, 0.82);
     border: 1px solid rgba(255, 255, 255, 0.6);
     box-shadow: 0 14px 28px -22px rgba(15, 23, 42, 0.44);
-    animation: ssSoftFloat 5.8s ease-in-out infinite;
+    /* Float animation removed — ran on 3 elements simultaneously */
+    will-change: transform;
 }
 
 .ss-landing-glass-main {
@@ -1318,7 +1322,8 @@ h1, h2, h3, .ss-landing-logo-text {
     width: 87%;
     height: 100%;
     background: linear-gradient(90deg, #fb7185, #ef4444);
-    animation: ssMeter 1.8s ease-out both, ssSoftPulse 2.8s ease-in-out infinite;
+    /* Removed ssSoftPulse infinite loop — opacity animation causes repaints */
+    animation: ssMeter 1.8s ease-out both;
 }
 
 .ss-landing-glass-alert,
@@ -1783,8 +1788,8 @@ body.ss-theme-dark .ss-landing-mobile-nav-links a:hover {
   height: 2px;
   border-radius: 999px;
   background: linear-gradient(90deg, var(--ss-primary), var(--ss-secondary));
-  opacity: 0.5;
-  animation: ssSoftPulse 2.8s ease-in-out infinite;
+  opacity: 0.6;
+  /* ssSoftPulse removed \u2014 continuous opacity animation on a pseudo-element */
 }
 
 body.ss-theme-dark .ss-hero-highlight {
@@ -1893,16 +1898,13 @@ body.ss-theme-dark .ss-hero-highlight {
   transform: scale(1.07);
 }
 
-/* ── CTA animated gradient ── */
+/* ── CTA gradient (static — animated background-position causes repaints) ── */
 .ss-landing-cta {
-  background: linear-gradient(-45deg, #ccfbf1, #ecfccb, #ffedd5, #ede9fe) !important;
-  background-size: 400% 400% !important;
-  animation: ssGradientShift 10s ease infinite !important;
+  background: linear-gradient(135deg, #ccfbf1 0%, #ecfccb 50%, #ede9fe 100%) !important;
 }
 
 body.ss-theme-dark .ss-landing-cta {
-  background: linear-gradient(-45deg, #0d2b26, #162041, #1a2e08, #160d35) !important;
-  background-size: 400% 400% !important;
+  background: linear-gradient(135deg, #0d2b26 0%, #162041 50%, #160d35 100%) !important;
 }
 
 /* ── Trust strip seamless marquee ── */

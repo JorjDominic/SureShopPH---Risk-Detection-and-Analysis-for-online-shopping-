@@ -147,7 +147,7 @@ function LandingPage({ session }) {
           <div className="container">
             <div className="ss-landing-hero-content">
               <div className="ss-landing-hero-text">
-                  <div className="ss-landing-kicker">AI-Powered Risk Detection for Filipino Shoppers</div>
+                  <div className="ss-landing-kicker">AI-Powered Risk Detection and Analysis for Filipino Shoppers</div>
                   <h1 className="ss-landing-hero-title">Shop <span className="ss-hero-highlight">Smarter</span>. Stay Protected.</h1>
                   <p className="ss-landing-hero-subtitle">
                     SureshopPH analyzes listings, sellers, and URLs in real-time to help you identify

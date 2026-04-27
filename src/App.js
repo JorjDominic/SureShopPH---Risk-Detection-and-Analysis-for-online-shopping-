@@ -13,6 +13,7 @@ import SettingsPage from './views/user/settings';
 import ScanDetailsPage from './views/user/scanDetails';
 import ForgotPassword from './views/forgotPassword';
 import ResetPassword from './views/resetPassword';
+import PrivacyPolicy from './views/privacyPolicy';
 import AdminDashboard from './views/admin/admindashboard';
 import AdminReports from './views/admin/adminReports';
 import AdminBlacklist from './views/admin/adminBlacklist';
@@ -540,7 +541,7 @@ function App() {
         <Route path="/api-reference" element={<InfoPage title="API Reference" subtitle="API reference content is coming soon. Public endpoints and usage examples will be published here." session={session} />} />
         <Route path="/contact-support" element={<InfoPage title="Contact Support" subtitle="Direct support channels are being finalized. Please use your dashboard and account recovery options for now." session={session} />} />
         <Route path="/status" element={<InfoPage title="System Status" subtitle="All core authentication services are operational." session={session} />} />
-        <Route path="/privacy-policy" element={<InfoPage title="Privacy Policy" subtitle="SureShop respects your privacy and secures account and scan data with modern safeguards." session={session} />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy session={session} />} />
         <Route path="/terms-of-service" element={<InfoPage title="Terms of Service" subtitle="Use SureShop responsibly and comply with platform and local regulations." session={session} />} />
         <Route path="/cookie-policy" element={<InfoPage title="Cookie Policy" subtitle="Cookie and tracking disclosures will be published here before public release." session={session} />} />
         <Route path="/gdpr-compliance" element={<InfoPage title="GDPR Compliance" subtitle="Compliance details are being reviewed and will be documented in this section." session={session} />} />

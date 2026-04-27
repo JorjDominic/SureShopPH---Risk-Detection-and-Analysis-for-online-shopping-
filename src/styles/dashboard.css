@@ -1801,3 +1801,155 @@ body.ss-theme-dark .ss-admin-log-entry {
     grid-column: 1;
   }
 }
+
+/* ===== Sign-Out Confirmation Modal ===== */
+.ss-signout-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: ssModalFadeIn 0.18s ease both;
+}
+
+@keyframes ssModalFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes ssModalSlideIn {
+  from { opacity: 0; transform: translateY(-14px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)     scale(1); }
+}
+
+.ss-signout-modal {
+  background: #fff;
+  border-radius: 16px;
+  padding: 2.25rem 2rem 2rem;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.22);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  animation: ssModalSlideIn 0.22s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.ss-signout-icon-wrap {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #fee2e2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  color: #ef4444;
+  margin-bottom: 1.25rem;
+  flex-shrink: 0;
+}
+
+.ss-signout-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 0.6rem;
+}
+
+.ss-signout-message {
+  font-size: 0.925rem;
+  color: #6b7280;
+  margin: 0 0 1.75rem;
+  line-height: 1.6;
+}
+
+.ss-signout-actions {
+  display: flex;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.ss-signout-btn-cancel,
+.ss-signout-btn-confirm {
+  flex: 1;
+  padding: 0.65rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, opacity 0.2s;
+  border: 2px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+}
+
+.ss-signout-btn-cancel {
+  background: #f3f4f6;
+  color: #374151;
+  border-color: #e5e7eb;
+}
+
+.ss-signout-btn-cancel:hover:not(:disabled) {
+  background: #e5e7eb;
+}
+
+.ss-signout-btn-confirm {
+  background: #ef4444;
+  color: #fff;
+  border-color: #ef4444;
+}
+
+.ss-signout-btn-confirm:hover:not(:disabled) {
+  background: #dc2626;
+  border-color: #dc2626;
+}
+
+.ss-signout-btn-cancel:disabled,
+.ss-signout-btn-confirm:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.ss-signout-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: ssSignoutSpin 0.65s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes ssSignoutSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* Dark mode */
+body.ss-theme-dark .ss-signout-modal {
+  background: #1f2937;
+}
+
+body.ss-theme-dark .ss-signout-title {
+  color: #f9fafb;
+}
+
+body.ss-theme-dark .ss-signout-message {
+  color: #9ca3af;
+}
+
+body.ss-theme-dark .ss-signout-btn-cancel {
+  background: #374151;
+  color: #d1d5db;
+  border-color: #4b5563;
+}
+
+body.ss-theme-dark .ss-signout-btn-cancel:hover:not(:disabled) {
+  background: #4b5563;
+}

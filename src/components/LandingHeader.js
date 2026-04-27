@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { logoutUser } from '../services/authService';
+import SignOutModal from './SignOutModal';
 
 function LandingHeader({ session }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [logoutBusy, setLogoutBusy] = useState(false);
+  const [showSignOutModal, setShowSignOutModal] = useState(false);
 
   useEffect(() => {
     const onScroll = () => {
@@ -48,15 +50,22 @@ function LandingHeader({ session }) {
 
   const closeMobileMenu = () => setMobileOpen(false);
 
+  const requestLogout = () => {
+    if (logoutBusy) return;
+    setShowSignOutModal(true);
+  };
+
   const handleLogout = async () => {
     if (logoutBusy) return;
     setLogoutBusy(true);
     await logoutUser();
     setLogoutBusy(false);
+    setShowSignOutModal(false);
     closeMobileMenu();
   };
 
   return (
+    <>
     <header className={`ss-landing-header${isScrolled ? ' is-scrolled' : ''}`}>
       <nav className="ss-landing-navbar">
         <div className="container">
@@ -101,7 +110,7 @@ function LandingHeader({ session }) {
                     <button
                       type="button"
                       className="btn btn-primary ss-landing-btn-small"
-                      onClick={handleLogout}
+                      onClick={requestLogout}
                       disabled={logoutBusy}
                     >
                       {logoutBusy ? 'Signing out...' : 'Logout'}
@@ -140,7 +149,7 @@ function LandingHeader({ session }) {
                     <li><Link to="/admin" onClick={closeMobileMenu}><i className="fas fa-shield-halved"></i> Admin Panel</Link></li>
                   )}
                   <li>
-                    <button type="button" onClick={handleLogout} disabled={logoutBusy}>
+                    <button type="button" onClick={requestLogout} disabled={logoutBusy}>
                       <i className="fas fa-sign-out-alt"></i> {logoutBusy ? 'Signing out...' : 'Logout'}
                     </button>
                   </li>
@@ -157,6 +166,13 @@ function LandingHeader({ session }) {
         </div>
       </nav>
     </header>
+    <SignOutModal
+      isOpen={showSignOutModal}
+      onConfirm={handleLogout}
+      onCancel={() => setShowSignOutModal(false)}
+      busy={logoutBusy}
+    />
+    </>
   );
 }
 

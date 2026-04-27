@@ -2,11 +2,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import DashboardIcon from './DashboardIcon';
+import SignOutModal from './SignOutModal';
 import '../styles/landing.css';
 import '../styles/dashboard.css';
 
 function AdminHeader({ user, onLogout, logoutBusy }) {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [showSignOutModal, setShowSignOutModal] = useState(false);
   const location = useLocation();
 
   const displayName = useMemo(() => {
@@ -30,7 +32,8 @@ function AdminHeader({ user, onLogout, logoutBusy }) {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <header className={`ss-landing-header${isScrolled ? ' is-scrolled' : ''}`}>
+    <>
+      <header className={`ss-landing-header${isScrolled ? ' is-scrolled' : ''}`}>
       <nav className="ss-landing-navbar">
         <div className="container">
           <div className="ss-landing-navbar-container">
@@ -85,7 +88,7 @@ function AdminHeader({ user, onLogout, logoutBusy }) {
               <button
                 type="button"
                 className="ss-dashboard-logout ss-dashboard-logout-cta"
-                onClick={onLogout}
+                onClick={() => setShowSignOutModal(true)}
                 disabled={logoutBusy}
               >
                 <DashboardIcon type="logout" />
@@ -98,6 +101,13 @@ function AdminHeader({ user, onLogout, logoutBusy }) {
         </div>
       </nav>
     </header>
+    <SignOutModal
+      isOpen={showSignOutModal}
+      onConfirm={onLogout}
+      onCancel={() => setShowSignOutModal(false)}
+      busy={logoutBusy}
+    />
+    </>
   );
 }
 

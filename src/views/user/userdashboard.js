@@ -3,6 +3,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
 import { logoutUser } from '../../services/authService';
+import {
+  generateActivationKey,
+  revokeAllActivationKeys,
+} from '../../services/accessTokenService';
 import DashboardHeader from '../../components/DashboardHeader';
 import DashboardFooter from '../../components/DashboardFooter';
 import DashboardIcon from '../../components/DashboardIcon';
@@ -18,6 +22,10 @@ function UserDashboard() {
   const [recentScans, setRecentScans] = useState([]);
   const [extensionActive, setExtensionActive] = useState(false);
   const [logoutBusy, setLogoutBusy] = useState(false);
+  const [keyBusy, setKeyBusy] = useState(false);
+  const [keyError, setKeyError] = useState(null);
+  const [generatedKey, setGeneratedKey] = useState(null);
+  const [keyCopied, setKeyCopied] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -89,6 +97,55 @@ function UserDashboard() {
     setLogoutBusy(true);
     await logoutUser();
     navigate('/login');
+  };
+
+  const handleGenerateKey = async () => {
+    setKeyError(null);
+    setKeyCopied(false);
+    setKeyBusy(true);
+    try {
+      const { plainKey } = await generateActivationKey();
+      setGeneratedKey(plainKey);
+      setExtensionActive(true);
+    } catch (err) {
+      setKeyError(err?.message || 'Failed to generate activation key.');
+    } finally {
+      setKeyBusy(false);
+    }
+  };
+
+  const handleCopyKey = async () => {
+    if (!generatedKey) return;
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(generatedKey);
+      } else {
+        const ta = document.createElement('textarea');
+        ta.value = generatedKey;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+      setKeyCopied(true);
+      setTimeout(() => setKeyCopied(false), 2000);
+    } catch {
+      setKeyError('Unable to copy to clipboard.');
+    }
+  };
+
+  const handleRevokeKey = async () => {
+    setKeyError(null);
+    setKeyBusy(true);
+    try {
+      await revokeAllActivationKeys();
+      setGeneratedKey(null);
+      setExtensionActive(false);
+    } catch (err) {
+      setKeyError(err?.message || 'Failed to revoke activation key.');
+    } finally {
+      setKeyBusy(false);
+    }
   };
 
   const formatDate = (iso) => {
@@ -198,28 +255,92 @@ function UserDashboard() {
             </div>
             <div className="ss-dashboard-panel">
               {extensionActive ? (
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem', flexWrap: 'wrap' }}>
                   <span className="ss-dashboard-action-icon" style={{ flexShrink: 0 }}><DashboardIcon type="shield" /></span>
-                  <div>
+                  <div style={{ flex: 1, minWidth: 240 }}>
                     <h3 style={{ margin: '0 0 0.4rem', color: 'var(--ss-dashboard-text)', fontSize: '1.05rem' }}>Extension Activated</h3>
                     <p style={{ margin: 0 }}>Your browser extension is successfully linked to your account. You can now scan products in real time.</p>
+
+                    {generatedKey && (
+                      <div style={{ marginTop: '1rem', padding: '0.85rem 1rem', background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: 8 }}>
+                        <p style={{ margin: '0 0 0.4rem', fontSize: '0.78rem', color: '#475569', fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                          Your activation key (shown only once)
+                        </p>
+                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                          <code style={{ fontFamily: 'monospace', fontSize: '0.95rem', fontWeight: 700, letterSpacing: '0.06em', color: '#0f172a' }}>
+                            {generatedKey}
+                          </code>
+                          <button
+                            type="button"
+                            className="ss-dashboard-btn ss-dashboard-btn-secondary"
+                            style={{ minHeight: 34, padding: '0 0.75rem', fontSize: '0.78rem' }}
+                            onClick={handleCopyKey}
+                          >
+                            <i className={`fas ${keyCopied ? 'fa-check' : 'fa-copy'}`}></i>&nbsp;{keyCopied ? 'Copied' : 'Copy'}
+                          </button>
+                        </div>
+                        <p style={{ margin: '0.6rem 0 0', fontSize: '0.75rem', color: '#b91c1c' }}>
+                          Save this key now — it will not be shown again. Paste it into the SureShop extension to activate it.
+                        </p>
+                      </div>
+                    )}
+
+                    <div style={{ marginTop: '1rem', display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+                      <button
+                        type="button"
+                        className="ss-dashboard-btn ss-dashboard-btn-secondary"
+                        onClick={handleGenerateKey}
+                        disabled={keyBusy}
+                      >
+                        {keyBusy
+                          ? <><i className="fas fa-spinner fa-spin"></i> Working…</>
+                          : <><i className="fas fa-rotate"></i> Regenerate Key</>}
+                      </button>
+                      <button
+                        type="button"
+                        className="ss-dashboard-btn ss-dashboard-btn-secondary"
+                        onClick={handleRevokeKey}
+                        disabled={keyBusy}
+                      >
+                        <i className="fas fa-ban"></i>&nbsp;Revoke
+                      </button>
+                    </div>
+                    {keyError && (
+                      <p style={{ margin: '0.75rem 0 0', color: '#b91c1c', fontSize: '0.85rem' }}>{keyError}</p>
+                    )}
                   </div>
                 </div>
               ) : (
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem', flexWrap: 'wrap' }}>
                   <span className="ss-dashboard-action-icon" style={{ flexShrink: 0 }}><DashboardIcon type="spark" /></span>
-                  <div>
+                  <div style={{ flex: 1, minWidth: 240 }}>
                     <h3 style={{ margin: '0 0 0.4rem', color: 'var(--ss-dashboard-text)', fontSize: '1.05rem' }}>Activate the Extension</h3>
-                    <p style={{ margin: '0 0 1.1rem' }}>Install the SureShop browser extension to scan Shopee products directly as you browse.</p>
-                    <a
-                      href="https://github.com/JorjDominic/Browser-Extension"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="ss-dashboard-btn ss-dashboard-btn-primary"
-                      style={{ gap: '0.5rem' }}
-                    >
-                      <i className="fas fa-download"></i> Download Extension
-                    </a>
+                    <p style={{ margin: '0 0 1.1rem' }}>Install the SureShop browser extension, then generate an activation key to link it to your account.</p>
+                    <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+                      <button
+                        type="button"
+                        className="ss-dashboard-btn ss-dashboard-btn-primary"
+                        style={{ gap: '0.5rem' }}
+                        onClick={handleGenerateKey}
+                        disabled={keyBusy}
+                      >
+                        {keyBusy
+                          ? <><i className="fas fa-spinner fa-spin"></i> Generating…</>
+                          : <><i className="fas fa-key"></i> Generate Activation Key</>}
+                      </button>
+                      <a
+                        href="https://github.com/JorjDominic/Browser-Extension"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="ss-dashboard-btn ss-dashboard-btn-secondary"
+                        style={{ gap: '0.5rem' }}
+                      >
+                        <i className="fas fa-download"></i> Download Extension
+                      </a>
+                    </div>
+                    {keyError && (
+                      <p style={{ margin: '0.75rem 0 0', color: '#b91c1c', fontSize: '0.85rem' }}>{keyError}</p>
+                    )}
                   </div>
                 </div>
               )}

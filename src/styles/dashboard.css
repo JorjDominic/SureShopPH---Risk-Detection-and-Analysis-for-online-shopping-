@@ -803,6 +803,36 @@ body.ss-theme-dark .ss-dashboard-tip-list article {
   border-color: rgba(148, 163, 184, 0.14);
 }
 
+/* ── Dark mode: table text ── */
+body.ss-theme-dark .ss-dashboard-table thead th {
+  color: #f1f5f9;
+}
+
+body.ss-theme-dark .ss-dashboard-table tbody td {
+  color: #cbd5e1;
+}
+
+/* ── Dark mode: form inputs ── */
+body.ss-theme-dark .udb-form-input {
+  background: rgba(15, 23, 42, 0.65);
+  border-color: rgba(148, 163, 184, 0.22);
+  color: #f1f5f9;
+}
+
+body.ss-theme-dark .udb-form-input::placeholder {
+  color: rgba(148, 163, 184, 0.5);
+}
+
+body.ss-theme-dark .udb-form-input:focus {
+  border-color: var(--ss-dashboard-teal);
+  box-shadow: 0 0 0 3px rgba(14, 165, 164, 0.18);
+}
+
+body.ss-theme-dark .udb-form-input:disabled {
+  background: rgba(15, 23, 42, 0.4);
+  color: #475569;
+}
+
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
   .ss-dashboard-hero-main,

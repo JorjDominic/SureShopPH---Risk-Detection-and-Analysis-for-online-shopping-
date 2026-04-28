@@ -9,50 +9,50 @@ import '../../styles/dashboard.css';
 // ─── Constants ────────────────────────────────────────────────────────────────
 const SAMPLE_MINIMUM = 200;
 const MOCK_TOTAL = 47;
-const MOCK_FAKE = 24;
-const MOCK_REAL = 23;
+const MOCK_SUSPICIOUS = 24;
+const MOCK_CREDIBLE = 23;
 
 // ─── Mock data ────────────────────────────────────────────────────────────────
 const INITIAL_SAMPLES = [
   {
     id: 's1',
     text: 'Grabe ang ganda ng item! Legit seller, dumating in 2 days. Highly recommend! Sulit na sulit ang bayad ko.',
-    label: 'genuine',
+    label: 'credible',
     notes: 'Clear positive tone, specific delivery detail.',
     createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
   },
   {
     id: 's2',
     text: 'PRANK LANG TO!! Hindi talaga ito legit na seller hahaha joke lang mga lodi. Like and share para sa free item!!!',
-    label: 'fake',
+    label: 'suspicious',
     notes: 'Engagement-bait pattern, no real purchase intent.',
     createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
   },
   {
     id: 's3',
     text: 'Subok na! Original talaga. May warranty pa. Tatlong beses na akong nag-order dito, hindi pa nila ako binibigo.',
-    label: 'genuine',
+    label: 'credible',
     notes: 'Repeat buyer signal, warranty mention.',
     createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
   },
   {
     id: 's4',
     text: 'LIMITADO LANG! Mag-order na agad bago maubusan! SCAM ALERT sa ibang sellers, kami lang ang tunay! GCash only!',
-    label: 'fake',
+    label: 'suspicious',
     notes: 'Urgency + exclusivity manipulation. GCash-only flag.',
     createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
   },
   {
     id: 's5',
     text: 'Hindi ko feel yung packaging kaya 4 stars lang. Pero yung item mismo okay naman. Matagal lang dumating — almost 3 weeks.',
-    label: 'genuine',
+    label: 'credible',
     notes: 'Balanced critique, credible delivery complaint.',
     createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
   },
   {
     id: 's6',
     text: 'Free iPhone 15 kung mag-share ka ng post na ito sa 10 friends! Legit to, nanalo na ako! I-redeem sa link sa bio!!!',
-    label: 'fake',
+    label: 'suspicious',
     notes: 'Classic share-bait giveaway scam.',
     createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
   },
@@ -173,11 +173,11 @@ function AdminTraining() {
 
   // Sample table
   const [samples, setSamples] = useState(INITIAL_SAMPLES);
-  const [filterTab, setFilterTab] = useState('all'); // 'all' | 'fake' | 'genuine'
+  const [filterTab, setFilterTab] = useState('all'); // 'all' | 'suspicious' | 'credible'
 
   // Submit form
   const [reviewText, setReviewText] = useState('');
-  const [selectedLabel, setSelectedLabel] = useState(null); // null | 'fake' | 'genuine'
+  const [selectedLabel, setSelectedLabel] = useState(null); // null | 'suspicious' | 'credible'
   const [notes, setNotes] = useState('');
   const [submitBusy, setSubmitBusy] = useState(false);
 
@@ -261,9 +261,16 @@ function AdminTraining() {
     : samples.filter((s) => s.label === filterTab);
 
   // Derived stats
-  const fakeCount = samples.filter((s) => s.label === 'fake').length;
-  const realCount = samples.filter((s) => s.label === 'genuine').length;
-  const isImbalanced = fakeCount > 0 && realCount > 0 && Math.abs(fakeCount - realCount) > Math.min(fakeCount, realCount) * 0.5;
+  const suspiciousCount = samples.filter((s) => s.label === 'suspicious').length;
+  const credibleCount = samples.filter((s) => s.label === 'credible').length;
+  const total = suspiciousCount + credibleCount;
+  // "Balanced" only when dataset is large enough AND neither class is below 30%
+  const isBalanced =
+    total >= SAMPLE_MINIMUM &&
+    total > 0 &&
+    suspiciousCount / total >= 0.3 &&
+    credibleCount / total >= 0.3;
+  const isImbalanced = suspiciousCount > 0 && credibleCount > 0 && !isBalanced && Math.abs(suspiciousCount - credibleCount) > Math.min(suspiciousCount, credibleCount) * 0.5;
 
   if (authLoading) return null;
   if (!user) return <Navigate to="/login" replace />;
@@ -290,8 +297,8 @@ function AdminTraining() {
                   Model Training
                 </h2>
                 <p style={{ color: 'var(--ss-dashboard-muted)', fontSize: '0.9rem', marginTop: '0.3rem', maxWidth: 560 }}>
-                  Curate and label review samples to train the SureShopPH NLP model. Submit annotated
-                  Filipino/Taglish reviews as genuine or fake to build the training dataset.
+                  Curate and label review samples to train the SureShopPH NLP model. Submit
+                  Filipino/Taglish reviews as credible or suspicious signals to build the training dataset.
                 </p>
               </div>
             </div>
@@ -347,10 +354,10 @@ function AdminTraining() {
                       <div>
                         <p>Dataset Balance</p>
                         <h3 style={{ color: 'var(--ss-dashboard-text)', fontSize: '1.35rem', marginTop: '0.2rem' }}>
-                          <span style={{ color: '#dc2626' }}>{MOCK_FAKE}</span>
-                          <span style={{ color: 'var(--ss-dashboard-muted)', fontWeight: 400, fontSize: '1rem' }}> fake · </span>
-                          <span style={{ color: '#16a34a' }}>{MOCK_REAL}</span>
-                          <span style={{ color: 'var(--ss-dashboard-muted)', fontWeight: 400, fontSize: '1rem' }}> real</span>
+                          <span style={{ color: '#ea580c' }}>{MOCK_SUSPICIOUS}</span>
+                          <span style={{ color: 'var(--ss-dashboard-muted)', fontWeight: 400, fontSize: '1rem' }}> suspicious · </span>
+                          <span style={{ color: '#16a34a' }}>{MOCK_CREDIBLE}</span>
+                          <span style={{ color: 'var(--ss-dashboard-muted)', fontWeight: 400, fontSize: '1rem' }}> credible</span>
                         </h3>
                       </div>
                       <div className="ss-dashboard-stat-icon" style={{ width: 44, height: 44, borderRadius: 14, background: isImbalanced ? 'linear-gradient(135deg,#eab308,#f97316)' : 'linear-gradient(135deg,#22c55e,#16a34a)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -362,12 +369,25 @@ function AdminTraining() {
                         display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
                         padding: '0.28rem 0.7rem', borderRadius: 999, fontSize: '0.74rem', fontWeight: 800,
                         fontFamily: 'var(--font-accent)', letterSpacing: '0.04em', textTransform: 'uppercase',
-                        background: isImbalanced ? 'rgba(234,179,8,0.14)' : 'rgba(22,163,74,0.12)',
-                        color: isImbalanced ? '#92400e' : '#166534',
+                        background: isImbalanced
+                          ? 'rgba(234,179,8,0.14)'
+                          : isBalanced
+                            ? 'rgba(22,163,74,0.12)'
+                            : 'rgba(100,116,139,0.13)',
+                        color: isImbalanced ? '#92400e' : isBalanced ? '#166534' : '#475569',
                       }}
                     >
-                      <i className={`fas ${isImbalanced ? 'fa-triangle-exclamation' : 'fa-check'}`} style={{ fontSize: '0.7rem' }} />
-                      {isImbalanced ? 'Imbalanced' : 'Balanced'}
+                      <i
+                        className={`fas ${
+                          isImbalanced
+                            ? 'fa-triangle-exclamation'
+                            : isBalanced
+                              ? 'fa-check'
+                              : 'fa-hourglass-half'
+                        }`}
+                        style={{ fontSize: '0.7rem' }}
+                      />
+                      {isImbalanced ? 'Imbalanced' : isBalanced ? 'Balanced' : 'Too few samples'}
                     </span>
                   </>
                 )}
@@ -453,9 +473,9 @@ function AdminTraining() {
 
               {/* ── Submit Form ──────────────────────────────────── */}
               <div className="ss-dashboard-panel" style={{ position: 'sticky', top: 88 }}>
-                <p className="ss-dashboard-eyebrow" style={{ marginBottom: '0.4rem' }}>Annotate</p>
+                <p className="ss-dashboard-eyebrow" style={{ marginBottom: '0.4rem' }}>Signal</p>
                 <h3 style={{ color: 'var(--ss-dashboard-text)', fontFamily: 'var(--font-display)', marginBottom: '1.25rem', fontSize: '1.15rem' }}>
-                  Add Training Sample
+                  Add Review Signal
                 </h3>
 
                 <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '1.1rem' }}>
@@ -479,8 +499,32 @@ function AdminTraining() {
                       placeholder="Paste a Filipino/Taglish review here…"
                       style={{ resize: 'vertical', minHeight: 110 }}
                     />
-                    <p style={{ fontSize: '0.74rem', color: '#94a3b8', marginTop: '0.25rem' }}>
-                      Ctrl+Enter to submit
+                    <p
+                      style={{
+                        fontSize: '0.74rem',
+                        color: 'var(--ss-dashboard-muted)',
+                        opacity: 0.75,
+                        marginTop: '0.25rem',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.3rem',
+                      }}
+                    >
+                      <kbd
+                        style={{
+                          fontSize: '0.68rem',
+                          fontFamily: 'var(--font-mono)',
+                          background: 'rgba(148,163,184,0.18)',
+                          border: '1px solid rgba(148,163,184,0.3)',
+                          borderRadius: 5,
+                          padding: '0.05rem 0.35rem',
+                          color: 'inherit',
+                          lineHeight: 1.6,
+                        }}
+                      >
+                        Ctrl+Enter
+                      </kbd>
+                      to submit
                     </p>
                   </div>
 
@@ -498,17 +542,17 @@ function AdminTraining() {
                         gap: '0.6rem',
                       }}
                     >
-                      {/* Fake button */}
+                      {/* Suspicious button */}
                       <button
                         type="button"
-                        onClick={() => setSelectedLabel(selectedLabel === 'fake' ? null : 'fake')}
-                        aria-pressed={selectedLabel === 'fake'}
+                        onClick={() => setSelectedLabel(selectedLabel === 'suspicious' ? null : 'suspicious')}
+                        aria-pressed={selectedLabel === 'suspicious'}
                         style={{
                           padding: '0.65rem 0.5rem',
                           borderRadius: 14,
-                          border: `2px solid ${selectedLabel === 'fake' ? '#dc2626' : 'rgba(148,163,184,0.22)'}`,
-                          background: selectedLabel === 'fake' ? 'rgba(220,38,38,0.1)' : 'transparent',
-                          color: selectedLabel === 'fake' ? '#dc2626' : 'var(--ss-dashboard-muted)',
+                          border: `2px solid ${selectedLabel === 'suspicious' ? '#ea580c' : 'rgba(148,163,184,0.22)'}`,
+                          background: selectedLabel === 'suspicious' ? 'rgba(234,88,12,0.1)' : 'transparent',
+                          color: selectedLabel === 'suspicious' ? '#ea580c' : 'var(--ss-dashboard-muted)',
                           fontWeight: 700,
                           fontSize: '0.86rem',
                           cursor: 'pointer',
@@ -520,20 +564,20 @@ function AdminTraining() {
                           fontFamily: 'var(--font-accent)',
                         }}
                       >
-                        🚩 Fake / Spam
+                        ⚠️ Suspicious
                       </button>
 
-                      {/* Genuine button */}
+                      {/* Credible button */}
                       <button
                         type="button"
-                        onClick={() => setSelectedLabel(selectedLabel === 'genuine' ? null : 'genuine')}
-                        aria-pressed={selectedLabel === 'genuine'}
+                        onClick={() => setSelectedLabel(selectedLabel === 'credible' ? null : 'credible')}
+                        aria-pressed={selectedLabel === 'credible'}
                         style={{
                           padding: '0.65rem 0.5rem',
                           borderRadius: 14,
-                          border: `2px solid ${selectedLabel === 'genuine' ? '#16a34a' : 'rgba(148,163,184,0.22)'}`,
-                          background: selectedLabel === 'genuine' ? 'rgba(22,163,74,0.1)' : 'transparent',
-                          color: selectedLabel === 'genuine' ? '#16a34a' : 'var(--ss-dashboard-muted)',
+                          border: `2px solid ${selectedLabel === 'credible' ? '#16a34a' : 'rgba(148,163,184,0.22)'}`,
+                          background: selectedLabel === 'credible' ? 'rgba(22,163,74,0.1)' : 'transparent',
+                          color: selectedLabel === 'credible' ? '#16a34a' : 'var(--ss-dashboard-muted)',
                           fontWeight: 700,
                           fontSize: '0.86rem',
                           cursor: 'pointer',
@@ -545,14 +589,39 @@ function AdminTraining() {
                           fontFamily: 'var(--font-accent)',
                         }}
                       >
-                        ✅ Genuine
+                        ✓ Credible
                       </button>
                     </div>
                     {!selectedLabel && (
-                      <p style={{ fontSize: '0.74rem', color: '#94a3b8', marginTop: '0.3rem' }}>
-                        Select a label before submitting
+                      <p style={{ fontSize: '0.74rem', color: 'var(--ss-dashboard-muted)', marginTop: '0.3rem' }}>
+                        Select a signal before submitting
                       </p>
                     )}
+                  </div>
+
+                  {/* Signal hint */}
+                  <div
+                    style={{
+                      display: 'flex',
+                      gap: '0.55rem',
+                      padding: '0.75rem 0.9rem',
+                      borderRadius: 12,
+                      background: 'rgba(148,163,184,0.07)',
+                      border: '1px solid rgba(148,163,184,0.15)',
+                    }}
+                  >
+                    <i
+                      className="fas fa-circle-info"
+                      style={{ color: 'var(--ss-dashboard-teal)', marginTop: '0.1rem', flexShrink: 0, fontSize: '0.85rem' }}
+                    />
+                    <p style={{ fontSize: '0.76rem', color: 'var(--ss-dashboard-muted)', lineHeight: 1.55, margin: 0 }}>
+                      You are providing a training signal, not a final verdict. Mark reviews that show
+                      patterns of manipulation, spam, or low credibility as{' '}
+                      <strong style={{ color: '#ea580c' }}>Suspicious</strong>. Mark reviews with
+                      specific, balanced, authentic detail as{' '}
+                      <strong style={{ color: '#16a34a' }}>Credible</strong>. The model learns from
+                      these signals to estimate risk probability — users always see a score (0–100), never a label.
+                    </p>
                   </div>
 
                   {/* Notes */}
@@ -561,7 +630,7 @@ function AdminTraining() {
                       htmlFor="train-notes"
                       style={{ display: 'block', marginBottom: '0.4rem', fontWeight: 600, fontSize: '0.84rem', color: 'var(--ss-dashboard-text)' }}
                     >
-                      Notes <span style={{ color: '#94a3b8', fontWeight: 400 }}>(optional)</span>
+                      Notes <span style={{ color: 'var(--ss-dashboard-muted)', fontWeight: 400 }}>(optional)</span>
                     </label>
                     <textarea
                       id="train-notes"
@@ -599,6 +668,7 @@ function AdminTraining() {
                     </h3>
                   </div>
                   <div
+                    className="ss-train-tab-pill"
                     style={{
                       display: 'flex',
                       gap: '0.35rem',
@@ -607,7 +677,7 @@ function AdminTraining() {
                       padding: '0.3rem',
                     }}
                   >
-                    {(['all', 'fake', 'genuine']).map((tab) => (
+                    {(['all', 'suspicious', 'credible']).map((tab) => (
                       <button
                         key={tab}
                         type="button"
@@ -616,10 +686,10 @@ function AdminTraining() {
                           padding: '0.38rem 0.85rem',
                           borderRadius: 9,
                           border: 'none',
-                          background: filterTab === tab ? '#fff' : 'transparent',
+                          background: filterTab === tab ? 'var(--ss-train-tab-bg)' : 'transparent',
                           color: filterTab === tab
-                            ? tab === 'fake' ? '#dc2626' : tab === 'genuine' ? '#16a34a' : 'var(--ss-dashboard-text)'
-                            : '#64748b',
+                            ? tab === 'suspicious' ? '#ea580c' : tab === 'credible' ? '#16a34a' : 'var(--ss-dashboard-text)'
+                            : 'var(--ss-dashboard-muted)',
                           fontWeight: 700,
                           fontSize: '0.78rem',
                           cursor: 'pointer',
@@ -631,8 +701,8 @@ function AdminTraining() {
                         }}
                       >
                         {tab === 'all' && `All (${samples.length})`}
-                        {tab === 'fake' && `🚩 Fake (${samples.filter((s) => s.label === 'fake').length})`}
-                        {tab === 'genuine' && `✅ Genuine (${samples.filter((s) => s.label === 'genuine').length})`}
+                        {tab === 'suspicious' && `⚠️ Suspicious (${samples.filter((s) => s.label === 'suspicious').length})`}
+                        {tab === 'credible' && `✓ Credible (${samples.filter((s) => s.label === 'credible').length})`}
                       </button>
                     ))}
                   </div>
@@ -657,11 +727,11 @@ function AdminTraining() {
                   </div>
                 ) : (
                   <div className="ss-dashboard-table-wrap">
-                    <table className="ss-dashboard-table">
+                    <table className="ss-dashboard-table" style={{ minWidth: 580 }}>
                       <thead>
                         <tr>
                           <th style={{ width: '40%' }}>Text</th>
-                          <th>Label</th>
+                          <th>Signal</th>
                           <th>Notes</th>
                           <th>Date</th>
                           <th style={{ width: 56 }}></th>
@@ -702,24 +772,36 @@ function AdminTraining() {
                                   fontWeight: 800,
                                   fontFamily: 'var(--font-accent)',
                                   textTransform: 'uppercase',
-                                  background: sample.label === 'fake' ? 'rgba(220,38,38,0.1)' : 'rgba(22,163,74,0.1)',
-                                  color: sample.label === 'fake' ? '#b91c1c' : '#166534',
+                                  background: sample.label === 'suspicious' ? 'rgba(234,88,12,0.1)' : 'rgba(22,163,74,0.1)',
+                                  color: sample.label === 'suspicious' ? '#c2410c' : '#166534',
                                   whiteSpace: 'nowrap',
                                 }}
                               >
-                                {sample.label === 'fake' ? '🚩 Fake' : '✅ Genuine'}
+                                {sample.label === 'suspicious' ? '⚠️ Suspicious' : '✓ Credible'}
                               </span>
                             </td>
 
                             {/* Notes */}
-                            <td>
-                              <span style={{ fontSize: '0.8rem', color: 'var(--ss-dashboard-muted)', fontStyle: sample.notes ? 'normal' : 'italic' }}>
+                            <td style={{ maxWidth: 180 }}>
+                              <span
+                                title={sample.notes || undefined}
+                                style={{
+                                  display: 'block',
+                                  fontSize: '0.8rem',
+                                  color: 'var(--ss-dashboard-muted)',
+                                  fontStyle: sample.notes ? 'normal' : 'italic',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                  cursor: sample.notes ? 'help' : 'default',
+                                }}
+                              >
                                 {sample.notes || '—'}
                               </span>
                             </td>
 
                             {/* Date */}
-                            <td style={{ whiteSpace: 'nowrap', fontSize: '0.8rem', color: '#94a3b8' }}>
+                            <td style={{ whiteSpace: 'nowrap', fontSize: '0.8rem', color: 'var(--ss-dashboard-muted)' }}>
                               {relativeTime(sample.createdAt)}
                             </td>
 
@@ -853,14 +935,13 @@ function AdminTraining() {
 
         {/* ── Sticky Train Model Bar ───────────────────────────────── */}
         <div
+          className="ss-train-sticky-bar"
           style={{
             position: 'sticky',
             bottom: 0,
             zIndex: 40,
-            background: 'rgba(255,255,255,0.96)',
             backdropFilter: 'blur(12px)',
             WebkitBackdropFilter: 'blur(12px)',
-            borderTop: '1px solid rgba(148,163,184,0.18)',
             padding: '0.85rem 0',
           }}
         >
@@ -933,7 +1014,7 @@ function AdminTraining() {
 
       <DashboardFooter />
 
-      {/* Inline keyframes */}
+      {/* Inline keyframes + dark mode vars */}
       <style>{`
         @keyframes ssTrainToastIn {
           from { opacity: 0; transform: translateY(12px) scale(0.96); }
@@ -943,9 +1024,22 @@ function AdminTraining() {
           0%, 100% { background-position: 200% 0; }
           50%       { background-position: -200% 0; }
         }
+        :root {
+          --ss-train-tab-bg: #fff;
+        }
+        .ss-train-sticky-bar {
+          background: rgba(255,255,255,0.96);
+          border-top: 1px solid rgba(148,163,184,0.18);
+        }
+        body.ss-theme-dark {
+          --ss-train-tab-bg: rgba(30,41,59,0.92);
+        }
         body.ss-theme-dark .ss-train-sticky-bar {
           background: rgba(15,23,42,0.96);
           border-top-color: rgba(148,163,184,0.22);
+        }
+        body.ss-theme-dark .ss-train-tab-pill {
+          background: rgba(148,163,184,0.12);
         }
       `}</style>
     </div>

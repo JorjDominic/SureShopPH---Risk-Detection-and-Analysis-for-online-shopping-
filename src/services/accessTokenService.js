@@ -24,7 +24,6 @@ const KEY_ALPHABET = '23456789ABCDEFGHJKMNPQRSTVWXYZ';
 
 const getCrypto = () => {
   if (typeof window !== 'undefined' && window.crypto) return window.crypto;
-  if (typeof self !== 'undefined' && self.crypto) return self.crypto;
   return null;
 };
 

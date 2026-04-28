@@ -32,7 +32,7 @@ function ScanDetailsPage() {
     setScanLoading(true);
 
     supabase
-      .from('scans')
+      .from('scan_history')
       .select('*')
       .eq('id', id)
       .eq('user_id', user.id)
@@ -151,8 +151,8 @@ function ScanDetailsPage() {
 
                   <div className="udb-detail-grid">
                     <div className="udb-detail-item">
-                      <label>Scan Type</label>
-                      <span>{scan.scan_type ? scan.scan_type.charAt(0).toUpperCase() + scan.scan_type.slice(1) : '—'}</span>
+                      <label>Scan Mode</label>
+                      <span>{scan.scan_mode ? scan.scan_mode.charAt(0).toUpperCase() + scan.scan_mode.slice(1) : '—'}</span>
                     </div>
                     <div className="udb-detail-item">
                       <label>Scanned On</label>
@@ -170,7 +170,7 @@ function ScanDetailsPage() {
             </div>
 
             {/* Analysis details */}
-            {(scan.notes || scan.flags || scan.confidence_score != null) && (
+            {(scan.notes || scan.flags || scan.confidence_pct != null) && (
               <div className="ss-dashboard-section">
                 <div className="container">
                   <div className="ss-dashboard-section-heading">
@@ -180,14 +180,14 @@ function ScanDetailsPage() {
                     </div>
                   </div>
                   <div className="ss-dashboard-panel">
-                    {scan.confidence_score != null && (
+                    {scan.confidence_pct != null && (
                       <div style={{ marginBottom: '1.25rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', color: 'var(--ss-dashboard-muted)', marginBottom: 6 }}>
                           <span>Confidence</span>
-                          <strong style={{ color: 'var(--ss-dashboard-text)' }}>{scan.confidence_score}%</strong>
+                          <strong style={{ color: 'var(--ss-dashboard-text)' }}>{scan.confidence_pct}%</strong>
                         </div>
                         <div className="ss-dashboard-meter">
-                          <span style={{ width: `${scan.confidence_score}%`, background: 'var(--ss-dashboard-blue)' }} />
+                          <span style={{ width: `${scan.confidence_pct}%`, background: 'var(--ss-dashboard-blue)' }} />
                         </div>
                       </div>
                     )}

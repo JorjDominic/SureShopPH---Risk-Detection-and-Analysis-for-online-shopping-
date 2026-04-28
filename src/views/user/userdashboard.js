@@ -48,8 +48,8 @@ function UserDashboard() {
       try {
         const [scansRes, tokenRes] = await Promise.all([
           supabase
-            .from('scans')
-            .select('risk_level, scan_type, product_name, created_at, id')
+            .from('scan_history')
+            .select('risk_level, scan_mode, url, created_at, id')
             .eq('user_id', currentUser.id)
             .order('created_at', { ascending: false })
             .limit(50),
@@ -429,9 +429,9 @@ function UserDashboard() {
                     <tbody>
                       {recentScans.map((scan) => (
                         <tr key={scan.id}>
-                          <td>{scan.scan_type ? scan.scan_type.charAt(0).toUpperCase() + scan.scan_type.slice(1) : '—'}</td>
+                          <td>{scan.scan_mode ? scan.scan_mode.charAt(0).toUpperCase() + scan.scan_mode.slice(1) : '—'}</td>
                           <td style={{ maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {scan.product_name || '—'}
+                            {scan.url || '—'}
                           </td>
                           <td>
                             <span className={`ss-dashboard-risk ${riskClass(scan.risk_level)}`}>

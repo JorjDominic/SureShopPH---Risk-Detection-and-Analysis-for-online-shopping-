@@ -30,8 +30,8 @@ function ScanHistoryPage() {
 
   const loadScans = useCallback(async (currentUser, pageNum, riskFilter) => {
     let query = supabase
-      .from('scans')
-      .select('id, scan_type, product_name, risk_level, created_at')
+      .from('scan_history')
+      .select('id, scan_mode, url, platform, risk_score, risk_level, created_at')
       .eq('user_id', currentUser.id)
       .order('created_at', { ascending: false })
       .range(pageNum * PAGE_SIZE, pageNum * PAGE_SIZE + PAGE_SIZE);
@@ -175,9 +175,9 @@ function ScanHistoryPage() {
                       {scans.map((scan, i) => (
                         <tr key={scan.id}>
                           <td style={{ color: '#94a3b8', fontSize: '0.8rem' }}>{i + 1}</td>
-                          <td>{scan.scan_type ? scan.scan_type.charAt(0).toUpperCase() + scan.scan_type.slice(1) : '—'}</td>
+                          <td>{scan.scan_mode ? scan.scan_mode.charAt(0).toUpperCase() + scan.scan_mode.slice(1) : '—'}</td>
                           <td style={{ maxWidth: 260, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {scan.product_name || '—'}
+                            {scan.url || '—'}
                           </td>
                           <td>
                             <span className={`ss-dashboard-risk ${riskClass(scan.risk_level)}`}>

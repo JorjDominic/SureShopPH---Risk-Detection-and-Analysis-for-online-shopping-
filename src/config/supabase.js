@@ -6,7 +6,6 @@ const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY || 'sb_publishab
 const withSupabaseHeaders = (headers = {}) => {
 	const normalized = new Headers(headers)
 	if (!normalized.has('apikey')) normalized.set('apikey', supabaseAnonKey)
-	if (!normalized.has('Authorization')) normalized.set('Authorization', `Bearer ${supabaseAnonKey}`)
 	return normalized
 }
 
@@ -30,7 +29,6 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 	global: {
 		headers: {
 			apikey: supabaseAnonKey,
-			Authorization: `Bearer ${supabaseAnonKey}`,
 		},
 		fetch: supabaseFetch,
 	},

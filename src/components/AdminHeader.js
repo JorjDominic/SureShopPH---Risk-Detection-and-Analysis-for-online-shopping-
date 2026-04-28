@@ -65,6 +65,9 @@ function AdminHeader({ user, onLogout, logoutBusy }) {
               <Link to="/admin/logs" className={isActive('/admin/logs') ? 'active' : ''}>
                 Logs
               </Link>
+              <Link to="/admin/training" className={isActive('/admin/training') ? 'active' : ''}>
+                Training
+              </Link>
               <Link to="/admin/settings" className={isActive('/admin/settings') ? 'active' : ''}>
                 Settings
               </Link>

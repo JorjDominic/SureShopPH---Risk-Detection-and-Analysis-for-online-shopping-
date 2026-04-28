@@ -19,6 +19,7 @@ import AdminReports from './views/admin/adminReports';
 import AdminBlacklist from './views/admin/adminBlacklist';
 import AdminLogs from './views/admin/adminLogs';
 import AdminSettings from './views/admin/adminSettings';
+import AdminTraining from './views/admin/adminTraining';
 import { getCurrentSession, onAuthStateChange } from './services/authService';
 
 const hasOAuthParamsInUrl = () => {
@@ -566,6 +567,7 @@ function App() {
         <Route path="/admin/blacklist" element={<AdminRoute session={session}><AdminBlacklist /></AdminRoute>} />
         <Route path="/admin/logs" element={<AdminRoute session={session}><AdminLogs /></AdminRoute>} />
         <Route path="/admin/settings" element={<AdminRoute session={session}><AdminSettings /></AdminRoute>} />
+        <Route path="/admin/training" element={<AdminRoute session={session}><AdminTraining /></AdminRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 

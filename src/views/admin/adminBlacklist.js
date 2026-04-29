@@ -7,7 +7,7 @@ import AdminHeader from '../../components/AdminHeader';
 import DashboardFooter from '../../components/DashboardFooter';
 import '../../styles/dashboard.css';
 
-function AdminBlacklist() {
+function AdminFlaggedUrls() {
   const navigate = useNavigate();
 
   const [user, setUser] = useState(null);
@@ -68,15 +68,15 @@ function AdminBlacklist() {
     setFlagBusy(true);
     setFlagAlert(null);
 
-    const { error } = await supabase.from('blacklist').upsert(
-      { url, reason: flagReason.trim() || 'Manual admin override', flagged_by: user.id },
+    const { error } = await supabase.from('flagged_urls').upsert(
+      { url, reason: flagReason.trim() || 'Manual admin flag', flagged_by: user.id },
       { onConflict: 'url' }
     );
 
     if (error) {
-      setFlagAlert({ type: 'error', message: error.message || 'Could not add to blacklist. Ensure the blacklist table exists.' });
+      setFlagAlert({ type: 'error', message: error.message || 'Could not save flag. Ensure the flagged_urls table exists.' });
     } else {
-      setFlagAlert({ type: 'success', message: `\u201c${url}\u201d has been hard-flagged.` });
+      setFlagAlert({ type: 'success', message: `“${url}” has been flagged as high risk.` });
       setFlagUrl('');
       setFlagReason('');
     }
@@ -110,8 +110,8 @@ function AdminBlacklist() {
           <div className="container">
             <div className="ss-dashboard-section-heading">
               <div>
-                <p className="ss-dashboard-eyebrow">Admin &rsaquo; Blacklist</p>
-                <h2>Blacklist Manager</h2>
+                <p className="ss-dashboard-eyebrow">Admin &rsaquo; Flagged URLs</p>
+                <h2>High-Risk URL Registry</h2>
               </div>
               <p style={{ alignSelf: 'center', color: 'var(--ss-dashboard-muted)', fontSize: '0.9rem' }}>
                 {highRiskScans.length} high-risk record{highRiskScans.length !== 1 ? 's' : ''}
@@ -124,9 +124,9 @@ function AdminBlacklist() {
         <div className="ss-dashboard-section" style={{ paddingTop: 0 }}>
           <div className="container">
             <div className="ss-dashboard-panel">
-              <p className="ss-dashboard-eyebrow" style={{ marginBottom: '0.6rem' }}>Manual Override</p>
+              <p className="ss-dashboard-eyebrow" style={{ marginBottom: '0.6rem' }}>Manual Flag</p>
               <h3 style={{ color: 'var(--ss-dashboard-text)', marginBottom: '1rem', fontFamily: 'var(--font-display)' }}>
-                Hard-Flag a URL or Seller
+                Flag a URL as High Risk
               </h3>
 
               <div ref={alertRef}>
@@ -144,13 +144,13 @@ function AdminBlacklist() {
               <form onSubmit={handleHardFlag} style={{ display: 'grid', gap: '1rem', maxWidth: 560 }}>
                 <div className="udb-form-group">
                   <label htmlFor="flag-url" style={{ display: 'block', marginBottom: '0.4rem', fontWeight: 600, fontSize: '0.85rem' }}>
-                    URL or Seller ID *
+                    URL *
                   </label>
                   <input
                     id="flag-url"
                     type="text"
                     className="udb-form-input"
-                    placeholder="https://shopee.ph/seller/... or seller ID"
+                    placeholder="https://shopee.ph/product/..."
                     value={flagUrl}
                     onChange={(e) => setFlagUrl(e.target.value)}
                     required
@@ -164,7 +164,7 @@ function AdminBlacklist() {
                     id="flag-reason"
                     type="text"
                     className="udb-form-input"
-                    placeholder="e.g. Confirmed scam, repeat offender&hellip;"
+                    placeholder="e.g. Confirmed scam pattern, elevated risk signals&hellip;"
                     value={flagReason}
                     onChange={(e) => setFlagReason(e.target.value)}
                   />
@@ -176,7 +176,7 @@ function AdminBlacklist() {
                     className="ss-dashboard-btn ss-dashboard-btn-primary"
                     style={{ minHeight: 42 }}
                   >
-                    <i className="fas fa-ban" style={{ marginRight: '0.45rem' }}></i>
+                    <i className="fas fa-flag" style={{ marginRight: '0.45rem' }}></i>
                     {flagBusy ? 'Adding\u2026' : 'Hard-Flag This URL'}
                   </button>
                 </div>
@@ -270,4 +270,4 @@ function AdminBlacklist() {
   );
 }
 
-export default AdminBlacklist;
+export default AdminFlaggedUrls;

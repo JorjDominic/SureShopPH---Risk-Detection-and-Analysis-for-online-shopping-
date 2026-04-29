@@ -220,14 +220,13 @@ function AdminDashboard() {
         const { data: typeRows } = await supabase.from('scans').select('scan_type');
         if (!active) return;
 
-        const counts = { product: 0, seller: 0, url: 0 };
+        const counts = { product: 0, url: 0 };
         for (const row of (typeRows ?? [])) {
           const t = row.scan_type?.toLowerCase();
           if (t in counts) counts[t]++;
         }
         setTypeSegments([
           { label: 'Product', value: counts.product, color: '#0ea5a4' },
-          { label: 'Seller', value: counts.seller, color: '#f97316' },
           { label: 'URL / Site', value: counts.url, color: '#2563eb' },
         ]);
       } catch {
@@ -290,8 +289,8 @@ function AdminDashboard() {
                 <Link to="/admin/reports" className="ss-dashboard-btn ss-dashboard-btn-secondary" style={{ minHeight: 40 }}>
                   <i className="fas fa-flag" style={{ marginRight: '0.4rem' }}></i>Reports
                 </Link>
-                <Link to="/admin/blacklist" className="ss-dashboard-btn ss-dashboard-btn-primary" style={{ minHeight: 40 }}>
-                  <i className="fas fa-ban" style={{ marginRight: '0.4rem' }}></i>Blacklist
+                <Link to="/admin/flagged" className="ss-dashboard-btn ss-dashboard-btn-primary" style={{ minHeight: 40 }}>
+                  <i className="fas fa-flag" style={{ marginRight: '0.4rem' }}></i>Flagged URLs
                 </Link>
               </div>
             </div>
@@ -410,8 +409,8 @@ function AdminDashboard() {
                 <p className="ss-dashboard-eyebrow">Live Feed</p>
                 <h2>Recent Scan Activity</h2>
               </div>
-              <Link to="/admin/blacklist" className="ss-dashboard-btn ss-dashboard-btn-secondary" style={{ alignSelf: 'center', minHeight: 38 }}>
-                View Blacklist
+              <Link to="/admin/flagged" className="ss-dashboard-btn ss-dashboard-btn-secondary" style={{ alignSelf: 'center', minHeight: 38 }}>
+                View Flagged URLs
               </Link>
             </div>
             <div className="ss-dashboard-panel">
@@ -487,13 +486,13 @@ function AdminDashboard() {
                 <h3>Report Queue</h3>
                 <p>Review user false-positive disputes</p>
               </Link>
-              <Link to="/admin/blacklist" className="ss-dashboard-action-card">
+              <Link to="/admin/flagged" className="ss-dashboard-action-card">
                 <div className="ss-dashboard-action-top">
                   <span className="ss-dashboard-action-icon"><DashboardIcon type="warning" /></span>
                   <span className="ss-dashboard-action-badge">DB</span>
                 </div>
-                <h3>Blacklist Manager</h3>
-                <p>Hard-flag high-risk URLs &amp; sellers</p>
+                <h3>High-Risk Registry</h3>
+                <p>Review URLs flagged as high risk</p>
               </Link>
               <Link to="/admin/logs" className="ss-dashboard-action-card">
                 <div className="ss-dashboard-action-top">

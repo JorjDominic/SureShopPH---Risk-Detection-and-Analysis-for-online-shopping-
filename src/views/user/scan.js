@@ -101,7 +101,6 @@ function ScanPage() {
                   onChange={(e) => setScanType(e.target.value)}
                 >
                   <option value="product">Product Listing</option>
-                  <option value="seller">Seller Profile</option>
                   <option value="url">Website / URL</option>
                 </select>
               </div>
@@ -203,8 +202,8 @@ function ScanPage() {
               <article>
                 <span><i className="fas fa-user-shield"></i></span>
                 <div>
-                  <h3>Seller Assessment</h3>
-                  <p>Evaluates account age, response rate, and rating patterns for red flags.</p>
+                  <h3>Seller Signals</h3>
+                  <p>Seller account age, response rate, and rating patterns are analyzed as risk factors within each listing scan.</p>
                 </div>
               </article>
               <article>

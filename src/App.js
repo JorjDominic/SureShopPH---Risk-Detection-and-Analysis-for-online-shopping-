@@ -16,7 +16,7 @@ import ResetPassword from './views/resetPassword';
 import PrivacyPolicy from './views/privacyPolicy';
 import AdminDashboard from './views/admin/admindashboard';
 import AdminReports from './views/admin/adminReports';
-import AdminBlacklist from './views/admin/adminBlacklist';
+import AdminFlaggedUrls from './views/admin/adminBlacklist';
 import AdminLogs from './views/admin/adminLogs';
 import AdminSettings from './views/admin/adminSettings';
 import AdminTraining from './views/admin/adminTraining';
@@ -151,7 +151,7 @@ function LandingPage({ session }) {
                   <div className="ss-landing-kicker">AI-Powered Risk Detection and Analysis for Filipino Shoppers</div>
                   <h1 className="ss-landing-hero-title">Shop <span className="ss-hero-highlight">Smarter</span>. Stay Protected.</h1>
                   <p className="ss-landing-hero-subtitle">
-                    SureshopPH analyzes listings, sellers, and URLs in real-time to help you identify
+                    SureshopPH analyzes listings and URLs in real-time to help you identify
                     fraudulent activity before you buy — powered by localized AI built for the Philippine
                     e-commerce environment.
                   </p>
@@ -196,11 +196,11 @@ function LandingPage({ session }) {
                   </div>
                   <div className="ss-landing-glass-card ss-landing-glass-alert">
                     <i className="fas fa-triangle-exclamation"></i>
-                    Suspicious seller account detected — registered 3 days ago
+                    New seller account detected — registered 3 days ago
                   </div>
                   <div className="ss-landing-glass-card ss-landing-glass-safe">
                     <i className="fas fa-circle-check"></i>
-                    Seller verified — high ratings and response rate
+                    Seller signal: high ratings and response rate
                   </div>
                 </div>
               </div>
@@ -250,8 +250,8 @@ function LandingPage({ session }) {
                 <div className="ss-landing-feature-icon">
                   <i className="fas fa-user-shield"></i>
                 </div>
-                <h3>Seller Assessment</h3>
-                <p>Evaluates seller account age, response rate, and aggregate ratings to surface fraudulent or newly created seller profiles.</p>
+                <h3>Seller Signals</h3>
+                <p>Seller account age, response rate, and aggregate ratings are evaluated as risk factors within each listing analysis — not a standalone scan target.</p>
               </div>
               <div className="ss-landing-feature-card ss-reveal" data-chip="Taglish NLP">
                 <div className="ss-landing-feature-icon">
@@ -553,7 +553,6 @@ function App() {
         <Route path="/social/discord" element={<InfoPage title="Discord" subtitle="Official social profiles are not yet public. This placeholder prevents dead links during deployment." session={session} />} />
         <Route path="/social/linkedin" element={<InfoPage title="LinkedIn" subtitle="Official social profiles are not yet public. This placeholder prevents dead links during deployment." session={session} />} />
         <Route path="/tools/url-scan" element={<InfoPage title="URL Scan" subtitle="The URL scan tool UI is coming soon. This placeholder keeps navigation working in production." session={session} />} />
-        <Route path="/tools/seller-check" element={<InfoPage title="Seller Check" subtitle="The seller assessment tool UI is coming soon. This placeholder keeps navigation working in production." session={session} />} />
         <Route path="/tools/saved-warnings" element={<InfoPage title="Saved Warnings" subtitle="Saved warning history is coming soon. This placeholder keeps navigation working in production." session={session} />} />
         <Route path="/tools/account-settings" element={<Navigate to="/settings" replace />} />
         <Route path="/userdashboard" element={<ProtectedRoute session={session}><UserDashboard /></ProtectedRoute>} />
@@ -564,7 +563,7 @@ function App() {
         <Route path="/admindashboard" element={<Navigate to="/admin" replace />} />
         <Route path="/admin" element={<AdminRoute session={session}><AdminDashboard /></AdminRoute>} />
         <Route path="/admin/reports" element={<AdminRoute session={session}><AdminReports /></AdminRoute>} />
-        <Route path="/admin/blacklist" element={<AdminRoute session={session}><AdminBlacklist /></AdminRoute>} />
+        <Route path="/admin/flagged" element={<AdminRoute session={session}><AdminFlaggedUrls /></AdminRoute>} />
         <Route path="/admin/logs" element={<AdminRoute session={session}><AdminLogs /></AdminRoute>} />
         <Route path="/admin/settings" element={<AdminRoute session={session}><AdminSettings /></AdminRoute>} />
         <Route path="/admin/training" element={<AdminRoute session={session}><AdminTraining /></AdminRoute>} />

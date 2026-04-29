@@ -178,9 +178,10 @@ function PrivacyPolicy({ session }) {
                     providers are contractually bound to process data only as instructed by us.
                   </li>
                   <li>
-                    <strong>Community Blacklist:</strong> URLs or sellers flagged by our system and
-                    confirmed as high-risk may appear in our public high-risk database in
+                    <strong>High-Risk URL Registry:</strong> URLs flagged by our system and
+                    confirmed as elevated risk may appear in our internal high-risk registry in
                     anonymized, aggregated form — no personally identifiable information is included.
+                    This registry informs our risk-scoring model and is not used to block access.
                   </li>
                   <li>
                     <strong>Legal Compliance:</strong> We may disclose information if required by

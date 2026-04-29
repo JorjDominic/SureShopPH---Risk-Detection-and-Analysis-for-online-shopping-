@@ -209,7 +209,7 @@ function UserDashboard() {
                   <span className="ss-dashboard-action-badge">New</span>
                 </div>
                 <h3>New Scan</h3>
-                <p>Scan a website, product, or seller</p>
+                <p>Scan a website or product listing</p>
               </Link>
               <Link to="/scan-history" className="ss-dashboard-action-card">
                 <div className="ss-dashboard-action-top">

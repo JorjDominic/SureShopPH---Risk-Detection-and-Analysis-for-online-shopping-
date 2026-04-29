@@ -59,8 +59,8 @@ function AdminHeader({ user, onLogout, logoutBusy }) {
               <Link to="/admin/reports" className={isActive('/admin/reports') ? 'active' : ''}>
                 Reports
               </Link>
-              <Link to="/admin/blacklist" className={isActive('/admin/blacklist') ? 'active' : ''}>
-                Blacklist
+              <Link to="/admin/flagged" className={isActive('/admin/flagged') ? 'active' : ''}>
+                Flagged
               </Link>
               <Link to="/admin/logs" className={isActive('/admin/logs') ? 'active' : ''}>
                 Logs

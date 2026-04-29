@@ -2,13 +2,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
-import { logoutUser } from '../../services/authService';
 import {
   generateActivationKey,
   revokeAllActivationKeys,
 } from '../../services/accessTokenService';
-import DashboardHeader from '../../components/DashboardHeader';
-import DashboardFooter from '../../components/DashboardFooter';
 import DashboardIcon from '../../components/DashboardIcon';
 import '../../styles/dashboard.css';
 
@@ -21,7 +18,6 @@ function UserDashboard() {
   const [stats, setStats] = useState({ total: 0, highRisk: 0, protected: 0 });
   const [recentScans, setRecentScans] = useState([]);
   const [extensionActive, setExtensionActive] = useState(false);
-  const [logoutBusy, setLogoutBusy] = useState(false);
   const [keyBusy, setKeyBusy] = useState(false);
   const [keyError, setKeyError] = useState(null);
   const [generatedKey, setGeneratedKey] = useState(null);
@@ -92,12 +88,6 @@ function UserDashboard() {
       'Shopper';
     return name.charAt(0).toUpperCase() + name.slice(1);
   }, [user]);
-
-  const handleLogout = async () => {
-    setLogoutBusy(true);
-    await logoutUser();
-    navigate('/login');
-  };
 
   const handleGenerateKey = async () => {
     setKeyError(null);

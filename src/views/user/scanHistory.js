@@ -1,22 +1,17 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
-import { logoutUser } from '../../services/authService';
-import DashboardHeader from '../../components/DashboardHeader';
-import DashboardFooter from '../../components/DashboardFooter';
 import '../../styles/dashboard.css';
 
 const PAGE_SIZE = 20;
 
 function ScanHistoryPage() {
-  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [scans, setScans] = useState([]);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(false);
   const [filter, setFilter] = useState('all');
-  const [logoutBusy, setLogoutBusy] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -66,12 +61,6 @@ function ScanHistoryPage() {
     setScans((prev) => [...prev, ...more]);
     setPage(nextPage);
     setHasMore(more.length === PAGE_SIZE);
-  };
-
-  const handleLogout = async () => {
-    setLogoutBusy(true);
-    await logoutUser();
-    navigate('/login');
   };
 
   const formatDate = (iso) => {

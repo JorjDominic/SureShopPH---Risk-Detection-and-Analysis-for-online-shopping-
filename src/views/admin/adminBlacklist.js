@@ -1,19 +1,14 @@
 
 import { useEffect, useRef, useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
-import { logoutUser } from '../../services/authService';
-import AdminHeader from '../../components/AdminHeader';
+
 import AdminSubNav, { MODERATION_TABS } from '../../components/AdminSubNav';
-import DashboardFooter from '../../components/DashboardFooter';
 import '../../styles/dashboard.css';
 
 function AdminFlaggedUrls() {
-  const navigate = useNavigate();
-
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [logoutBusy, setLogoutBusy] = useState(false);
 
   const [highRiskScans, setHighRiskScans] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -84,12 +79,6 @@ function AdminFlaggedUrls() {
 
     setFlagBusy(false);
     alertRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  };
-
-  const handleLogout = async () => {
-    setLogoutBusy(true);
-    await logoutUser();
-    navigate('/login');
   };
 
   const formatDate = (iso) =>

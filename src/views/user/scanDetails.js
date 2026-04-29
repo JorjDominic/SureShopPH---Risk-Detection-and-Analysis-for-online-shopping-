@@ -1,20 +1,15 @@
 import { useEffect, useState } from 'react';
-import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useParams } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
-import { logoutUser } from '../../services/authService';
-import DashboardHeader from '../../components/DashboardHeader';
-import DashboardFooter from '../../components/DashboardFooter';
 import '../../styles/dashboard.css';
 
 function ScanDetailsPage() {
   const { id } = useParams();
-  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [scan, setScan] = useState(null);
   const [scanLoading, setScanLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [logoutBusy, setLogoutBusy] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -46,12 +41,6 @@ function ScanDetailsPage() {
 
     return () => { active = false; };
   }, [user, id]);
-
-  const handleLogout = async () => {
-    setLogoutBusy(true);
-    await logoutUser();
-    navigate('/login');
-  };
 
   const formatDate = (iso) => {
     if (!iso) return '—';

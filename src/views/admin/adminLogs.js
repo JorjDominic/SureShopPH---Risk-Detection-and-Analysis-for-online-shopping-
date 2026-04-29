@@ -1,19 +1,14 @@
 
 import { useCallback, useEffect, useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
-import { logoutUser } from '../../services/authService';
-import AdminHeader from '../../components/AdminHeader';
+
 import AdminSubNav, { TRAINING_TABS } from '../../components/AdminSubNav';
-import DashboardFooter from '../../components/DashboardFooter';
 import '../../styles/dashboard.css';
 
 function AdminLogs() {
-  const navigate = useNavigate();
-
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [logoutBusy, setLogoutBusy] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   const [nlpFeed, setNlpFeed] = useState([]);
@@ -67,12 +62,6 @@ function AdminLogs() {
     setRefreshing(true);
     await loadData();
     setRefreshing(false);
-  };
-
-  const handleLogout = async () => {
-    setLogoutBusy(true);
-    await logoutUser();
-    navigate('/login');
   };
 
   const formatDate = (iso) =>

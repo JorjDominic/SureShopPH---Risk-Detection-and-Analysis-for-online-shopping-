@@ -3,8 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
 import { logoutUser } from '../../services/authService';
-import AdminHeader from '../../components/AdminHeader';
-import DashboardFooter from '../../components/DashboardFooter';
+
 import '../../styles/dashboard.css';
 
 function AdminSettings() {

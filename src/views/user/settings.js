@@ -1,16 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
-import { logoutUser } from '../../services/authService';
-import DashboardHeader from '../../components/DashboardHeader';
-import DashboardFooter from '../../components/DashboardFooter';
 import '../../styles/dashboard.css';
 
 function SettingsPage() {
-  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [logoutBusy, setLogoutBusy] = useState(false);
 
   const [displayName, setDisplayName] = useState('');
   const [savingProfile, setSavingProfile] = useState(false);
@@ -40,12 +35,6 @@ function SettingsPage() {
     });
     return () => { active = false; };
   }, []);
-
-  const handleLogout = async () => {
-    setLogoutBusy(true);
-    await logoutUser();
-    navigate('/login');
-  };
 
   const handleSaveProfile = async (e) => {
     e.preventDefault();

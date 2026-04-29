@@ -1,10 +1,8 @@
 
 import { useEffect, useState } from 'react';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
-import { logoutUser } from '../../services/authService';
-import AdminHeader from '../../components/AdminHeader';
-import DashboardFooter from '../../components/DashboardFooter';
+
 import DashboardIcon from '../../components/DashboardIcon';
 import '../../styles/dashboard.css';
 
@@ -150,10 +148,8 @@ function DonutChart({ segments }) {
 
 /* ── Main admin dashboard ─────────────────────────────────── */
 function AdminDashboard() {
-  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [logoutBusy, setLogoutBusy] = useState(false);
 
   const [kpis, setKpis] = useState({ total: 0, highRisk: 0, pendingReports: 0 });
   const [trendData, setTrendData] = useState([]);
@@ -239,12 +235,6 @@ function AdminDashboard() {
     load();
     return () => { active = false; };
   }, []);
-
-  const handleLogout = async () => {
-    setLogoutBusy(true);
-    await logoutUser();
-    navigate('/login');
-  };
 
   const formatDate = (iso) => {
     if (!iso) return '\u2014';

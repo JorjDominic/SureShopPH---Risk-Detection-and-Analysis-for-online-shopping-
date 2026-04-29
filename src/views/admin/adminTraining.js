@@ -1,10 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
-import { logoutUser } from '../../services/authService';
-import AdminHeader from '../../components/AdminHeader';
+
 import AdminSubNav, { TRAINING_TABS } from '../../components/AdminSubNav';
-import DashboardFooter from '../../components/DashboardFooter';
 import '../../styles/dashboard.css';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -268,12 +266,9 @@ function HealthPill({ ok, redWhenBad = false, okLabel, badLabel, title }) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 function AdminTraining() {
-  const navigate = useNavigate();
-
   // Auth
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
-  const [logoutBusy, setLogoutBusy] = useState(false);
 
   // Page loading skeleton
   const [pageReady, setPageReady] = useState(false);
@@ -327,12 +322,6 @@ function AdminTraining() {
 
     return () => { active = false; };
   }, []);
-
-  const handleLogout = async () => {
-    setLogoutBusy(true);
-    await logoutUser();
-    navigate('/login');
-  };
 
   // Ctrl+Enter submit
   const handleTextareaKeyDown = (e) => {

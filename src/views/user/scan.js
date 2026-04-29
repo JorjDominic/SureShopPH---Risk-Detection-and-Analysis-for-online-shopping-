@@ -1,16 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
-import { logoutUser } from '../../services/authService';
-import DashboardHeader from '../../components/DashboardHeader';
-import DashboardFooter from '../../components/DashboardFooter';
 import '../../styles/dashboard.css';
 
 function ScanPage() {
-  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [logoutBusy, setLogoutBusy] = useState(false);
   const [url, setUrl] = useState('');
   const [scanType, setScanType] = useState('product');
   const [scanning, setScanning] = useState(false);
@@ -26,12 +21,6 @@ function ScanPage() {
     });
     return () => { active = false; };
   }, []);
-
-  const handleLogout = async () => {
-    setLogoutBusy(true);
-    await logoutUser();
-    navigate('/login');
-  };
 
   const handleScan = async (e) => {
     e.preventDefault();

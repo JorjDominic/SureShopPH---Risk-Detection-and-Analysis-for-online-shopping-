@@ -1,25 +1,20 @@
 
 import { useCallback, useEffect, useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
-import { logoutUser } from '../../services/authService';
-import AdminHeader from '../../components/AdminHeader';
+
 import AdminSubNav, { MODERATION_TABS } from '../../components/AdminSubNav';
-import DashboardFooter from '../../components/DashboardFooter';
 import '../../styles/dashboard.css';
 
 const FILTERS = ['All', 'Pending', 'Verified', 'Dismissed'];
 
 function AdminReports() {
-  const navigate = useNavigate();
-
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [reports, setReports] = useState([]);
   const [filter, setFilter] = useState('All');
   const [busyId, setBusyId] = useState(null);
   const [noTable, setNoTable] = useState(false);
-  const [logoutBusy, setLogoutBusy] = useState(false);
 
   const loadReports = useCallback(async () => {
     let query = supabase
@@ -64,12 +59,6 @@ function AdminReports() {
       prev.map((r) => (r.id === id ? { ...r, status: newStatus } : r))
     );
     setBusyId(null);
-  };
-
-  const handleLogout = async () => {
-    setLogoutBusy(true);
-    await logoutUser();
-    navigate('/login');
   };
 
   const formatDate = (iso) =>

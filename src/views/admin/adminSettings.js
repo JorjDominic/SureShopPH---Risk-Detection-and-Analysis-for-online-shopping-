@@ -122,8 +122,6 @@ function AdminSettings() {
 
   return (
     <div className="ss-dashboard-page">
-      <AdminHeader user={user} onLogout={handleLogout} logoutBusy={logoutBusy} />
-
       <main className="ss-dashboard-main">
 
         {/* Header */}
@@ -340,6 +338,153 @@ function AdminSettings() {
           </div>
         </div>
 
+        {/* User Management (frontend stub) */}
+        <div className="ss-dashboard-section" style={{ paddingTop: 0 }}>
+          <div className="container">
+            <div className="ss-dashboard-panel">
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', marginBottom: '1rem' }}>
+                <div>
+                  <p className="ss-dashboard-eyebrow" style={{ marginBottom: '0.5rem' }}>Platform</p>
+                  <h3 style={{ color: 'var(--ss-dashboard-text)', marginBottom: '0.4rem', fontFamily: 'var(--font-display)' }}>
+                    User Management
+                  </h3>
+                  <p style={{ color: 'var(--ss-dashboard-muted)', fontSize: '0.88rem', maxWidth: 560 }}>
+                    Review SureShopPH accounts, change roles, and manage admin access. Backend wiring is pending — actions below are inactive.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="ss-dashboard-btn ss-dashboard-btn-primary"
+                  style={{ minHeight: 40 }}
+                  disabled
+                  title="Backend not yet wired"
+                >
+                  <i className="fas fa-user-plus" style={{ marginRight: '0.4rem' }}></i>
+                  Invite Admin
+                </button>
+              </div>
+
+              {/* Search + filter bar */}
+              <div style={{ display: 'flex', gap: '0.6rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+                <div className="ss-admin-search" style={{ flex: '1 1 240px' }}>
+                  <i className="fas fa-search" style={{ color: '#94a3b8', fontSize: '0.9rem' }}></i>
+                  <input
+                    type="text"
+                    placeholder="Search by name or email\u2026"
+                    disabled
+                  />
+                </div>
+                <select className="udb-form-input" disabled style={{ maxWidth: 180 }}>
+                  <option>All roles</option>
+                  <option>Admin</option>
+                  <option>User</option>
+                </select>
+                <select className="udb-form-input" disabled style={{ maxWidth: 180 }}>
+                  <option>All statuses</option>
+                  <option>Active</option>
+                  <option>Suspended</option>
+                </select>
+              </div>
+
+              {/* Mock table — frontend only */}
+              <div className="ss-dashboard-table-wrap">
+                <table className="ss-dashboard-table">
+                  <thead>
+                    <tr>
+                      <th>User</th>
+                      <th>Email</th>
+                      <th>Role</th>
+                      <th>Status</th>
+                      <th>Joined</th>
+                      <th style={{ minWidth: 160 }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { id: 1, name: 'Maria Santos', email: 'maria.santos@example.ph', role: 'Admin', status: 'Active', joined: 'Mar 12, 2026' },
+                      { id: 2, name: 'Juan Dela Cruz', email: 'juan.delacruz@example.ph', role: 'User', status: 'Active', joined: 'Apr 3, 2026' },
+                      { id: 3, name: 'Andrea Reyes', email: 'andrea.r@example.ph', role: 'User', status: 'Suspended', joined: 'Feb 27, 2026' },
+                      { id: 4, name: 'Mark Villanueva', email: 'mark.v@example.ph', role: 'User', status: 'Active', joined: 'Apr 18, 2026' },
+                      { id: 5, name: 'Luis Tan', email: 'luis.tan@example.ph', role: 'Admin', status: 'Active', joined: 'Jan 8, 2026' },
+                    ].map((u) => (
+                      <tr key={u.id}>
+                        <td style={{ fontWeight: 600, color: 'var(--ss-dashboard-text)' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                            <span
+                              style={{
+                                width: 32, height: 32, borderRadius: '50%',
+                                background: u.role === 'Admin'
+                                  ? 'linear-gradient(135deg, #ef4444, #f97316)'
+                                  : 'linear-gradient(135deg, #0ea5a4, #2563eb)',
+                                color: '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                                fontSize: '0.78rem', fontWeight: 800, flexShrink: 0,
+                              }}
+                            >
+                              {u.name.split(' ').map((n) => n[0]).join('').slice(0, 2)}
+                            </span>
+                            {u.name}
+                          </div>
+                        </td>
+                        <td style={{ fontFamily: 'monospace', fontSize: '0.82rem', color: 'var(--ss-dashboard-muted)' }}>
+                          {u.email}
+                        </td>
+                        <td>
+                          <span
+                            className="ss-dashboard-risk"
+                            style={{
+                              background: u.role === 'Admin' ? 'rgba(239,68,68,0.1)' : 'rgba(14,165,164,0.12)',
+                              color: u.role === 'Admin' ? '#b91c1c' : 'var(--ss-dashboard-teal-dark)',
+                              border: `1px solid ${u.role === 'Admin' ? 'rgba(239,68,68,0.25)' : 'rgba(14,165,164,0.25)'}`,
+                            }}
+                          >
+                            {u.role}
+                          </span>
+                        </td>
+                        <td>
+                          <span className={`ss-dashboard-risk ${u.status === 'Active' ? 'ss-dashboard-risk-low' : 'ss-dashboard-risk-high'}`}>
+                            {u.status}
+                          </span>
+                        </td>
+                        <td style={{ whiteSpace: 'nowrap', fontSize: '0.82rem', color: 'var(--ss-dashboard-muted)' }}>
+                          {u.joined}
+                        </td>
+                        <td>
+                          <div style={{ display: 'flex', gap: '0.4rem' }}>
+                            <button
+                              type="button"
+                              disabled
+                              className="ss-dashboard-btn ss-dashboard-btn-secondary"
+                              style={{ minHeight: 32, padding: '0 0.7rem', fontSize: '0.75rem' }}
+                              title="Backend not yet wired"
+                            >
+                              <i className="fas fa-pen" style={{ marginRight: '0.3rem' }}></i>Edit
+                            </button>
+                            <button
+                              type="button"
+                              disabled
+                              className="ss-dashboard-btn ss-dashboard-btn-secondary"
+                              style={{ minHeight: 32, padding: '0 0.7rem', fontSize: '0.75rem', borderColor: 'rgba(239,68,68,0.3)', color: '#ef4444' }}
+                              title="Backend not yet wired"
+                            >
+                              <i className="fas fa-ban" style={{ marginRight: '0.3rem' }}></i>
+                              {u.status === 'Active' ? 'Suspend' : 'Reinstate'}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <p style={{ fontSize: '0.78rem', color: 'var(--ss-dashboard-muted)', marginTop: '0.85rem', fontStyle: 'italic' }}>
+                <i className="fas fa-circle-info" style={{ marginRight: '0.4rem' }}></i>
+                Showing demo data. Wire to <code>auth.users</code> + a <code>profiles</code> table to enable.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Danger zone */}
         <div className="ss-dashboard-section" style={{ paddingTop: 0 }}>
           <div className="container">
@@ -368,8 +513,6 @@ function AdminSettings() {
         </div>
 
       </main>
-
-      <DashboardFooter />
     </div>
   );
 }

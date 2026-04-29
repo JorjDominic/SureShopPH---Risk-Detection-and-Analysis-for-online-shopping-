@@ -94,8 +94,6 @@ function ScanHistoryPage() {
 
   return (
     <div className="ss-dashboard-page">
-      <DashboardHeader user={user} onLogout={handleLogout} logoutBusy={logoutBusy} />
-
       <main className="ss-dashboard-main">
 
         {/* Page title */}
@@ -222,8 +220,6 @@ function ScanHistoryPage() {
         </div>
 
       </main>
-
-      <DashboardFooter />
     </div>
   );
 }

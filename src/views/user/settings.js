@@ -97,8 +97,6 @@ function SettingsPage() {
 
   return (
     <div className="ss-dashboard-page">
-      <DashboardHeader user={user} onLogout={handleLogout} logoutBusy={logoutBusy} />
-
       <main className="ss-dashboard-main">
 
         {/* Page title */}
@@ -266,8 +264,6 @@ function SettingsPage() {
         </div>
 
       </main>
-
-      <DashboardFooter />
     </div>
   );
 }

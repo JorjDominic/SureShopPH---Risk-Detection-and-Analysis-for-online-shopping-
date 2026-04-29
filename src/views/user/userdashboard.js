@@ -177,8 +177,6 @@ function UserDashboard() {
 
   return (
     <div className="ss-dashboard-page">
-      <DashboardHeader user={user} onLogout={handleLogout} logoutBusy={logoutBusy} />
-
       <main className="ss-dashboard-main">
 
         {/* Welcome */}
@@ -459,8 +457,6 @@ function UserDashboard() {
         </div>
 
       </main>
-
-      <DashboardFooter />
     </div>
   );
 }

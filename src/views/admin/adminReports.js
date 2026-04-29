@@ -90,8 +90,6 @@ function AdminReports() {
 
   return (
     <div className="ss-dashboard-page">
-      <AdminHeader user={user} onLogout={handleLogout} logoutBusy={logoutBusy} />
-
       <main className="ss-dashboard-main">
 
         <AdminSubNav eyebrow="Admin › Moderation" tabs={MODERATION_TABS} />
@@ -206,8 +204,6 @@ function AdminReports() {
         </div>
 
       </main>
-
-      <DashboardFooter />
     </div>
   );
 }

@@ -447,8 +447,6 @@ function AdminTraining() {
       {/* Toast layer */}
       <Toast toasts={toasts} />
 
-      <AdminHeader user={user} onLogout={handleLogout} logoutBusy={logoutBusy} />
-
       <main className="ss-dashboard-main">
 
         <AdminSubNav eyebrow="Admin › Training" tabs={TRAINING_TABS} />
@@ -1461,8 +1459,6 @@ function AdminTraining() {
         </div>
 
       </main>
-
-      <DashboardFooter />
 
       {/* Inline keyframes + dark mode vars */}
       <style>{`

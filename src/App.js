@@ -20,6 +20,8 @@ import AdminFlaggedUrls from './views/admin/adminBlacklist';
 import AdminLogs from './views/admin/adminLogs';
 import AdminSettings from './views/admin/adminSettings';
 import AdminTraining from './views/admin/adminTraining';
+import AdminLayout from './components/AdminLayout';
+import UserLayout from './components/UserLayout';
 import { getCurrentSession, onAuthStateChange } from './services/authService';
 
 const hasOAuthParamsInUrl = () => {
@@ -555,18 +557,24 @@ function App() {
         <Route path="/tools/url-scan" element={<InfoPage title="URL Scan" subtitle="The URL scan tool UI is coming soon. This placeholder keeps navigation working in production." session={session} />} />
         <Route path="/tools/saved-warnings" element={<InfoPage title="Saved Warnings" subtitle="Saved warning history is coming soon. This placeholder keeps navigation working in production." session={session} />} />
         <Route path="/tools/account-settings" element={<Navigate to="/settings" replace />} />
-        <Route path="/userdashboard" element={<ProtectedRoute session={session}><UserDashboard /></ProtectedRoute>} />
-        <Route path="/scan" element={<ProtectedRoute session={session}><ScanPage /></ProtectedRoute>} />
-        <Route path="/scan-history" element={<ProtectedRoute session={session}><ScanHistoryPage /></ProtectedRoute>} />
-        <Route path="/settings" element={<ProtectedRoute session={session}><SettingsPage /></ProtectedRoute>} />
-        <Route path="/scan-details/:id" element={<ProtectedRoute session={session}><ScanDetailsPage /></ProtectedRoute>} />
+        <Route path="/userdashboard" element={<ProtectedRoute session={session}><UserLayout /></ProtectedRoute>}>
+          <Route index element={<UserDashboard />} />
+        </Route>
+        <Route element={<ProtectedRoute session={session}><UserLayout /></ProtectedRoute>}>
+          <Route path="/scan" element={<ScanPage />} />
+          <Route path="/scan-history" element={<ScanHistoryPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/scan-details/:id" element={<ScanDetailsPage />} />
+        </Route>
         <Route path="/admindashboard" element={<Navigate to="/admin" replace />} />
-        <Route path="/admin" element={<AdminRoute session={session}><AdminDashboard /></AdminRoute>} />
-        <Route path="/admin/reports" element={<AdminRoute session={session}><AdminReports /></AdminRoute>} />
-        <Route path="/admin/flagged" element={<AdminRoute session={session}><AdminFlaggedUrls /></AdminRoute>} />
-        <Route path="/admin/logs" element={<AdminRoute session={session}><AdminLogs /></AdminRoute>} />
-        <Route path="/admin/settings" element={<AdminRoute session={session}><AdminSettings /></AdminRoute>} />
-        <Route path="/admin/training" element={<AdminRoute session={session}><AdminTraining /></AdminRoute>} />
+        <Route element={<AdminRoute session={session}><AdminLayout /></AdminRoute>}>
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/reports" element={<AdminReports />} />
+          <Route path="/admin/flagged" element={<AdminFlaggedUrls />} />
+          <Route path="/admin/logs" element={<AdminLogs />} />
+          <Route path="/admin/settings" element={<AdminSettings />} />
+          <Route path="/admin/training" element={<AdminTraining />} />
+        </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 

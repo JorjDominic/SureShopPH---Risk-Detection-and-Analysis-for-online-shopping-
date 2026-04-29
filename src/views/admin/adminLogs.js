@@ -96,8 +96,6 @@ function AdminLogs() {
 
   return (
     <div className="ss-dashboard-page">
-      <AdminHeader user={user} onLogout={handleLogout} logoutBusy={logoutBusy} />
-
       <main className="ss-dashboard-main">
 
         <AdminSubNav eyebrow="Admin › Training" tabs={TRAINING_TABS} />
@@ -256,8 +254,6 @@ function AdminLogs() {
         </div>
 
       </main>
-
-      <DashboardFooter />
     </div>
   );
 }

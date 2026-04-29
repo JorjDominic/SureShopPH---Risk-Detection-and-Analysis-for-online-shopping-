@@ -102,8 +102,6 @@ function AdminFlaggedUrls() {
 
   return (
     <div className="ss-dashboard-page">
-      <AdminHeader user={user} onLogout={handleLogout} logoutBusy={logoutBusy} />
-
       <main className="ss-dashboard-main">
 
         <AdminSubNav eyebrow="Admin › Moderation" tabs={MODERATION_TABS} />
@@ -266,8 +264,6 @@ function AdminFlaggedUrls() {
         </div>
 
       </main>
-
-      <DashboardFooter />
     </div>
   );
 }

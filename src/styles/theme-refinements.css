@@ -1,0 +1,502 @@
+/* =========================================================================
+ * SureShopPH — Theme Refinements (Professional Polish Layer)
+ * -------------------------------------------------------------------------
+ * Same design system, tightened. Loaded LAST so it wins specificity.
+ * Goals: deeper trust palette, solid surfaces, calmer shadows, refined type,
+ * consistent radii, accessible focus rings. No structural changes.
+ * ========================================================================= */
+
+/* ---------- 1. Refined design tokens -------------------------------------- */
+:root {
+  /* Brand: a deeper, more confident teal (Tailwind teal-600/700 territory) */
+  --ss-dashboard-teal: #0d9488;
+  --ss-dashboard-teal-dark: #0f766e;
+  --ss-dashboard-blue: #1d4ed8;
+
+  /* Status: muted, professional */
+  --ss-dashboard-orange: #c2410c;
+  --ss-dashboard-red: #b91c1c;
+  --ss-dashboard-green: #15803d;
+
+  /* Text: tighter slate scale, higher contrast */
+  --ss-dashboard-text: #0b1220;
+  --ss-dashboard-muted: #475569;
+
+  /* Surfaces: solid (transparency reads as amateur) */
+  --ss-dashboard-bg: #f7f9fc;
+  --ss-dashboard-surface: #ffffff;
+  --ss-dashboard-surface-strong: #ffffff;
+  --ss-dashboard-border: #e2e8f0;
+
+  /* Shadows: calmer, single-layer, less glassy */
+  --ss-dashboard-shadow: 0 1px 2px rgba(15, 23, 42, 0.04),
+                         0 8px 24px -16px rgba(15, 23, 42, 0.18);
+  --ss-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+  --ss-shadow-lg: 0 4px 12px -4px rgba(15, 23, 42, 0.12);
+
+  /* Landing palette alignment */
+  --ss-primary: #0d9488;
+  --ss-primary-dark: #0f766e;
+  --ss-primary-light: #ccfbf1;
+  --ss-secondary: #1d4ed8;
+  --ss-dark: #0b1220;
+  --ss-gray: #475569;
+  --ss-border: #e2e8f0;
+
+  /* Radius scale (consistent) */
+  --ss-radius-sm: 6px;
+  --ss-radius: 10px;
+  --ss-radius-md: 12px;
+  --ss-radius-lg: 16px;
+}
+
+/* Legacy palette in styles.css */
+:root {
+  --primary: #0d9488;
+  --primary-dark: #0f766e;
+  --success: #15803d;
+  --danger: #b91c1c;
+  --warning: #b45309;
+  --dark: #0b1220;
+  --light: #f7f9fc;
+  --border: #e2e8f0;
+  --text: #1e293b;
+}
+
+/* ---------- 2. Page background: calm, single-tone -------------------------- */
+.ss-dashboard-page {
+  background: var(--ss-dashboard-bg) !important;
+}
+
+html, body {
+  background-color: var(--ss-dashboard-bg);
+  color: var(--ss-dashboard-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ---------- 3. Surfaces: solid, crisp borders ------------------------------ */
+.ss-dashboard-hero-card,
+.ss-dashboard-panel,
+.ss-dashboard-action-card,
+.ss-dashboard-stat-card {
+  background: var(--ss-dashboard-surface) !important;
+  border: 1px solid var(--ss-dashboard-border) !important;
+  box-shadow: var(--ss-dashboard-shadow) !important;
+  border-radius: var(--ss-radius-lg) !important;
+}
+
+.ss-dashboard-hero-card {
+  border-radius: 20px !important;
+}
+
+/* Kill the multicolor decorative blurs behind hero — looks unprofessional */
+.ss-dashboard-hero-main::before,
+.ss-dashboard-hero-side::before {
+  display: none !important;
+}
+
+/* Neutralize gradient seams & overhead bars */
+.ss-dashboard-hero-card::before,
+.ss-dashboard-panel::before {
+  display: none !important;
+}
+
+/* ---------- 4. Topbar: cleaner, no transparency --------------------------- */
+.ss-dashboard-topbar {
+  background: #ffffff !important;
+  border-bottom: 1px solid var(--ss-dashboard-border) !important;
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.02);
+}
+
+.ss-dashboard-brand-mark {
+  background: var(--ss-dashboard-teal) !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+}
+
+/* ---------- 5. Buttons: solid, single-color, no rainbow gradients --------- */
+.ss-dashboard-btn {
+  border-radius: var(--ss-radius) !important;
+  font-weight: 600 !important;
+  letter-spacing: 0 !important;
+  transition: background-color .15s ease, border-color .15s ease,
+              color .15s ease, box-shadow .15s ease, transform .05s ease;
+}
+
+.ss-dashboard-btn-primary {
+  background: var(--ss-dashboard-teal) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--ss-dashboard-teal) !important;
+  box-shadow: 0 1px 2px rgba(13, 148, 136, 0.25) !important;
+}
+
+.ss-dashboard-btn-primary:not(:disabled):hover {
+  background: var(--ss-dashboard-teal-dark) !important;
+  border-color: var(--ss-dashboard-teal-dark) !important;
+  transform: none !important;
+}
+
+.ss-dashboard-btn-primary::after {
+  display: none !important;
+}
+
+.ss-dashboard-btn-secondary {
+  background: #ffffff !important;
+  color: var(--ss-dashboard-text) !important;
+  border: 1px solid var(--ss-dashboard-border) !important;
+  box-shadow: none !important;
+}
+
+.ss-dashboard-btn-secondary:not(:disabled):hover {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+}
+
+.ss-dashboard-logout {
+  border-radius: var(--ss-radius) !important;
+  background: #ffffff !important;
+  border: 1px solid #fecaca !important;
+}
+
+.ss-dashboard-logout:hover:not(:disabled) {
+  background: #fef2f2 !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* ---------- 6. Pills / chips / badges: subtler ---------------------------- */
+.ss-dashboard-chip,
+.ss-dashboard-eyebrow,
+.ss-dashboard-panel-pill,
+.ss-dashboard-side-badge,
+.ss-dashboard-action-badge {
+  font-weight: 600 !important;
+  letter-spacing: 0.06em !important;
+  font-size: 0.68rem !important;
+}
+
+.ss-dashboard-chip {
+  background: #f0fdfa !important;
+  color: var(--ss-dashboard-teal-dark) !important;
+  border: 1px solid #ccfbf1;
+}
+
+.ss-dashboard-eyebrow {
+  color: var(--ss-dashboard-muted) !important;
+  background: transparent !important;
+  padding: 0 !important;
+  letter-spacing: 0.1em !important;
+  font-size: 0.7rem !important;
+}
+
+/* ---------- 7. Typography: tighter, more deliberate ----------------------- */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--ss-dashboard-text);
+  letter-spacing: -0.02em !important;
+  line-height: 1.2 !important;
+}
+
+.ss-dashboard-section-heading h2 {
+  font-size: 1.35rem !important;
+  font-weight: 700 !important;
+}
+
+.ss-dashboard-section-heading h3 {
+  font-size: 1.05rem !important;
+  font-weight: 600 !important;
+}
+
+/* ---------- 8. Stat cards: cleaner numbers -------------------------------- */
+.ss-dashboard-stat-card {
+  border-radius: var(--ss-radius-lg) !important;
+  padding: 1.25rem !important;
+}
+
+.ss-dashboard-stat-top h3 {
+  font-family: var(--font-accent) !important;
+  font-size: 1.75rem !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+  color: var(--ss-dashboard-text) !important;
+}
+
+.ss-dashboard-stat-card.tone-teal,
+.ss-dashboard-stat-card.tone-blue,
+.ss-dashboard-stat-card.tone-success,
+.ss-dashboard-stat-card.tone-danger {
+  background: #ffffff !important;
+}
+
+.ss-dashboard-stat-icon {
+  background: #f1f5f9 !important;
+  color: var(--ss-dashboard-text) !important;
+  border-radius: 10px !important;
+  width: 40px;
+  height: 40px;
+}
+
+/* ---------- 9. Tables: cleaner separators --------------------------------- */
+.ss-dashboard-table {
+  font-size: 0.88rem;
+}
+
+.ss-dashboard-table thead th {
+  background: #f8fafc !important;
+  color: var(--ss-dashboard-muted) !important;
+  font-family: var(--font-accent);
+  font-weight: 600 !important;
+  font-size: 0.72rem !important;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid var(--ss-dashboard-border) !important;
+}
+
+.ss-dashboard-table tbody tr {
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.ss-dashboard-table tbody tr:hover {
+  background: #f8fafc !important;
+}
+
+/* ---------- 10. Risk/state pills: muted, semantic ------------------------- */
+.ss-dashboard-risk {
+  font-family: var(--font-accent);
+  font-size: 0.7rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.04em;
+  padding: 0.2rem 0.55rem !important;
+  border-radius: 999px !important;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+}
+
+.ss-dashboard-risk-high {
+  background: #fef2f2 !important;
+  color: #991b1b !important;
+  border-color: #fecaca !important;
+}
+
+.ss-dashboard-risk-medium {
+  background: #fffbeb !important;
+  color: #92400e !important;
+  border-color: #fde68a !important;
+}
+
+.ss-dashboard-risk-low {
+  background: #f0fdf4 !important;
+  color: #166534 !important;
+  border-color: #bbf7d0 !important;
+}
+
+/* ---------- 11. Forms: tighter inputs, accessible focus ------------------- */
+.udb-form-input,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+input[type="url"],
+select,
+textarea {
+  border-radius: var(--ss-radius) !important;
+  border: 1px solid var(--ss-dashboard-border) !important;
+  background: #ffffff !important;
+  font-size: 0.92rem;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.udb-form-input:focus,
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none !important;
+  border-color: var(--ss-dashboard-teal) !important;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15) !important;
+}
+
+/* Accessible focus ring on all interactive elements (keyboard) */
+a:focus-visible,
+button:focus-visible,
+.ss-dashboard-btn:focus-visible {
+  outline: 2px solid var(--ss-dashboard-teal) !important;
+  outline-offset: 2px !important;
+  box-shadow: none !important;
+}
+
+/* ---------- 12. Nav links: subtle active state ---------------------------- */
+.ss-dashboard-nav a {
+  padding: 0.45rem 0.75rem;
+  border-radius: 8px;
+  transition: background-color .15s ease, color .15s ease;
+}
+
+.ss-dashboard-nav a:hover {
+  background: #f1f5f9;
+  color: var(--ss-dashboard-text) !important;
+}
+
+.ss-dashboard-nav a.active {
+  background: #f0fdfa;
+  color: var(--ss-dashboard-teal-dark) !important;
+}
+
+/* ---------- 13. Action cards (quick nav): cleaner ------------------------- */
+.ss-dashboard-action-card {
+  border-radius: var(--ss-radius-lg) !important;
+  padding: 1.25rem !important;
+  transition: border-color .15s ease, box-shadow .15s ease, transform .1s ease;
+}
+
+.ss-dashboard-action-card:hover {
+  border-color: var(--ss-dashboard-teal) !important;
+  box-shadow: 0 8px 24px -12px rgba(13, 148, 136, 0.25) !important;
+  transform: translateY(-1px);
+}
+
+.ss-dashboard-action-icon {
+  background: #f0fdfa !important;
+  color: var(--ss-dashboard-teal-dark) !important;
+  border-radius: 10px !important;
+  width: 40px;
+  height: 40px;
+}
+
+.ss-dashboard-action-badge {
+  background: #f1f5f9 !important;
+  color: var(--ss-dashboard-muted) !important;
+  border: 1px solid var(--ss-dashboard-border) !important;
+}
+
+/* ---------- 14. Landing page polish --------------------------------------- */
+.ss-landing-header {
+  background: #ffffff !important;
+  border-bottom: 1px solid var(--ss-dashboard-border);
+  box-shadow: none !important;
+}
+
+.ss-landing-section-title {
+  letter-spacing: -0.02em;
+  color: var(--ss-dashboard-text);
+}
+
+.ss-landing-section-subtitle {
+  color: var(--ss-dashboard-muted);
+}
+
+/* Hero gradient: deeper, single-direction, less candy */
+.hero {
+  background: linear-gradient(135deg, #0f766e 0%, #0b1220 100%) !important;
+}
+
+/* ---------- 15. Alerts: clean, semantic ----------------------------------- */
+.udb-alert {
+  border-radius: var(--ss-radius) !important;
+  padding: 0.75rem 1rem !important;
+  font-size: 0.88rem;
+  border: 1px solid transparent;
+}
+
+.udb-alert-error,
+.udb-alert.error {
+  background: #fef2f2 !important;
+  color: #991b1b !important;
+  border-color: #fecaca !important;
+}
+
+.udb-alert-success,
+.udb-alert.success {
+  background: #f0fdf4 !important;
+  color: #166534 !important;
+  border-color: #bbf7d0 !important;
+}
+
+/* ---------- 16. Empty states: friendlier ---------------------------------- */
+.udb-empty-state {
+  padding: 2.5rem 1.5rem;
+  color: var(--ss-dashboard-muted);
+}
+
+.udb-empty-state h3 {
+  color: var(--ss-dashboard-text);
+  margin-bottom: 0.4rem;
+}
+
+.udb-empty-state i {
+  color: #cbd5e1;
+}
+
+/* ---------- 17. Dark mode: solid, not glassy ----------------------------- */
+body.ss-theme-dark {
+  --ss-dashboard-bg: #0b1220;
+  --ss-dashboard-surface: #111827;
+  --ss-dashboard-surface-strong: #0f172a;
+  --ss-dashboard-border: #1f2937;
+  --ss-dashboard-text: #f1f5f9;
+  --ss-dashboard-muted: #94a3b8;
+  --ss-dashboard-shadow: 0 1px 2px rgba(0, 0, 0, 0.3),
+                         0 8px 24px -16px rgba(0, 0, 0, 0.5);
+}
+
+body.ss-theme-dark .ss-dashboard-page {
+  background: var(--ss-dashboard-bg) !important;
+}
+
+body.ss-theme-dark .ss-dashboard-topbar {
+  background: #0f172a !important;
+  border-bottom-color: var(--ss-dashboard-border) !important;
+}
+
+body.ss-theme-dark .ss-dashboard-hero-card,
+body.ss-theme-dark .ss-dashboard-panel,
+body.ss-theme-dark .ss-dashboard-action-card,
+body.ss-theme-dark .ss-dashboard-stat-card {
+  background: var(--ss-dashboard-surface) !important;
+  border-color: var(--ss-dashboard-border) !important;
+}
+
+body.ss-theme-dark .ss-dashboard-btn-secondary {
+  background: #111827 !important;
+  border-color: var(--ss-dashboard-border) !important;
+  color: var(--ss-dashboard-text) !important;
+}
+
+body.ss-theme-dark .ss-dashboard-btn-secondary:hover {
+  background: #1f2937 !important;
+}
+
+body.ss-theme-dark .udb-form-input,
+body.ss-theme-dark input,
+body.ss-theme-dark select,
+body.ss-theme-dark textarea {
+  background: #0f172a !important;
+  border-color: var(--ss-dashboard-border) !important;
+  color: var(--ss-dashboard-text) !important;
+}
+
+body.ss-theme-dark .ss-dashboard-table thead th {
+  background: #0f172a !important;
+}
+
+body.ss-theme-dark .ss-dashboard-table tbody tr:hover {
+  background: #111827 !important;
+}
+
+body.ss-theme-dark .ss-dashboard-nav a:hover {
+  background: #1f2937;
+}
+
+body.ss-theme-dark .ss-dashboard-nav a.active {
+  background: rgba(13, 148, 136, 0.15);
+}
+
+body.ss-theme-dark .ss-dashboard-action-icon,
+body.ss-theme-dark .ss-dashboard-stat-icon {
+  background: #1f2937 !important;
+  color: var(--ss-dashboard-text) !important;
+}
+
+body.ss-theme-dark .ss-dashboard-chip {
+  background: rgba(13, 148, 136, 0.15) !important;
+  border-color: rgba(13, 148, 136, 0.3);
+}

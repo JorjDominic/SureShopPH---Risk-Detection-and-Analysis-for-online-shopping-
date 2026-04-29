@@ -21,7 +21,6 @@ import AdminLogs from './views/admin/adminLogs';
 import AdminSettings from './views/admin/adminSettings';
 import AdminTraining from './views/admin/adminTraining';
 import { getCurrentSession, onAuthStateChange } from './services/authService';
-import './styles/theme-refinements.css';
 
 const hasOAuthParamsInUrl = () => {
   const params = new URLSearchParams(window.location.search);

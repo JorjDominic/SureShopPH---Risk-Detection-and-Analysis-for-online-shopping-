@@ -4,6 +4,7 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
 import { logoutUser } from '../../services/authService';
 import AdminHeader from '../../components/AdminHeader';
+import AdminSubNav, { MODERATION_TABS } from '../../components/AdminSubNav';
 import DashboardFooter from '../../components/DashboardFooter';
 import '../../styles/dashboard.css';
 
@@ -93,12 +94,13 @@ function AdminReports() {
 
       <main className="ss-dashboard-main">
 
+        <AdminSubNav eyebrow="Admin › Moderation" tabs={MODERATION_TABS} />
+
         <div className="ss-dashboard-section">
           <div className="container">
             <div className="ss-dashboard-section-heading">
               <div>
-                <p className="ss-dashboard-eyebrow">Admin &rsaquo; Moderation</p>
-                <h2>Report Management</h2>
+                <h2>User Reports</h2>
               </div>
               <p style={{ alignSelf: 'center', color: 'var(--ss-dashboard-muted)', fontSize: '0.9rem' }}>
                 {reports.length} record{reports.length !== 1 ? 's' : ''}

@@ -30,6 +30,7 @@ function AdminHeader({ user, onLogout, logoutBusy }) {
   }, []);
 
   const isActive = (path) => location.pathname === path;
+  const inGroup = (paths) => paths.some((p) => location.pathname === p || location.pathname.startsWith(p + '/'));
 
   return (
     <>
@@ -56,16 +57,16 @@ function AdminHeader({ user, onLogout, logoutBusy }) {
               <Link to="/admin" className={isActive('/admin') ? 'active' : ''}>
                 Overview
               </Link>
-              <Link to="/admin/reports" className={isActive('/admin/reports') ? 'active' : ''}>
-                Reports
+              <Link
+                to="/admin/reports"
+                className={inGroup(['/admin/reports', '/admin/flagged']) ? 'active' : ''}
+              >
+                Moderation
               </Link>
-              <Link to="/admin/flagged" className={isActive('/admin/flagged') ? 'active' : ''}>
-                Flagged
-              </Link>
-              <Link to="/admin/logs" className={isActive('/admin/logs') ? 'active' : ''}>
-                Logs
-              </Link>
-              <Link to="/admin/training" className={isActive('/admin/training') ? 'active' : ''}>
+              <Link
+                to="/admin/training"
+                className={inGroup(['/admin/training', '/admin/logs']) ? 'active' : ''}
+              >
                 Training
               </Link>
               <Link to="/admin/settings" className={isActive('/admin/settings') ? 'active' : ''}>

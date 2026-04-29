@@ -3,6 +3,7 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
 import { logoutUser } from '../../services/authService';
 import AdminHeader from '../../components/AdminHeader';
+import AdminSubNav, { TRAINING_TABS } from '../../components/AdminSubNav';
 import DashboardFooter from '../../components/DashboardFooter';
 import '../../styles/dashboard.css';
 
@@ -450,14 +451,15 @@ function AdminTraining() {
 
       <main className="ss-dashboard-main">
 
+        <AdminSubNav eyebrow="Admin › Training" tabs={TRAINING_TABS} />
+
         {/* ── Page Header ──────────────────────────────────────────── */}
         <div className="ss-dashboard-section">
           <div className="container">
             <div className="ss-dashboard-section-heading">
               <div>
-                <p className="ss-dashboard-eyebrow">Admin › AI Model</p>
                 <h2 style={{ color: 'var(--ss-dashboard-text)', fontFamily: 'var(--font-display)', letterSpacing: '-0.04em', fontSize: '1.85rem' }}>
-                  Model Training
+                  Labeling Tool
                 </h2>
                 <p style={{ color: 'var(--ss-dashboard-muted)', fontSize: '0.9rem', marginTop: '0.3rem', maxWidth: 560 }}>
                   Curate and label review samples to train the SureShopPH NLP model. Submit

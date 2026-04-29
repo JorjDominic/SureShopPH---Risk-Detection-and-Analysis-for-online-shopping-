@@ -4,6 +4,7 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
 import { logoutUser } from '../../services/authService';
 import AdminHeader from '../../components/AdminHeader';
+import AdminSubNav, { TRAINING_TABS } from '../../components/AdminSubNav';
 import DashboardFooter from '../../components/DashboardFooter';
 import '../../styles/dashboard.css';
 
@@ -99,12 +100,13 @@ function AdminLogs() {
 
       <main className="ss-dashboard-main">
 
+        <AdminSubNav eyebrow="Admin › Training" tabs={TRAINING_TABS} />
+
         {/* Header */}
         <div className="ss-dashboard-section">
           <div className="container">
             <div className="ss-dashboard-section-heading">
               <div>
-                <p className="ss-dashboard-eyebrow">Admin &rsaquo; Monitoring</p>
                 <h2>System &amp; AI Logs</h2>
               </div>
               <button

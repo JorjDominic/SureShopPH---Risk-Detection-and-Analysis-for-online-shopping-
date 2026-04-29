@@ -11,6 +11,32 @@ const SAMPLE_MINIMUM = 200;
 const MOCK_TOTAL = 47;
 const MOCK_SUSPICIOUS = 24;
 const MOCK_CREDIBLE = 23;
+const LOW_QUALITY_CHAR_THRESHOLD = 10;
+const NEAR_DUP_THRESHOLD = 0.7;
+
+// ─── Guideline examples ──────────────────────────────────────────────────────
+const CREDIBLE_EXAMPLES = [
+  'Dumating after 3 days. Size medium fit perfectly, color matches the photo. Zipper medyo stiff pero ok sa price.',
+  'Hindi ko inasahan na ganito kaganda yung tela. Mag-oorder ulit. Minus 1 star kasi late ng 2 days.',
+  'Okay naman yung quality for the price. 250 lang. Medyo maliit yung sizing so size up.',
+  'Legit yung seller. Naka-bubble wrap, walang damage. 4/5 kasi kulang yung freebies.',
+  'Second time ko nang bumili. Consistent quality. Recommended for budget buyers.',
+];
+
+const SUSPICIOUS_EXAMPLES = [
+  'goods',
+  'LEGIT SELLER HIGHLY RECOMMEND!!!',
+  'sulit na sulit bilhin na agad!',
+  'ok',
+  'Free shipping, mabilis dumating, 5 stars!',
+];
+
+const SUBMIT_CHECKLIST = [
+  'Does it mention a specific detail (size, color, delivery time)?',
+  'Is it natural language, not promotional?',
+  'Is it longer than one word or phrase?',
+  'Would a real buyer write this?',
+];
 
 // ─── Mock data ────────────────────────────────────────────────────────────────
 const INITIAL_SAMPLES = [
@@ -97,6 +123,45 @@ function formatAbsDate(isoString) {
   });
 }
 
+// Normalize a review string for comparison (lowercase, trim, collapse whitespace).
+function normalizeText(s) {
+  return (s || '').toLowerCase().trim().replace(/\s+/g, ' ');
+}
+
+// Tokenize into a Set of unique alphanumeric words (length >= 2).
+function tokenize(s) {
+  const norm = normalizeText(s);
+  if (!norm) return new Set();
+  const tokens = norm
+    .split(/[^a-z0-9ñ]+/i)
+    .filter((w) => w.length >= 2);
+  return new Set(tokens);
+}
+
+// Return ratio (0..1) of shared words: |A∩B| / |A∪B| (Jaccard).
+function wordOverlapRatio(a, b) {
+  const A = tokenize(a);
+  const B = tokenize(b);
+  if (A.size === 0 || B.size === 0) return 0;
+  let inter = 0;
+  A.forEach((w) => { if (B.has(w)) inter += 1; });
+  const union = A.size + B.size - inter;
+  return union === 0 ? 0 : inter / union;
+}
+
+// Count duplicates inside a samples array (pairs of identical normalized text).
+function countDuplicates(samples) {
+  const seen = new Map();
+  let dupes = 0;
+  for (const s of samples) {
+    const key = normalizeText(s.text);
+    if (!key) continue;
+    if (seen.has(key)) dupes += 1;
+    else seen.set(key, true);
+  }
+  return dupes;
+}
+
 // ─── Toast ────────────────────────────────────────────────────────────────────
 function Toast({ toasts }) {
   return (
@@ -159,6 +224,47 @@ function Skeleton({ width = '100%', height = 18, radius = 8, style = {} }) {
   );
 }
 
+// ─── Health Pill ──────────────────────────────────────────────────────────────
+function HealthPill({ ok, redWhenBad = false, okLabel, badLabel, title }) {
+  const tone = ok ? 'green' : redWhenBad ? 'red' : 'yellow';
+  const palette = {
+    green: { bg: 'rgba(22,163,74,0.12)', fg: '#166534', dot: '#16a34a' },
+    yellow: { bg: 'rgba(234,179,8,0.14)', fg: '#92400e', dot: '#eab308' },
+    red: { bg: 'rgba(220,38,38,0.12)', fg: '#b91c1c', dot: '#dc2626' },
+  }[tone];
+  return (
+    <span
+      title={title}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '0.45rem',
+        padding: '0.4rem 0.8rem',
+        borderRadius: 999,
+        fontSize: '0.78rem',
+        fontWeight: 700,
+        fontFamily: 'var(--font-accent)',
+        background: palette.bg,
+        color: palette.fg,
+        whiteSpace: 'nowrap',
+      }}
+    >
+      <span
+        aria-hidden="true"
+        style={{
+          width: 8,
+          height: 8,
+          borderRadius: '50%',
+          background: palette.dot,
+          boxShadow: `0 0 0 3px ${palette.bg}`,
+        }}
+      />
+      <span style={{ color: 'var(--ss-dashboard-muted)', fontWeight: 600 }}>{title}:</span>
+      {ok ? okLabel : badLabel}
+    </span>
+  );
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 function AdminTraining() {
   const navigate = useNavigate();
@@ -180,6 +286,13 @@ function AdminTraining() {
   const [selectedLabel, setSelectedLabel] = useState(null); // null | 'suspicious' | 'credible'
   const [notes, setNotes] = useState('');
   const [submitBusy, setSubmitBusy] = useState(false);
+
+  // Guidelines panel
+  const [guidelinesOpen, setGuidelinesOpen] = useState(false);
+
+  // Duplicate detection (debounced)
+  // status: 'none' | 'exact' | 'near'
+  const [dupStatus, setDupStatus] = useState('none');
 
   // History panel
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -231,6 +344,7 @@ function AdminTraining() {
     e?.preventDefault?.();
     if (!reviewText.trim()) return;
     if (!selectedLabel) return;
+    if (dupStatus === 'exact') return;
 
     setSubmitBusy(true);
     await new Promise((r) => setTimeout(r, 420)); // fake async
@@ -271,6 +385,55 @@ function AdminTraining() {
     suspiciousCount / total >= 0.3 &&
     credibleCount / total >= 0.3;
   const isImbalanced = suspiciousCount > 0 && credibleCount > 0 && !isBalanced && Math.abs(suspiciousCount - credibleCount) > Math.min(suspiciousCount, credibleCount) * 0.5;
+
+  // ─── Dataset Health (mock) ────────────────────────────────────────────────
+  // Minimum size — uses MOCK_TOTAL so the indicator reflects the documented
+  // "47 / 200" mock state until a real backend is wired.
+  const healthMinSizeOk = MOCK_TOTAL >= SAMPLE_MINIMUM;
+
+  // Balance — neither label below 30% of the (mock) total.
+  const mockTotal = MOCK_SUSPICIOUS + MOCK_CREDIBLE;
+  const healthBalanceOk =
+    mockTotal > 0 &&
+    MOCK_SUSPICIOUS / mockTotal >= 0.3 &&
+    MOCK_CREDIBLE / mockTotal >= 0.3;
+
+  // Low quality — count short rows in the in-memory samples list.
+  const lowQualityCount = samples.filter(
+    (s) => normalizeText(s.text).length < LOW_QUALITY_CHAR_THRESHOLD,
+  ).length;
+  const healthQualityOk = lowQualityCount === 0;
+
+  // Duplicates — exact-text duplicates inside the in-memory list.
+  const duplicateCount = countDuplicates(samples);
+  const healthDupesOk = duplicateCount === 0;
+
+  // Aggregate health
+  const healthAnyRed = !healthMinSizeOk; // only the size pill is red-eligible
+  const healthAllGreen = healthMinSizeOk && healthBalanceOk && healthQualityOk && healthDupesOk;
+  const healthOnlyYellow = !healthAnyRed && !healthAllGreen;
+
+  // Debounced duplicate detection on reviewText
+  useEffect(() => {
+    const text = reviewText.trim();
+    if (!text) {
+      setDupStatus('none');
+      return undefined;
+    }
+    const handle = setTimeout(() => {
+      const norm = normalizeText(text);
+      // Exact match
+      const exact = samples.some((s) => normalizeText(s.text) === norm);
+      if (exact) {
+        setDupStatus('exact');
+        return;
+      }
+      // Near-duplicate via word overlap
+      const near = samples.some((s) => wordOverlapRatio(text, s.text) > NEAR_DUP_THRESHOLD);
+      setDupStatus(near ? 'near' : 'none');
+    }, 300);
+    return () => clearTimeout(handle);
+  }, [reviewText, samples]);
 
   if (authLoading) return null;
   if (!user) return <Navigate to="/login" replace />;
@@ -459,6 +622,92 @@ function AdminTraining() {
           </div>
         </div>
 
+        {/* ── Dataset Health Bar ───────────────────────────────────── */}
+        <div className="ss-dashboard-section" style={{ paddingTop: 0 }}>
+          <div className="container">
+            <div className="ss-dashboard-panel" style={{ padding: '1rem 1.15rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
+                <i className="fas fa-heart-pulse" style={{ color: 'var(--ss-dashboard-teal)' }} />
+                <p className="ss-dashboard-eyebrow" style={{ margin: 0 }}>Dataset Health</p>
+              </div>
+
+              {/* Pill row */}
+              <div
+                style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: '0.55rem',
+                  marginBottom: '0.75rem',
+                }}
+              >
+                <HealthPill
+                  ok={healthMinSizeOk}
+                  redWhenBad
+                  okLabel="Ready"
+                  badLabel={`${MOCK_TOTAL} / ${SAMPLE_MINIMUM} samples`}
+                  title="Minimum Size"
+                />
+                <HealthPill
+                  ok={healthBalanceOk}
+                  okLabel="Balanced"
+                  badLabel="Imbalanced (>70/30)"
+                  title="Label Balance"
+                />
+                <HealthPill
+                  ok={healthQualityOk}
+                  okLabel="Clean"
+                  badLabel={`${lowQualityCount} low-quality`}
+                  title="Low Quality"
+                />
+                <HealthPill
+                  ok={healthDupesOk}
+                  okLabel="No duplicates"
+                  badLabel={`${duplicateCount} duplicate${duplicateCount === 1 ? '' : 's'}`}
+                  title="Duplicates"
+                />
+              </div>
+
+              {/* Summary line */}
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  fontSize: '0.82rem',
+                  fontWeight: 600,
+                  padding: '0.45rem 0.85rem',
+                  borderRadius: 10,
+                  background: healthAnyRed
+                    ? 'rgba(220,38,38,0.1)'
+                    : healthOnlyYellow
+                      ? 'rgba(234,179,8,0.12)'
+                      : 'rgba(22,163,74,0.12)',
+                  color: healthAnyRed
+                    ? '#b91c1c'
+                    : healthOnlyYellow
+                      ? '#92400e'
+                      : '#166534',
+                }}
+              >
+                <i
+                  className={`fas ${
+                    healthAnyRed
+                      ? 'fa-circle-xmark'
+                      : healthOnlyYellow
+                        ? 'fa-triangle-exclamation'
+                        : 'fa-circle-check'
+                  }`}
+                />
+                {healthAnyRed
+                  ? 'Not ready — resolve issues first'
+                  : healthOnlyYellow
+                    ? 'Can train but quality may affect results'
+                    : 'Dataset ready to train'}
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* ── Two-column layout: Form + Table ──────────────────────── */}
         <div className="ss-dashboard-section" style={{ paddingTop: 0 }}>
           <div className="container">
@@ -473,10 +722,140 @@ function AdminTraining() {
 
               {/* ── Submit Form ──────────────────────────────────── */}
               <div className="ss-dashboard-panel" style={{ position: 'sticky', top: 88 }}>
-                <p className="ss-dashboard-eyebrow" style={{ marginBottom: '0.4rem' }}>Signal</p>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', marginBottom: '0.6rem', flexWrap: 'wrap' }}>
+                  <p className="ss-dashboard-eyebrow" style={{ margin: 0 }}>Signal</p>
+                  <button
+                    type="button"
+                    onClick={() => setGuidelinesOpen((v) => !v)}
+                    aria-expanded={guidelinesOpen}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                      padding: '0.32rem 0.7rem',
+                      borderRadius: 10,
+                      border: '1px solid rgba(148,163,184,0.25)',
+                      background: guidelinesOpen ? 'rgba(14,165,164,0.12)' : 'transparent',
+                      color: guidelinesOpen ? 'var(--ss-dashboard-teal)' : 'var(--ss-dashboard-muted)',
+                      fontSize: '0.76rem',
+                      fontWeight: 700,
+                      fontFamily: 'var(--font-accent)',
+                      cursor: 'pointer',
+                      transition: 'all 0.18s ease',
+                    }}
+                  >
+                    📋 {guidelinesOpen ? 'Hide Guidelines' : 'View Guidelines'}
+                    <i className={`fas fa-chevron-${guidelinesOpen ? 'up' : 'down'}`} style={{ fontSize: '0.65rem' }} />
+                  </button>
+                </div>
                 <h3 style={{ color: 'var(--ss-dashboard-text)', fontFamily: 'var(--font-display)', marginBottom: '1.25rem', fontSize: '1.15rem' }}>
                   Add Review Signal
                 </h3>
+
+                {/* Collapsible Guidelines Panel */}
+                {guidelinesOpen && (
+                  <div
+                    style={{
+                      marginBottom: '1.1rem',
+                      padding: '1rem',
+                      borderRadius: 14,
+                      background: 'rgba(148,163,184,0.07)',
+                      border: '1px solid rgba(148,163,184,0.18)',
+                      display: 'grid',
+                      gap: '0.9rem',
+                    }}
+                  >
+                    {/* Credible examples */}
+                    <div>
+                      <p style={{ margin: 0, marginBottom: '0.45rem', fontSize: '0.74rem', fontWeight: 800, fontFamily: 'var(--font-accent)', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#16a34a' }}>
+                        ✓ Credible signals
+                      </p>
+                      <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: '0.4rem' }}>
+                        {CREDIBLE_EXAMPLES.map((ex, i) => (
+                          <li
+                            key={`cred-${i}`}
+                            style={{
+                              fontSize: '0.78rem',
+                              color: 'var(--ss-dashboard-text)',
+                              padding: '0.45rem 0.65rem',
+                              background: 'rgba(22,163,74,0.06)',
+                              borderLeft: '3px solid #16a34a',
+                              borderRadius: 6,
+                              lineHeight: 1.5,
+                            }}
+                          >
+                            {ex}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* Suspicious examples */}
+                    <div>
+                      <p style={{ margin: 0, marginBottom: '0.45rem', fontSize: '0.74rem', fontWeight: 800, fontFamily: 'var(--font-accent)', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#ea580c' }}>
+                        ⚠️ Suspicious signals
+                      </p>
+                      <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: '0.4rem' }}>
+                        {SUSPICIOUS_EXAMPLES.map((ex, i) => (
+                          <li
+                            key={`susp-${i}`}
+                            style={{
+                              fontSize: '0.78rem',
+                              color: 'var(--ss-dashboard-text)',
+                              padding: '0.45rem 0.65rem',
+                              background: 'rgba(234,88,12,0.06)',
+                              borderLeft: '3px solid #ea580c',
+                              borderRadius: 6,
+                              lineHeight: 1.5,
+                            }}
+                          >
+                            {ex}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* Checklist */}
+                    <div>
+                      <p style={{ margin: 0, marginBottom: '0.45rem', fontSize: '0.74rem', fontWeight: 800, fontFamily: 'var(--font-accent)', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ss-dashboard-text)' }}>
+                        Check before submitting
+                      </p>
+                      <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: '0.3rem' }}>
+                        {SUBMIT_CHECKLIST.map((item, i) => (
+                          <li
+                            key={`chk-${i}`}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'flex-start',
+                              gap: '0.5rem',
+                              fontSize: '0.78rem',
+                              color: 'var(--ss-dashboard-muted)',
+                              lineHeight: 1.5,
+                            }}
+                          >
+                            <i className="far fa-square" style={{ marginTop: '0.18rem', color: 'var(--ss-dashboard-teal)', flexShrink: 0, fontSize: '0.85rem' }} />
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* Footer note */}
+                    <p
+                      style={{
+                        margin: 0,
+                        fontSize: '0.74rem',
+                        color: 'var(--ss-dashboard-muted)',
+                        fontStyle: 'italic',
+                        lineHeight: 1.5,
+                        paddingTop: '0.5rem',
+                        borderTop: '1px dashed rgba(148,163,184,0.25)',
+                      }}
+                    >
+                      You're providing a training signal, not a verdict. Users always see a risk score (0–100), never a label.
+                    </p>
+                  </div>
+                )}
 
                 <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '1.1rem' }}>
 
@@ -526,6 +905,34 @@ function AdminTraining() {
                       </kbd>
                       to submit
                     </p>
+
+                    {/* Duplicate warning */}
+                    {dupStatus !== 'none' && (
+                      <div
+                        role="alert"
+                        style={{
+                          marginTop: '0.5rem',
+                          display: 'flex',
+                          gap: '0.5rem',
+                          alignItems: 'flex-start',
+                          padding: '0.55rem 0.75rem',
+                          borderRadius: 10,
+                          background: dupStatus === 'exact' ? 'rgba(220,38,38,0.1)' : 'rgba(234,179,8,0.12)',
+                          border: `1px solid ${dupStatus === 'exact' ? 'rgba(220,38,38,0.3)' : 'rgba(234,179,8,0.35)'}`,
+                          color: dupStatus === 'exact' ? '#b91c1c' : '#92400e',
+                          fontSize: '0.78rem',
+                          fontWeight: 600,
+                          lineHeight: 1.45,
+                        }}
+                      >
+                        <i className="fas fa-triangle-exclamation" style={{ marginTop: '0.15rem', flexShrink: 0 }} />
+                        <span>
+                          {dupStatus === 'exact'
+                            ? 'This exact review already exists in the dataset. Submitting it will create a duplicate.'
+                            : 'This review is very similar to an existing sample. Consider adding it only if it provides a meaningfully different example.'}
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Label toggle */}
@@ -645,7 +1052,7 @@ function AdminTraining() {
 
                   <button
                     type="submit"
-                    disabled={submitBusy || !reviewText.trim() || !selectedLabel}
+                    disabled={submitBusy || !reviewText.trim() || !selectedLabel || dupStatus === 'exact'}
                     className="ss-dashboard-btn ss-dashboard-btn-primary"
                     style={{ minHeight: 44, width: '100%' }}
                   >
@@ -966,18 +1373,27 @@ function AdminTraining() {
               >
                 <button
                   type="button"
-                  disabled
+                  disabled={healthAnyRed}
                   ref={trainBtnRef}
                   aria-describedby="train-tooltip"
                   className="ss-dashboard-btn ss-dashboard-btn-primary"
                   style={{
                     minHeight: 44,
-                    opacity: 0.52,
-                    cursor: 'not-allowed',
-                    filter: 'grayscale(0.3)',
+                    opacity: healthAnyRed ? 0.52 : 1,
+                    cursor: healthAnyRed ? 'not-allowed' : 'pointer',
+                    filter: healthAnyRed ? 'grayscale(0.3)' : 'none',
                   }}
                 >
-                  <i className="fas fa-brain" style={{ marginRight: '0.5rem' }} />
+                  <i
+                    className={`fas ${
+                      healthAnyRed
+                        ? 'fa-lock'
+                        : healthOnlyYellow
+                          ? 'fa-triangle-exclamation'
+                          : 'fa-brain'
+                    }`}
+                    style={{ marginRight: '0.5rem' }}
+                  />
                   Train Model
                 </button>
                 {trainTipVisible && (
@@ -988,7 +1404,11 @@ function AdminTraining() {
                       position: 'absolute',
                       bottom: 'calc(100% + 10px)',
                       right: 0,
-                      background: '#0f172a',
+                      background: healthAnyRed
+                        ? '#7f1d1d'
+                        : healthOnlyYellow
+                          ? '#78350f'
+                          : '#0f172a',
                       color: '#f1f5f9',
                       fontSize: '0.78rem',
                       fontWeight: 500,
@@ -1000,9 +1420,37 @@ function AdminTraining() {
                       zIndex: 100,
                     }}
                   >
-                    <i className="fas fa-lock" style={{ marginRight: '0.4rem', fontSize: '0.7rem' }} />
-                    Need {SAMPLE_MINIMUM} samples minimum (you have {MOCK_TOTAL})
-                    <div style={{ position: 'absolute', bottom: -5, right: 16, width: 10, height: 10, background: '#0f172a', transform: 'rotate(45deg)', borderRadius: 2 }} />
+                    <i
+                      className={`fas ${
+                        healthAnyRed
+                          ? 'fa-lock'
+                          : healthOnlyYellow
+                            ? 'fa-triangle-exclamation'
+                            : 'fa-circle-check'
+                      }`}
+                      style={{ marginRight: '0.4rem', fontSize: '0.7rem' }}
+                    />
+                    {healthAnyRed
+                      ? `Need ${SAMPLE_MINIMUM} samples minimum (you have ${MOCK_TOTAL})`
+                      : healthOnlyYellow
+                        ? 'Quality issues detected — training may be affected'
+                        : 'Ready to train'}
+                    <div
+                      style={{
+                        position: 'absolute',
+                        bottom: -5,
+                        right: 16,
+                        width: 10,
+                        height: 10,
+                        background: healthAnyRed
+                          ? '#7f1d1d'
+                          : healthOnlyYellow
+                            ? '#78350f'
+                            : '#0f172a',
+                        transform: 'rotate(45deg)',
+                        borderRadius: 2,
+                      }}
+                    />
                   </div>
                 )}
               </div>

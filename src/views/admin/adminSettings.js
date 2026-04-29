@@ -117,7 +117,7 @@ function AdminSettings() {
     navigate('/login');
   };
 
-  if (loading) return null;
+  if (loading) return <div className="ss-dashboard-page" aria-busy="true" />;
   if (!user) return <Navigate to="/login" replace />;
 
   return (

@@ -97,7 +97,7 @@ function AdminFlaggedUrls() {
       ? new Date(iso).toLocaleString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
       : '\u2014';
 
-  if (loading) return null;
+  if (loading) return <div className="ss-dashboard-page" aria-busy="true" />;
   if (!user) return <Navigate to="/login" replace />;
 
   return (

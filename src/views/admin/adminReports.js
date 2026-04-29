@@ -85,7 +85,7 @@ function AdminReports() {
     return <span className="ss-admin-status-badge dismissed">Dismissed</span>;
   };
 
-  if (loading) return null;
+  if (loading) return <div className="ss-dashboard-page" aria-busy="true" />;
   if (!user) return <Navigate to="/login" replace />;
 
   return (

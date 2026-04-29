@@ -70,7 +70,7 @@ function ScanDetailsPage() {
   };
 
   if (!authLoading && !user) return <Navigate to="/login" replace />;
-  if (authLoading) return null;
+  if (authLoading) return <div className="ss-dashboard-page" aria-busy="true" />;
 
   return (
     <div className="ss-dashboard-page">

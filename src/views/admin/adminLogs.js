@@ -91,7 +91,7 @@ function AdminLogs() {
     return '#22c55e';
   };
 
-  if (loading) return null;
+  if (loading) return <div className="ss-dashboard-page" aria-busy="true" />;
   if (!user) return <Navigate to="/login" replace />;
 
   return (

@@ -93,7 +93,7 @@ function SettingsPage() {
   };
 
   if (!loading && !user) return <Navigate to="/login" replace />;
-  if (loading) return null;
+  if (loading) return <div className="ss-dashboard-page" aria-busy="true" />;
 
   return (
     <div className="ss-dashboard-page">

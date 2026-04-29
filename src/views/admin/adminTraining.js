@@ -436,7 +436,7 @@ function AdminTraining() {
     return () => clearTimeout(handle);
   }, [reviewText, samples]);
 
-  if (authLoading) return null;
+  if (authLoading) return <div className="ss-dashboard-page" aria-busy="true" />;
   if (!user) return <Navigate to="/login" replace />;
 
   const role = user.app_metadata?.role || user.user_metadata?.role;

@@ -1980,3 +1980,67 @@ body.ss-theme-dark .ss-signout-btn-cancel {
 body.ss-theme-dark .ss-signout-btn-cancel:hover:not(:disabled) {
   background: #4b5563;
 }
+
+
+/* =========================================================================
+ * Page Transitions — eliminate white flash & add gentle fade between routes
+ * ========================================================================= */
+
+/* Paint dashboard bg on body so the brief loading skeleton frame is not white */
+html, body {
+  background-color: var(--ss-dashboard-bg) !important;
+}
+
+body.ss-theme-dark,
+body.ss-theme-dark html {
+  background-color: var(--ss-dashboard-bg) !important;
+}
+
+/* Fade in main content on every navigation. Each <main> remounts on route
+   change in React Router, so this animation re-runs naturally. */
+.ss-dashboard-main {
+  animation: ssRouteFadeIn 220ms ease-out both;
+  will-change: opacity, transform;
+}
+
+@keyframes ssRouteFadeIn {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 6px, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* Slightly faster fade for inner section heading shifts */
+.ss-dashboard-section {
+  animation: ssRouteFadeIn 260ms ease-out both;
+}
+
+/* Topbar should not animate — it is sticky and shared visually across routes */
+.ss-dashboard-topbar,
+.ss-landing-header {
+  animation: none !important;
+}
+
+/* Respect reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .ss-dashboard-main,
+  .ss-dashboard-section {
+    animation: none !important;
+  }
+}
+
+/* Smooth nav link & button hover transitions (consistent across routes) */
+.ss-dashboard-nav a,
+.ss-dashboard-btn,
+.ss-dashboard-action-card,
+.ss-dashboard-stat-card {
+  transition: background-color .18s ease,
+              color .18s ease,
+              border-color .18s ease,
+              box-shadow .18s ease,
+              transform .12s ease;
+}

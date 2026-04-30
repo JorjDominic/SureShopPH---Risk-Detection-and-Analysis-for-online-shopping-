@@ -1,25 +1,13 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.REACT_APP_SUPABASE_URL
-const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY
+const supabaseUrl = process.env.REACT_APP_SUPABASE_URL || 'https://lmjuqnvzakiznpfvkkqk.supabase.co'
+const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY || 'sb_publishable_B7vSdKIkoVRzHvAArtoWTQ_7gJrBMwk'
 
-// Flag the misconfig but DO NOT throw — a throw at module-import time crashes
-// the whole bundle before React mounts, leaving the user with a white screen.
-// Instead, log loudly and let the app render so the ErrorBoundary (or any UI
-// surface that needs supabase) can show a real message.
-export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey)
-
-if (!isSupabaseConfigured) {
-	// eslint-disable-next-line no-console
-	console.error(
-		'[Supabase] Missing REACT_APP_SUPABASE_URL or REACT_APP_SUPABASE_ANON_KEY. ' +
-		'The app will load but auth and data calls will fail until env vars are set.'
-	)
-}
+export const isSupabaseConfigured = true
 
 const withSupabaseHeaders = (headers = {}) => {
 	const normalized = new Headers(headers)
-	if (supabaseAnonKey && !normalized.has('apikey')) normalized.set('apikey', supabaseAnonKey)
+	if (!normalized.has('apikey')) normalized.set('apikey', supabaseAnonKey)
 	return normalized
 }
 
@@ -34,20 +22,16 @@ const supabaseFetch = async (input, init = {}) => {
 	return fetch(input, nextInit)
 }
 
-// Use safe fallbacks so createClient doesn't throw — every call will simply
-// fail at the network layer when env vars are missing, which the UI handles.
-export const supabase = createClient(
-	supabaseUrl || 'https://placeholder.supabase.co',
-	supabaseAnonKey || 'placeholder-anon-key',
-	{
-		auth: {
-			persistSession: true,
-			autoRefreshToken: true,
-			detectSessionInUrl: true,
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+	auth: {
+		persistSession: true,
+		autoRefreshToken: true,
+		detectSessionInUrl: true,
+	},
+	global: {
+		headers: {
+			apikey: supabaseAnonKey,
 		},
-		global: {
-			headers: supabaseAnonKey ? { apikey: supabaseAnonKey } : {},
-			fetch: supabaseFetch,
-		},
-	}
-)
+		fetch: supabaseFetch,
+	},
+})

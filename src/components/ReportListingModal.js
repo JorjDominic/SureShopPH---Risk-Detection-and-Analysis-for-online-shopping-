@@ -19,6 +19,7 @@ function ReportListingModal({ open, onClose, userId, listingUrl, defaultType = '
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [done, setDone] = useState(false);
+  const [duplicateInfo, setDuplicateInfo] = useState(null);
 
   useEffect(() => {
     if (!open) return;
@@ -27,6 +28,7 @@ function ReportListingModal({ open, onClose, userId, listingUrl, defaultType = '
     setError('');
     setDone(false);
     setBusy(false);
+    setDuplicateInfo(null);
   }, [open, defaultType]);
 
   if (!open) return null;
@@ -39,12 +41,49 @@ function ReportListingModal({ open, onClose, userId, listingUrl, defaultType = '
     setBusy(true);
     setError('');
 
+    // 1. Already in the verified registry? → mark this report as duplicate
+    //    so the admin queue isn't spammed with the same URL.
+    let status = 'pending';
+    let listingId = null;
+    let duplicateReason = null;
+    try {
+      const { data: registry } = await supabase
+        .from('high_risk_listings')
+        .select('id')
+        .eq('url', listingUrl)
+        .eq('verified', true)
+        .maybeSingle();
+      if (registry?.id) {
+        status = 'duplicate';
+        listingId = registry.id;
+        duplicateReason = 'registry';
+      }
+    } catch { /* ignore */ }
+
+    // 2. Same user already reported this URL? → also duplicate.
+    if (status === 'pending') {
+      try {
+        const { data: existing } = await supabase
+          .from('user_reports')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('listing_url', listingUrl)
+          .limit(1)
+          .maybeSingle();
+        if (existing?.id) {
+          status = 'duplicate';
+          duplicateReason = 'self';
+        }
+      } catch { /* ignore */ }
+    }
+
     const { error: insertErr } = await supabase.from('user_reports').insert({
       user_id: userId,
       listing_url: listingUrl,
       report_type: reportType,
       description: description.trim() || null,
-      status: 'pending',
+      status,
+      listing_id: listingId,
     });
 
     if (insertErr) {
@@ -54,6 +93,7 @@ function ReportListingModal({ open, onClose, userId, listingUrl, defaultType = '
     }
 
     setBusy(false);
+    setDuplicateInfo(duplicateReason);
     setDone(true);
   };
 
@@ -103,9 +143,19 @@ function ReportListingModal({ open, onClose, userId, listingUrl, defaultType = '
           <div className="udb-alert udb-alert-success" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <i className="fas fa-circle-check"></i>
             <div>
-              <strong>Report submitted.</strong>
+              <strong>
+                {duplicateInfo === 'registry'
+                  ? 'Already flagged.'
+                  : duplicateInfo === 'self'
+                  ? 'You already reported this.'
+                  : 'Report submitted.'}
+              </strong>
               <p style={{ margin: '0.2rem 0 0', fontSize: '0.83rem' }}>
-                Our moderators will review it. Thank you for helping keep the community safe.
+                {duplicateInfo === 'registry'
+                  ? 'This listing is already in our verified high-risk registry. Thanks for double-checking.'
+                  : duplicateInfo === 'self'
+                  ? 'Your earlier report for this URL is still on file. We\u2019ve logged this one as a duplicate.'
+                  : 'Our moderators will review it. Thank you for helping keep the community safe.'}
               </p>
             </div>
           </div>

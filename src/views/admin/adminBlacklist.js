@@ -34,7 +34,8 @@ function AdminFlaggedUrls() {
         .select('id, user_id, url, platform, scan_mode, risk_score, risk_level, created_at')
         .gte('risk_score', 80)
         .order('risk_score', { ascending: false })
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(100);
 
       if (active) {
         setHighRiskScans(data ?? []);

@@ -9,6 +9,7 @@ import AdminSubNav, { MODERATION_TABS } from '../../components/AdminSubNav';
 import '../../styles/dashboard.css';
 
 const STATUS_FILTERS = ['All', 'Pending', 'Verified', 'Dismissed', 'Duplicate'];
+const PAGE_SIZE = 25;
 
 function AdminReports() {
   const { user, loading: authLoading } = useAuth();
@@ -18,19 +19,29 @@ function AdminReports() {
   const [busyId, setBusyId] = useState(null);
   const [actionAlert, setActionAlert] = useState(null);
   const [noTable, setNoTable] = useState(false);
+  const [page, setPage] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
 
-  const loadReports = useCallback(async () => {
-    const { data, error } = await supabase
+  const loadReports = useCallback(async (pageIndex = 0) => {
+    const from = pageIndex * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
+    const { data, error, count } = await supabase
       .from('user_reports')
-      .select('id, user_id, listing_url, report_type, description, status, reviewed_by, reviewed_at, listing_id, created_at')
-      .order('created_at', { ascending: false });
+      .select(
+        'id, user_id, listing_url, report_type, description, status, reviewed_by, reviewed_at, listing_id, created_at',
+        { count: 'exact' }
+      )
+      .order('created_at', { ascending: false })
+      .range(from, to);
 
     if (error) {
       setNoTable(true);
       setReports([]);
+      setTotalCount(0);
     } else {
       setNoTable(false);
       setReports(data ?? []);
+      setTotalCount(count ?? 0);
     }
   }, []);
 
@@ -40,10 +51,10 @@ function AdminReports() {
 
     if (!user) { setLoading(false); return undefined; }
 
-    loadReports().finally(() => { if (active) setLoading(false); });
+    loadReports(page).finally(() => { if (active) setLoading(false); });
 
     return () => { active = false; };
-  }, [authLoading, user, loadReports]);
+  }, [authLoading, user, loadReports, page]);
 
   const visibleReports = useMemo(() => {
     if (statusFilter === 'All') return reports;
@@ -138,7 +149,7 @@ function AdminReports() {
           type: 'success',
           message: `Promoted "${displayUrl}" to the high-risk registry.`,
         });
-        await loadReports();
+        await loadReports(page);
       } catch (err) {
         setActionAlert({
           type: 'error',
@@ -148,7 +159,7 @@ function AdminReports() {
         setBusyId(null);
       }
     },
-    [user, loadReports]
+    [user, loadReports, page]
   );
 
   const handleDismiss = useCallback(
@@ -362,6 +373,32 @@ function AdminReports() {
                       })}
                     </tbody>
                   </table>
+                </div>
+              )}
+
+              {totalCount > PAGE_SIZE && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  <span style={{ fontSize: '0.85rem', color: '#64748b' }}>
+                    Showing {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, totalCount)} of {totalCount}
+                  </span>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button
+                      type="button"
+                      className="ss-dashboard-btn ss-dashboard-btn-secondary"
+                      disabled={page === 0}
+                      onClick={() => setPage((p) => Math.max(0, p - 1))}
+                    >
+                      <i className="fas fa-chevron-left"></i> Prev
+                    </button>
+                    <button
+                      type="button"
+                      className="ss-dashboard-btn ss-dashboard-btn-secondary"
+                      disabled={(page + 1) * PAGE_SIZE >= totalCount}
+                      onClick={() => setPage((p) => p + 1)}
+                    >
+                      Next <i className="fas fa-chevron-right"></i>
+                    </button>
+                  </div>
                 </div>
               )}
             </div>

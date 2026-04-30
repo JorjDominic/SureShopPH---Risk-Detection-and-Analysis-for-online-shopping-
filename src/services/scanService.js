@@ -267,6 +267,35 @@ const tryEdgeAnalyze = async ({ url, scanType, userId }) => {
 };
 
 // ---------------------------------------------------------------------------
+// Rate limiting. Prevents a single user (or runaway client) from hammering
+// the scan_history table or the optional Edge Function.
+// ---------------------------------------------------------------------------
+
+const SCAN_LIMIT_PER_HOUR = 30;
+
+const enforceRateLimit = async (userId) => {
+  const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+  try {
+    const { count, error } = await supabase
+      .from('scan_history')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .gte('created_at', since);
+    if (error) return; // fail open — don't block users on a count error
+    if ((count ?? 0) >= SCAN_LIMIT_PER_HOUR) {
+      const err = new Error(
+        `Scan limit reached (${SCAN_LIMIT_PER_HOUR}/hour). Please try again later.`
+      );
+      err.code = 'rate_limited';
+      throw err;
+    }
+  } catch (e) {
+    if (e?.code === 'rate_limited') throw e;
+    // network/db hiccup — don't block the scan
+  }
+};
+
+// ---------------------------------------------------------------------------
 // Curated registry lookup. If a URL was already verified as high-risk by an
 // admin, short-circuit straight to a High verdict before doing anything else.
 // ---------------------------------------------------------------------------
@@ -324,6 +353,10 @@ export const runScan = async ({ url, scanType = 'product', userId }) => {
   if (!userId) {
     throw new Error('You must be signed in to run a scan.');
   }
+
+  // Rate limit: at most SCAN_LIMIT_PER_HOUR scans per user per rolling hour.
+  // Counted before parsing so a flood of bad URLs still hits the cap.
+  await enforceRateLimit(userId);
 
   const parsed = normalizeAndParseUrl(url);
   const canonicalUrl = canonicalizeUrl(parsed);

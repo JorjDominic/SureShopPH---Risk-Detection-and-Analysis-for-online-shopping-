@@ -15,19 +15,25 @@ function AdminLogs() {
   const [nlpFeed, setNlpFeed] = useState([]);
   const [errorLogs, setErrorLogs] = useState([]);
   const [noErrorTable, setNoErrorTable] = useState(false);
+  const [actionFilter, setActionFilter] = useState('all');
 
   const loadData = useCallback(async () => {
+    let logsQuery = supabase
+      .from('admin_logs')
+      .select('id, user_id, action, details, created_at')
+      .order('created_at', { ascending: false })
+      .limit(100);
+    if (actionFilter !== 'all') {
+      logsQuery = logsQuery.eq('action', actionFilter);
+    }
+
     const [nlpRes, errRes] = await Promise.all([
       supabase
         .from('scan_history')
         .select('id, url, platform, scan_mode, flags, risk_level, risk_score, confidence_pct, created_at')
         .order('created_at', { ascending: false })
         .limit(20),
-      supabase
-        .from('admin_logs')
-        .select('id, user_id, action, details, created_at')
-        .order('created_at', { ascending: false })
-        .limit(30),
+      logsQuery,
     ]);
 
     setNlpFeed(nlpRes.data ?? []);
@@ -39,7 +45,7 @@ function AdminLogs() {
       setNoErrorTable(false);
       setErrorLogs(errRes.data ?? []);
     }
-  }, []);
+  }, [actionFilter]);
 
   useEffect(() => {
     if (authLoading) return;
@@ -197,7 +203,21 @@ function AdminLogs() {
                 </h3>
               </div>
               {!noErrorTable && (
-                <span className="ss-dashboard-panel-pill">{errorLogs.length} entries</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <select
+                    value={actionFilter}
+                    onChange={(e) => setActionFilter(e.target.value)}
+                    className="udb-form-input"
+                    style={{ padding: '0.4rem 0.6rem', fontSize: '0.8rem', height: 'auto' }}
+                    aria-label="Filter by action"
+                  >
+                    <option value="all">All actions</option>
+                    <option value="report.verified">Report verified</option>
+                    <option value="report.dismissed">Report dismissed</option>
+                    <option value="blacklist.added">Blacklist added</option>
+                  </select>
+                  <span className="ss-dashboard-panel-pill">{errorLogs.length} entries</span>
+                </div>
               )}
             </div>
             <div className="ss-dashboard-panel">

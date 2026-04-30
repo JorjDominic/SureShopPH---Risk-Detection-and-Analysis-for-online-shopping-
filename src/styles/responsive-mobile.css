@@ -1,0 +1,203 @@
+/* =========================================================================
+ * Mobile responsiveness overrides.
+ * Loaded last so these rules win the cascade. Targets fixes called out in
+ * the responsiveness audit. Keep this file additive only.
+ * ========================================================================= */
+
+/* -------------------------------------------------------------------------
+ * Landing page
+ * ------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+	.ss-landing-hero-content {
+		grid-template-columns: 1fr !important;
+		gap: 2rem !important;
+	}
+	.ss-landing-hero-title {
+		font-size: clamp(1.75rem, 7vw, 2.75rem) !important;
+		line-height: 1.15 !important;
+	}
+	.ss-landing-hero-subtitle,
+	.ss-landing-section h2 {
+		font-size: clamp(1.5rem, 5vw, 2rem) !important;
+	}
+	.ss-landing-cta-buttons {
+		flex-direction: column !important;
+		align-items: stretch !important;
+	}
+	.ss-landing-cta-buttons .btn {
+		width: 100% !important;
+		justify-content: center !important;
+	}
+	.ss-landing-demo-content {
+		grid-template-columns: 1fr !important;
+	}
+	.ss-landing-footer-content {
+		grid-template-columns: 1fr 1fr !important;
+		gap: 1.5rem !important;
+	}
+}
+@media (max-width: 480px) {
+	.ss-landing-footer-content {
+		grid-template-columns: 1fr !important;
+	}
+	.ss-landing-newsletter-row {
+		flex-direction: column !important;
+		gap: 0.5rem !important;
+	}
+	.ss-landing-newsletter-row input,
+	.ss-landing-newsletter-row button {
+		width: 100% !important;
+	}
+}
+
+/* -------------------------------------------------------------------------
+ * Dashboard (user + admin)
+ * ------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+	.ss-dashboard-topbar-inner {
+		min-height: 64px !important;
+		gap: 0.5rem !important;
+		padding: 0.5rem 0.75rem !important;
+	}
+	.ss-dashboard-section {
+		padding: 1.25rem 0 !important;
+	}
+	.ss-dashboard-section .container {
+		padding-left: 1rem !important;
+		padding-right: 1rem !important;
+	}
+	.ss-dashboard-panel {
+		padding: 1rem !important;
+		border-radius: 14px !important;
+	}
+	.ss-dashboard-hero-grid,
+	.ss-dashboard-content-grid {
+		grid-template-columns: 1fr !important;
+		gap: 1rem !important;
+	}
+	.ss-dashboard-section-heading {
+		flex-direction: column !important;
+		align-items: flex-start !important;
+		gap: 0.5rem !important;
+	}
+	.ss-dashboard-btn {
+		font-size: 0.85rem !important;
+		padding: 0.55rem 0.9rem !important;
+	}
+}
+@media (max-width: 640px) {
+	.ss-dashboard-actions-grid,
+	.ss-dashboard-stats-grid {
+		grid-template-columns: 1fr !important;
+	}
+}
+@media (max-width: 480px) {
+	.ss-dashboard-actions-grid,
+	.ss-dashboard-stats-grid {
+		grid-template-columns: 1fr !important;
+		gap: 0.75rem !important;
+	}
+	.ss-dashboard-hero-main h1 {
+		font-size: clamp(1.4rem, 6vw, 2rem) !important;
+	}
+}
+
+/* -------------------------------------------------------------------------
+ * Tables — already wrapped in overflow-x scrollers but tighten the look.
+ * ------------------------------------------------------------------------- */
+@media (max-width: 640px) {
+	.ss-dashboard-table-wrap {
+		margin: 0 -0.5rem !important;
+		padding: 0 0.5rem !important;
+	}
+	.ss-dashboard-table th,
+	.ss-dashboard-table td {
+		padding: 0.55rem 0.6rem !important;
+		font-size: 0.8rem !important;
+	}
+}
+
+/* -------------------------------------------------------------------------
+ * Admin sub-nav (tab bar) — let it scroll horizontally instead of stacking.
+ * ------------------------------------------------------------------------- */
+@media (max-width: 640px) {
+	[data-admin-subnav] {
+		flex-wrap: nowrap !important;
+		overflow-x: auto !important;
+		-webkit-overflow-scrolling: touch !important;
+		scrollbar-width: none !important;
+	}
+	[data-admin-subnav]::-webkit-scrollbar {
+		display: none !important;
+	}
+	[data-admin-subnav] > button,
+	[data-admin-subnav] > a {
+		flex: 0 0 auto !important;
+		white-space: nowrap !important;
+	}
+}
+
+/* -------------------------------------------------------------------------
+ * Privacy policy two-column → one-column earlier.
+ * ------------------------------------------------------------------------- */
+@media (max-width: 900px) {
+	.ss-policy-layout {
+		grid-template-columns: 1fr !important;
+	}
+	.ss-policy-toc {
+		position: static !important;
+		margin-bottom: 1.5rem !important;
+	}
+}
+@media (max-width: 480px) {
+	.ss-policy-footer-grid {
+		grid-template-columns: 1fr !important;
+	}
+}
+
+/* -------------------------------------------------------------------------
+ * Auth pages (login, register, forgot, reset) — tighten padding on phones.
+ * ------------------------------------------------------------------------- */
+@media (max-width: 480px) {
+	.login-page,
+	.register-page {
+		padding: 1rem !important;
+	}
+	.auth-card {
+		padding: 1.25rem !important;
+		border-radius: 14px !important;
+	}
+	.auth-card h1 {
+		font-size: clamp(1.4rem, 6vw, 1.8rem) !important;
+	}
+}
+
+/* -------------------------------------------------------------------------
+ * Modals — keep within viewport on small screens.
+ * ------------------------------------------------------------------------- */
+@media (max-width: 480px) {
+	[role='dialog'] > div {
+		padding: 1rem !important;
+		max-height: 90vh !important;
+		overflow-y: auto !important;
+	}
+}
+
+/* -------------------------------------------------------------------------
+ * Generic safety: prevent horizontal scroll on the whole document and make
+ * long URLs/words wrap instead of breaking layout.
+ * ------------------------------------------------------------------------- */
+html, body {
+	overflow-x: hidden;
+	max-width: 100%;
+}
+@media (max-width: 640px) {
+	img, video {
+		max-width: 100%;
+		height: auto;
+	}
+	pre, code {
+		white-space: pre-wrap !important;
+		word-break: break-word !important;
+	}
+}

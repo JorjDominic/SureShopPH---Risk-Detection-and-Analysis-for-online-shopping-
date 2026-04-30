@@ -22,6 +22,7 @@ function AdminSubNav({ eyebrow, tabs = [] }) {
         )}
         <div
           role="tablist"
+          data-admin-subnav
           style={{
             display: 'flex',
             gap: '0.4rem',

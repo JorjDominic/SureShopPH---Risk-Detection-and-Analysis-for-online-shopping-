@@ -9,6 +9,7 @@ import '../styles/dashboard.css';
 function AdminHeader({ user, onLogout, logoutBusy }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [showSignOutModal, setShowSignOutModal] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
 
   const displayName = useMemo(() => {
@@ -29,8 +30,11 @@ function AdminHeader({ user, onLogout, logoutBusy }) {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  useEffect(() => { setMobileOpen(false); }, [location.pathname]);
+
   const isActive = (path) => location.pathname === path;
   const inGroup = (paths) => paths.some((p) => location.pathname === p || location.pathname.startsWith(p + '/'));
+  const closeMobile = () => setMobileOpen(false);
 
   return (
     <>
@@ -91,7 +95,7 @@ function AdminHeader({ user, onLogout, logoutBusy }) {
               </span>
               <button
                 type="button"
-                className="ss-dashboard-logout ss-dashboard-logout-cta"
+                className="ss-dashboard-logout ss-dashboard-logout-cta ss-dashboard-logout-desktop"
                 onClick={() => setShowSignOutModal(true)}
                 disabled={logoutBusy}
               >
@@ -100,8 +104,53 @@ function AdminHeader({ user, onLogout, logoutBusy }) {
                   {logoutBusy ? 'Signing out\u2026' : 'Logout'}
                 </span>
               </button>
+              <button
+                type="button"
+                className="ss-mobile-menu-btn"
+                aria-label="Toggle navigation"
+                aria-expanded={mobileOpen}
+                onClick={() => setMobileOpen((v) => !v)}
+              >
+                <i className={`fas ${mobileOpen ? 'fa-times' : 'fa-bars'}`}></i>
+              </button>
             </div>
           </div>
+
+          {mobileOpen && (
+            <div className="ss-mobile-dropdown">
+              <Link to="/admin" onClick={closeMobile} className={isActive('/admin') ? 'active' : ''}>
+                <i className="fas fa-gauge-high"></i> Overview
+              </Link>
+              <Link
+                to="/admin/reports"
+                onClick={closeMobile}
+                className={inGroup(['/admin/reports', '/admin/flagged']) ? 'active' : ''}
+              >
+                <i className="fas fa-flag"></i> Moderation
+              </Link>
+              <Link
+                to="/admin/training"
+                onClick={closeMobile}
+                className={inGroup(['/admin/training', '/admin/logs']) ? 'active' : ''}
+              >
+                <i className="fas fa-brain"></i> Training
+              </Link>
+              <Link to="/admin/settings" onClick={closeMobile} className={isActive('/admin/settings') ? 'active' : ''}>
+                <i className="fas fa-cog"></i> Settings
+              </Link>
+              <Link to="/userdashboard" onClick={closeMobile}>
+                <i className="fas fa-user"></i> User View
+              </Link>
+              <button
+                type="button"
+                onClick={() => { closeMobile(); setShowSignOutModal(true); }}
+                disabled={logoutBusy}
+                className="ss-mobile-dropdown-logout"
+              >
+                <i className="fas fa-sign-out-alt"></i> {logoutBusy ? 'Signing out\u2026' : 'Logout'}
+              </button>
+            </div>
+          )}
         </div>
       </nav>
     </header>

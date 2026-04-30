@@ -9,6 +9,7 @@ import '../styles/dashboard.css';
 function DashboardHeader({ user, onLogout, logoutBusy }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [showSignOutModal, setShowSignOutModal] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
 
   const isAdmin =
@@ -33,7 +34,11 @@ function DashboardHeader({ user, onLogout, logoutBusy }) {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  // Close the mobile menu on route change.
+  useEffect(() => { setMobileOpen(false); }, [location.pathname]);
+
   const isActive = (path) => location.pathname === path;
+  const closeMobile = () => setMobileOpen(false);
 
   return (
     <>
@@ -87,7 +92,7 @@ function DashboardHeader({ user, onLogout, logoutBusy }) {
               </span>
               <button
                 type="button"
-                className="ss-dashboard-logout ss-dashboard-logout-cta"
+                className="ss-dashboard-logout ss-dashboard-logout-cta ss-dashboard-logout-desktop"
                 onClick={() => setShowSignOutModal(true)}
                 disabled={logoutBusy}
               >
@@ -96,8 +101,47 @@ function DashboardHeader({ user, onLogout, logoutBusy }) {
                   {logoutBusy ? 'Signing out…' : 'Logout'}
                 </span>
               </button>
+              <button
+                type="button"
+                className="ss-mobile-menu-btn"
+                aria-label="Toggle navigation"
+                aria-expanded={mobileOpen}
+                onClick={() => setMobileOpen((v) => !v)}
+              >
+                <i className={`fas ${mobileOpen ? 'fa-times' : 'fa-bars'}`}></i>
+              </button>
             </div>
           </div>
+
+          {mobileOpen && (
+            <div className="ss-mobile-dropdown">
+              <Link to="/userdashboard" onClick={closeMobile} className={isActive('/userdashboard') ? 'active' : ''}>
+                <i className="fas fa-tachometer-alt"></i> Dashboard
+              </Link>
+              <Link to="/scan" onClick={closeMobile} className={isActive('/scan') ? 'active' : ''}>
+                <i className="fas fa-search"></i> New Scan
+              </Link>
+              <Link to="/scan-history" onClick={closeMobile} className={isActive('/scan-history') ? 'active' : ''}>
+                <i className="fas fa-history"></i> Scan History
+              </Link>
+              <Link to="/settings" onClick={closeMobile} className={isActive('/settings') ? 'active' : ''}>
+                <i className="fas fa-cog"></i> Settings
+              </Link>
+              {isAdmin && (
+                <Link to="/admin" onClick={closeMobile} className={location.pathname.startsWith('/admin') ? 'active' : ''}>
+                  <i className="fas fa-shield-halved"></i> Admin
+                </Link>
+              )}
+              <button
+                type="button"
+                onClick={() => { closeMobile(); setShowSignOutModal(true); }}
+                disabled={logoutBusy}
+                className="ss-mobile-dropdown-logout"
+              >
+                <i className="fas fa-sign-out-alt"></i> {logoutBusy ? 'Signing out…' : 'Logout'}
+              </button>
+            </div>
+          )}
         </div>
       </nav>
     </header>

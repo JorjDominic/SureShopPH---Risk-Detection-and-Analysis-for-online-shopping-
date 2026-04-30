@@ -23,6 +23,7 @@ import AdminTraining from './views/admin/adminTraining';
 import AdminLayout from './components/AdminLayout';
 import UserLayout from './components/UserLayout';
 import ErrorBoundary from './components/ErrorBoundary';
+import { isSupabaseConfigured } from './config/supabase';
 import { useAuth } from './context/AuthContext';
 
 function DeferredSectionContent({ children, minHeight = 420 }) {
@@ -469,6 +470,23 @@ function App() {
   return (
     <BrowserRouter>
       <ErrorBoundary>
+      {!isSupabaseConfigured && (
+        <div
+          role="alert"
+          style={{
+            background: '#fef2f2',
+            color: '#991b1b',
+            borderBottom: '1px solid #fecaca',
+            padding: '0.6rem 1rem',
+            fontSize: '0.85rem',
+            textAlign: 'center',
+            fontFamily: 'system-ui, sans-serif',
+          }}
+        >
+          <strong>Configuration error:</strong> Supabase environment variables are missing.
+          Set <code>REACT_APP_SUPABASE_URL</code> and <code>REACT_APP_SUPABASE_ANON_KEY</code> in your hosting provider, then redeploy.
+        </div>
+      )}
       <Routes>
         <Route path="/" element={<LandingPage session={session} />} />
         <Route path="/login" element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />

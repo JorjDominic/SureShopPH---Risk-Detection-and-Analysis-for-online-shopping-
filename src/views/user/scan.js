@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { runScan } from '../../services/scanService';
+import ReportListingModal from '../../components/ReportListingModal';
 import '../../styles/dashboard.css';
 
 function ScanPage() {
@@ -11,6 +12,7 @@ function ScanPage() {
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
+  const [reportOpen, setReportOpen] = useState(false);
 
   const handleScan = async (e) => {
     e.preventDefault();
@@ -152,10 +154,18 @@ function ScanPage() {
                   </p>
                 )}
                 {result.id && (
-                  <div style={{ marginTop: '1rem' }}>
+                  <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                     <Link to={`/scan-details/${result.id}`} className="ss-dashboard-btn ss-dashboard-btn-secondary">
                       <i className="fas fa-eye"></i> View Full Report
                     </Link>
+                    <button
+                      type="button"
+                      onClick={() => setReportOpen(true)}
+                      className="ss-dashboard-btn ss-dashboard-btn-secondary"
+                      style={{ borderColor: '#fecaca', color: '#dc2626' }}
+                    >
+                      <i className="fas fa-flag"></i> Report this listing
+                    </button>
                   </div>
                 )}
               </div>
@@ -163,6 +173,14 @@ function ScanPage() {
             </div>
           </div>
         </div>
+
+        <ReportListingModal
+          open={reportOpen}
+          onClose={() => setReportOpen(false)}
+          userId={user?.id}
+          listingUrl={result?.url || url}
+          defaultType={result?.risk_level === 'High' ? 'scam' : 'misleading'}
+        />
 
         {/* How it works */}
         <div className="ss-dashboard-section">

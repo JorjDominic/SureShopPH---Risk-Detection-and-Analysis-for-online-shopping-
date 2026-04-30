@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
 import { useAuth } from '../../context/AuthContext';
+import ReportListingModal from '../../components/ReportListingModal';
 import '../../styles/dashboard.css';
 
 function ScanDetailsPage() {
@@ -10,6 +11,7 @@ function ScanDetailsPage() {
   const [scan, setScan] = useState(null);
   const [scanLoading, setScanLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
 
   useEffect(() => {
     if (!user || !id) return;
@@ -232,9 +234,27 @@ function ScanDetailsPage() {
               <Link to="/scan" className="ss-dashboard-btn ss-dashboard-btn-primary">
                 <i className="fas fa-search"></i> New Scan
               </Link>
+              {scan?.url && (
+                <button
+                  type="button"
+                  onClick={() => setReportOpen(true)}
+                  className="ss-dashboard-btn ss-dashboard-btn-secondary"
+                  style={{ borderColor: '#fecaca', color: '#dc2626' }}
+                >
+                  <i className="fas fa-flag"></i> Report this listing
+                </button>
+              )}
             </div>
           </div>
         </div>
+
+        <ReportListingModal
+          open={reportOpen}
+          onClose={() => setReportOpen(false)}
+          userId={user?.id}
+          listingUrl={scan?.url}
+          defaultType={scan?.risk_level === 'High' ? 'scam' : 'misleading'}
+        />
 
       </main>
     </div>

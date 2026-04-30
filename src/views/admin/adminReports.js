@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
 import { useAuth } from '../../context/AuthContext';
+import { logAdminAction } from '../../services/adminLogService';
 
 import AdminSubNav, { MODERATION_TABS } from '../../components/AdminSubNav';
 import '../../styles/dashboard.css';
@@ -49,6 +50,19 @@ function AdminReports() {
     const target = statusFilter.toLowerCase();
     return reports.filter((r) => (r.status || 'pending') === target);
   }, [reports, statusFilter]);
+
+  // Map of listing_url -> total pending reports for that URL across the
+  // whole table. Lets the admin see "9 other users reported this URL too"
+  // without losing the per-report description / reporter id.
+  const pendingByUrl = useMemo(() => {
+    const m = new Map();
+    for (const r of reports) {
+      if ((r.status || 'pending') === 'pending' && r.listing_url) {
+        m.set(r.listing_url, (m.get(r.listing_url) ?? 0) + 1);
+      }
+    }
+    return m;
+  }, [reports]);
 
   const counts = useMemo(() => {
     const c = { pending: 0, verified: 0, dismissed: 0, duplicate: 0 };
@@ -105,9 +119,24 @@ function AdminReports() {
 
         if (updateErr) throw updateErr;
 
+        await logAdminAction({
+          userId: user.id,
+          action: 'report.verified',
+          details: {
+            report_id: report.id,
+            listing_url: report.listing_url,
+            listing_id: listing?.id ?? null,
+          },
+        });
+
+        let displayUrl = report.listing_url;
+        try {
+          const u = new URL(report.listing_url);
+          displayUrl = u.hostname + (u.pathname.length > 30 ? u.pathname.slice(0, 30) + '…' : u.pathname);
+        } catch { /* leave raw */ }
         setActionAlert({
           type: 'success',
-          message: `Promoted “${report.listing_url}” to the high-risk registry.`,
+          message: `Promoted "${displayUrl}" to the high-risk registry.`,
         });
         await loadReports();
       } catch (err) {
@@ -139,6 +168,11 @@ function AdminReports() {
       if (error) {
         setActionAlert({ type: 'error', message: error.message || 'Could not dismiss report.' });
       } else {
+        await logAdminAction({
+          userId: user.id,
+          action: 'report.dismissed',
+          details: { report_id: report.id, listing_url: report.listing_url },
+        });
         setReports((prev) =>
           prev.map((r) =>
             r.id === report.id
@@ -259,6 +293,8 @@ function AdminReports() {
                       {visibleReports.map((r) => {
                         const status = (r.status || 'pending').toLowerCase();
                         const isPending = status === 'pending';
+                        const siblingCount = pendingByUrl.get(r.listing_url) ?? 0;
+                        const hasSiblings = isPending && siblingCount > 1;
                         return (
                           <tr key={r.id}>
                             <td style={{ maxWidth: 260 }}>
@@ -270,6 +306,20 @@ function AdminReports() {
                               >
                                 {r.listing_url || '\u2014'}
                               </a>
+                              {hasSiblings && (
+                                <span
+                                  title={`${siblingCount} pending reports for this URL`}
+                                  style={{
+                                    display: 'inline-block', marginTop: '0.3rem',
+                                    fontSize: '0.7rem', fontWeight: 700,
+                                    padding: '0.15rem 0.5rem', borderRadius: 999,
+                                    background: 'rgba(249,115,22,0.12)', color: '#c2410c',
+                                  }}
+                                >
+                                  <i className="fas fa-layer-group" style={{ marginRight: '0.3rem' }}></i>
+                                  {siblingCount} reports
+                                </span>
+                              )}
                             </td>
                             <td>
                               <span className="ss-dashboard-risk ss-dashboard-risk-medium" style={{ fontSize: '0.78rem' }}>

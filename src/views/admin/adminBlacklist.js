@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
 import { useAuth } from '../../context/AuthContext';
+import { logAdminAction } from '../../services/adminLogService';
 
 import AdminSubNav, { MODERATION_TABS } from '../../components/AdminSubNav';
 import '../../styles/dashboard.css';
@@ -78,6 +79,11 @@ function AdminFlaggedUrls() {
     if (error) {
       setFlagAlert({ type: 'error', message: error.message || 'Could not save flag. Ensure the high_risk_listings table exists.' });
     } else {
+      await logAdminAction({
+        userId: user.id,
+        action: 'blacklist.added',
+        details: { url, reason: flagReason.trim() || null },
+      });
       setFlagAlert({ type: 'success', message: `“${url}” has been flagged as high risk.` });
       setFlagUrl('');
       setFlagReason('');

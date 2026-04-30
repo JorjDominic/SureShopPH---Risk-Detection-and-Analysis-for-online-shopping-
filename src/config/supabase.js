@@ -1,7 +1,14 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.REACT_APP_SUPABASE_URL || 'https://lmjuqnvzakiznpfvkkqk.supabase.co'
-const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY || 'sb_publishable_B7vSdKIkoVRzHvAArtoWTQ_7gJrBMwk'
+const supabaseUrl = process.env.REACT_APP_SUPABASE_URL
+const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY
+
+if (!supabaseUrl || !supabaseAnonKey) {
+	throw new Error(
+		'Supabase environment variables are missing. ' +
+		'Set REACT_APP_SUPABASE_URL and REACT_APP_SUPABASE_ANON_KEY before building.'
+	)
+}
 
 const withSupabaseHeaders = (headers = {}) => {
 	const normalized = new Headers(headers)

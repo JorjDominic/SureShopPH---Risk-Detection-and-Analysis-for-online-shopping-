@@ -22,6 +22,7 @@ import AdminSettings from './views/admin/adminSettings';
 import AdminTraining from './views/admin/adminTraining';
 import AdminLayout from './components/AdminLayout';
 import UserLayout from './components/UserLayout';
+import ErrorBoundary from './components/ErrorBoundary';
 import { useAuth } from './context/AuthContext';
 
 function DeferredSectionContent({ children, minHeight = 420 }) {
@@ -467,6 +468,7 @@ function App() {
 
   return (
     <BrowserRouter>
+      <ErrorBoundary>
       <Routes>
         <Route path="/" element={<LandingPage session={session} />} />
         <Route path="/login" element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />
@@ -523,6 +525,7 @@ function App() {
           <i className={`fas ${isDarkMode ? 'fa-moon' : 'fa-sun'}`}></i>
         </span>
       </button>
+      </ErrorBoundary>
     </BrowserRouter>
   );
 }

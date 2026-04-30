@@ -79,6 +79,46 @@ const normalizeAndParseUrl = (raw) => {
   return parsed;
 };
 
+// Tracking / marketing query params we want to strip so two URLs that point
+// at the same listing don't end up as separate rows in scan_history /
+// high_risk_listings.
+const TRACKING_PARAM_PREFIXES = ['utm_', 'fbclid', 'gclid', 'mc_', '_ga'];
+const TRACKING_PARAMS = new Set([
+  'fbclid', 'gclid', 'msclkid', 'mc_cid', 'mc_eid', 'igshid', 'yclid',
+  '_branch_match_id', 'ref', 'ref_src', 'ref_url', 'spm',
+]);
+
+/**
+ * Returns a stable canonical form of a URL, suitable for blacklist lookups.
+ * Lowercases the host, drops the default port, strips tracking params,
+ * removes trailing slashes, and discards the fragment.
+ */
+const canonicalizeUrl = (parsed) => {
+  const u = new URL(parsed.href);
+  u.hostname = u.hostname.toLowerCase();
+  u.hash = '';
+
+  const params = u.searchParams;
+  const drop = [];
+  params.forEach((_, key) => {
+    const lowered = key.toLowerCase();
+    if (
+      TRACKING_PARAMS.has(lowered) ||
+      TRACKING_PARAM_PREFIXES.some((p) => lowered.startsWith(p))
+    ) {
+      drop.push(key);
+    }
+  });
+  drop.forEach((k) => params.delete(k));
+
+  // Strip trailing slash from non-root paths.
+  if (u.pathname.length > 1 && u.pathname.endsWith('/')) {
+    u.pathname = u.pathname.replace(/\/+$/, '');
+  }
+
+  return u.toString();
+};
+
 const detectPlatform = (hostname) => {
   for (const entry of KNOWN_PLATFORMS) {
     if (entry.match.test(hostname)) return entry.platform;
@@ -227,6 +267,37 @@ const tryEdgeAnalyze = async ({ url, scanType, userId }) => {
 };
 
 // ---------------------------------------------------------------------------
+// Curated registry lookup. If a URL was already verified as high-risk by an
+// admin, short-circuit straight to a High verdict before doing anything else.
+// ---------------------------------------------------------------------------
+
+const tryRegistryLookup = async (canonicalUrl) => {
+  try {
+    const { data, error } = await supabase
+      .from('high_risk_listings')
+      .select('id, platform, risk_score, risk_level, flags, verified')
+      .eq('url', canonicalUrl)
+      .eq('verified', true)
+      .maybeSingle();
+
+    if (error || !data) return null;
+
+    const flags = Array.isArray(data.flags) ? data.flags : [];
+    return {
+      risk_score: typeof data.risk_score === 'number' ? data.risk_score : 100,
+      risk_level: data.risk_level || 'High',
+      flags: ['registry_match', ...flags],
+      notes: 'This URL is in SureShopPH\u2019s verified high-risk registry.',
+      platform: data.platform,
+      source: 'registry',
+      confidence_pct: 100,
+    };
+  } catch {
+    return null;
+  }
+};
+
+// ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
 
@@ -255,16 +326,20 @@ export const runScan = async ({ url, scanType = 'product', userId }) => {
   }
 
   const parsed = normalizeAndParseUrl(url);
+  const canonicalUrl = canonicalizeUrl(parsed);
   const platform = detectPlatform(parsed.hostname);
 
-  const edge = await tryEdgeAnalyze({
-    url: parsed.href,
-    scanType,
-    userId,
-  });
+  // 1. If the URL is already in the verified registry, skip analysis.
+  const registry = await tryRegistryLookup(canonicalUrl);
 
+  // 2. Otherwise try the optional Edge Function.
+  const edge = !registry
+    ? await tryEdgeAnalyze({ url: canonicalUrl, scanType, userId })
+    : null;
+
+  // 3. Always have the local heuristic as a safety net.
   const local = analyzeHeuristically(parsed);
-  const analysis = edge || local;
+  const analysis = registry || edge || local;
 
   const productName =
     analysis.product_name ||
@@ -290,8 +365,8 @@ export const runScan = async ({ url, scanType = 'product', userId }) => {
   // Row written to DB — must match `public.scan_history` columns exactly.
   const row = {
     user_id: userId,
-    platform: edge?.platform || platform,
-    url: parsed.href,
+    platform: analysis.platform || platform,
+    url: canonicalUrl,
     risk_score: analysis.risk_score,
     risk_level: analysis.risk_level,
     flags: analysis.flags,
@@ -341,7 +416,7 @@ export const previewScan = (url) => {
   const platform = detectPlatform(parsed.hostname);
   const local = analyzeHeuristically(parsed);
   return {
-    url: parsed.href,
+    url: canonicalizeUrl(parsed),
     platform,
     ...local,
   };

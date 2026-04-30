@@ -7,19 +7,21 @@ import { useAuth } from '../../context/AuthContext';
 import AdminSubNav, { MODERATION_TABS } from '../../components/AdminSubNav';
 import '../../styles/dashboard.css';
 
-const ALL_FILTER = 'All';
+const STATUS_FILTERS = ['All', 'Pending', 'Verified', 'Dismissed', 'Duplicate'];
 
 function AdminReports() {
   const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
   const [reports, setReports] = useState([]);
-  const [filter, setFilter] = useState(ALL_FILTER);
+  const [statusFilter, setStatusFilter] = useState('Pending');
+  const [busyId, setBusyId] = useState(null);
+  const [actionAlert, setActionAlert] = useState(null);
   const [noTable, setNoTable] = useState(false);
 
   const loadReports = useCallback(async () => {
     const { data, error } = await supabase
       .from('user_reports')
-      .select('id, user_id, listing_url, report_type, description, created_at')
+      .select('id, user_id, listing_url, report_type, description, status, reviewed_by, reviewed_at, listing_id, created_at')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -42,19 +44,119 @@ function AdminReports() {
     return () => { active = false; };
   }, [authLoading, user, loadReports]);
 
-  // Derive filter buttons from the actual report_type values present.
-  const filters = useMemo(() => {
-    const types = new Set();
+  const visibleReports = useMemo(() => {
+    if (statusFilter === 'All') return reports;
+    const target = statusFilter.toLowerCase();
+    return reports.filter((r) => (r.status || 'pending') === target);
+  }, [reports, statusFilter]);
+
+  const counts = useMemo(() => {
+    const c = { pending: 0, verified: 0, dismissed: 0, duplicate: 0 };
     for (const r of reports) {
-      if (r.report_type) types.add(r.report_type);
+      const s = r.status || 'pending';
+      if (s in c) c[s] += 1;
     }
-    return [ALL_FILTER, ...Array.from(types).sort()];
+    return c;
   }, [reports]);
 
-  const visibleReports = useMemo(() => {
-    if (filter === ALL_FILTER) return reports;
-    return reports.filter((r) => r.report_type === filter);
-  }, [reports, filter]);
+  // Verify a report:
+  //   1. Upsert into high_risk_listings with verified=true.
+  //   2. Update this report (and any other pending reports for the same URL)
+  //      with status='verified', reviewed_by, reviewed_at, listing_id.
+  const handleVerify = useCallback(
+    async (report) => {
+      if (!report?.listing_url) {
+        setActionAlert({ type: 'error', message: 'Report has no listing URL.' });
+        return;
+      }
+      setBusyId(report.id);
+      setActionAlert(null);
+
+      try {
+        const { data: listing, error: upsertErr } = await supabase
+          .from('high_risk_listings')
+          .upsert(
+            {
+              url: report.listing_url,
+              platform: 'web',
+              risk_score: 100,
+              risk_level: 'High',
+              flags: [report.report_type || 'user_report'],
+              verified: true,
+              verified_by: user.id,
+            },
+            { onConflict: 'url' }
+          )
+          .select('id')
+          .single();
+
+        if (upsertErr) throw upsertErr;
+
+        const { error: updateErr } = await supabase
+          .from('user_reports')
+          .update({
+            status: 'verified',
+            reviewed_by: user.id,
+            reviewed_at: new Date().toISOString(),
+            listing_id: listing?.id ?? null,
+          })
+          .eq('listing_url', report.listing_url)
+          .in('status', ['pending', 'duplicate']);
+
+        if (updateErr) throw updateErr;
+
+        setActionAlert({
+          type: 'success',
+          message: `Promoted “${report.listing_url}” to the high-risk registry.`,
+        });
+        await loadReports();
+      } catch (err) {
+        setActionAlert({
+          type: 'error',
+          message: err?.message || 'Could not verify report.',
+        });
+      } finally {
+        setBusyId(null);
+      }
+    },
+    [user, loadReports]
+  );
+
+  const handleDismiss = useCallback(
+    async (report) => {
+      setBusyId(report.id);
+      setActionAlert(null);
+
+      const { error } = await supabase
+        .from('user_reports')
+        .update({
+          status: 'dismissed',
+          reviewed_by: user.id,
+          reviewed_at: new Date().toISOString(),
+        })
+        .eq('id', report.id);
+
+      if (error) {
+        setActionAlert({ type: 'error', message: error.message || 'Could not dismiss report.' });
+      } else {
+        setReports((prev) =>
+          prev.map((r) =>
+            r.id === report.id
+              ? {
+                  ...r,
+                  status: 'dismissed',
+                  reviewed_by: user.id,
+                  reviewed_at: new Date().toISOString(),
+                }
+              : r
+          )
+        );
+      }
+
+      setBusyId(null);
+    },
+    [user]
+  );
 
   const formatDate = (iso) =>
     iso
@@ -62,6 +164,15 @@ function AdminReports() {
           month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
         })
       : '\u2014';
+
+  const statusBadge = (status) => {
+    const s = (status || 'pending').toLowerCase();
+    return (
+      <span className={`ss-admin-status-badge ${s}`}>
+        {s.charAt(0).toUpperCase() + s.slice(1)}
+      </span>
+    );
+  };
 
   if (loading) return <div className="ss-dashboard-page" aria-busy="true" />;
   if (!user) return <Navigate to="/login" replace />;
@@ -80,22 +191,40 @@ function AdminReports() {
               </div>
               <p style={{ alignSelf: 'center', color: 'var(--ss-dashboard-muted)', fontSize: '0.9rem' }}>
                 {visibleReports.length} record{visibleReports.length !== 1 ? 's' : ''}
+                {' · '}
+                <strong style={{ color: '#f97316' }}>{counts.pending} pending</strong>
               </p>
             </div>
 
-            {filters.length > 1 && (
-              <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
-                {filters.map((f) => (
-                  <button
-                    key={f}
-                    type="button"
-                    onClick={() => setFilter(f)}
-                    className={`ss-dashboard-btn ${filter === f ? 'ss-dashboard-btn-primary' : 'ss-dashboard-btn-secondary'}`}
-                    style={{ minHeight: 36, padding: '0 1rem', fontSize: '0.83rem' }}
-                  >
-                    {f}
-                  </button>
-                ))}
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
+              {STATUS_FILTERS.map((f) => (
+                <button
+                  key={f}
+                  type="button"
+                  onClick={() => setStatusFilter(f)}
+                  className={`ss-dashboard-btn ${statusFilter === f ? 'ss-dashboard-btn-primary' : 'ss-dashboard-btn-secondary'}`}
+                  style={{ minHeight: 36, padding: '0 1rem', fontSize: '0.83rem' }}
+                >
+                  {f}
+                  {f !== 'All' && (
+                    <span style={{ marginLeft: '0.4rem', opacity: 0.7, fontSize: '0.78rem' }}>
+                      ({counts[f.toLowerCase()] ?? 0})
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+
+            {actionAlert && (
+              <div
+                className={`udb-alert ${actionAlert.type === 'error' ? 'udb-alert-error' : 'udb-alert-success'}`}
+                style={{ marginBottom: '1rem' }}
+              >
+                <i
+                  className={`fas ${actionAlert.type === 'error' ? 'fa-circle-exclamation' : 'fa-circle-check'}`}
+                  style={{ marginRight: '0.5rem' }}
+                ></i>
+                {actionAlert.message}
               </div>
             )}
 
@@ -122,35 +251,65 @@ function AdminReports() {
                         <th>Description</th>
                         <th>User ID</th>
                         <th>Date</th>
+                        <th>Status</th>
+                        <th style={{ minWidth: 180 }}>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {visibleReports.map((r) => (
-                        <tr key={r.id}>
-                          <td style={{ maxWidth: 260 }}>
-                            <a
-                              href={r.listing_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              style={{ color: 'var(--ss-dashboard-blue)', textDecoration: 'none', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-                            >
-                              {r.listing_url || '\u2014'}
-                            </a>
-                          </td>
-                          <td>
-                            <span className="ss-dashboard-risk ss-dashboard-risk-medium" style={{ fontSize: '0.78rem' }}>
-                              {r.report_type || '\u2014'}
-                            </span>
-                          </td>
-                          <td style={{ maxWidth: 320, color: 'var(--ss-dashboard-muted)', fontSize: '0.85rem' }}>
-                            {r.description || '\u2014'}
-                          </td>
-                          <td style={{ fontFamily: 'monospace', fontSize: '0.76rem', color: '#94a3b8' }}>
-                            {r.user_id?.slice(0, 8)}\u2026
-                          </td>
-                          <td style={{ whiteSpace: 'nowrap', fontSize: '0.82rem' }}>{formatDate(r.created_at)}</td>
-                        </tr>
-                      ))}
+                      {visibleReports.map((r) => {
+                        const status = (r.status || 'pending').toLowerCase();
+                        const isPending = status === 'pending';
+                        return (
+                          <tr key={r.id}>
+                            <td style={{ maxWidth: 260 }}>
+                              <a
+                                href={r.listing_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{ color: 'var(--ss-dashboard-blue)', textDecoration: 'none', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                              >
+                                {r.listing_url || '\u2014'}
+                              </a>
+                            </td>
+                            <td>
+                              <span className="ss-dashboard-risk ss-dashboard-risk-medium" style={{ fontSize: '0.78rem' }}>
+                                {r.report_type || '\u2014'}
+                              </span>
+                            </td>
+                            <td style={{ maxWidth: 320, color: 'var(--ss-dashboard-muted)', fontSize: '0.85rem' }}>
+                              {r.description || '\u2014'}
+                            </td>
+                            <td style={{ fontFamily: 'monospace', fontSize: '0.76rem', color: '#94a3b8' }}>
+                              {r.user_id?.slice(0, 8)}\u2026
+                            </td>
+                            <td style={{ whiteSpace: 'nowrap', fontSize: '0.82rem' }}>{formatDate(r.created_at)}</td>
+                            <td>{statusBadge(r.status)}</td>
+                            <td>
+                              <div style={{ display: 'flex', gap: '0.45rem' }}>
+                                <button
+                                  type="button"
+                                  disabled={busyId === r.id || !isPending}
+                                  onClick={() => handleVerify(r)}
+                                  className="ss-dashboard-btn ss-dashboard-btn-primary"
+                                  style={{ minHeight: 34, padding: '0 0.8rem', fontSize: '0.78rem' }}
+                                  title={isPending ? 'Promote to high-risk listings' : 'Already reviewed'}
+                                >
+                                  <i className="fas fa-check" style={{ marginRight: '0.3rem' }}></i>Verify
+                                </button>
+                                <button
+                                  type="button"
+                                  disabled={busyId === r.id || !isPending}
+                                  onClick={() => handleDismiss(r)}
+                                  className="ss-dashboard-btn ss-dashboard-btn-secondary"
+                                  style={{ minHeight: 34, padding: '0 0.8rem', fontSize: '0.78rem' }}
+                                >
+                                  <i className="fas fa-times" style={{ marginRight: '0.3rem' }}></i>Dismiss
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>

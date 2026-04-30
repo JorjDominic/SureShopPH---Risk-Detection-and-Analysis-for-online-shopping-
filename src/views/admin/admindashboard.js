@@ -177,7 +177,8 @@ function AdminDashboard() {
             .limit(8),
           supabase
             .from('user_reports')
-            .select('*', { count: 'exact', head: true }),
+            .select('*', { count: 'exact', head: true })
+            .eq('status', 'pending'),
         ]);
 
         if (!active) return;
@@ -310,12 +311,12 @@ function AdminDashboard() {
               <article className="ss-dashboard-stat-card tone-blue">
                 <div className="ss-dashboard-stat-top">
                   <div>
-                    <p>User Reports</p>
+                    <p>Pending Reports</p>
                     <h3>{kpis.pendingReports.toLocaleString()}</h3>
                   </div>
                   <span className="ss-dashboard-stat-icon"><DashboardIcon type="shield" /></span>
                 </div>
-                <small>User dispute reports submitted</small>
+                <small>User dispute reports awaiting review</small>
               </article>
 
               <article className="ss-dashboard-stat-card tone-success">

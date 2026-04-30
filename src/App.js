@@ -22,18 +22,7 @@ import AdminSettings from './views/admin/adminSettings';
 import AdminTraining from './views/admin/adminTraining';
 import AdminLayout from './components/AdminLayout';
 import UserLayout from './components/UserLayout';
-import { getCurrentSession, onAuthStateChange } from './services/authService';
-
-const hasOAuthParamsInUrl = () => {
-  const params = new URLSearchParams(window.location.search);
-  return (
-    params.has('code') ||
-    params.has('access_token') ||
-    params.has('refresh_token') ||
-    params.has('provider_token') ||
-    params.has('provider_refresh_token')
-  );
-};
+import { useAuth } from './context/AuthContext';
 
 function DeferredSectionContent({ children, minHeight = 420 }) {
   const [isVisible, setIsVisible] = useState(false);
@@ -70,39 +59,34 @@ function DeferredSectionContent({ children, minHeight = 420 }) {
   );
 }
 
-function ProtectedRoute({ session, children }) {
+function ProtectedRoute({ children }) {
+  const { isAuthenticated } = useAuth();
   const location = useLocation();
 
-  if (!session) {
+  if (!isAuthenticated) {
     return <Navigate to="/login" replace state={{ from: location.pathname + location.search + location.hash }} />;
   }
 
   return children;
 }
 
-function PublicOnlyRoute({ session, children }) {
-  if (session) {
-    const role =
-      session.user?.app_metadata?.role ||
-      session.user?.user_metadata?.role;
-    return <Navigate to={role === 'admin' ? '/admin' : '/userdashboard'} replace />;
+function PublicOnlyRoute({ children }) {
+  const { isAuthenticated, isAdmin } = useAuth();
+  if (isAuthenticated) {
+    return <Navigate to={isAdmin ? '/admin' : '/userdashboard'} replace />;
   }
-
   return children;
 }
 
-function AdminRoute({ session, children }) {
+function AdminRoute({ children }) {
+  const { isAuthenticated, isAdmin } = useAuth();
   const location = useLocation();
 
-  if (!session) {
+  if (!isAuthenticated) {
     return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   }
 
-  const role =
-    session.user?.app_metadata?.role ||
-    session.user?.user_metadata?.role;
-
-  if (role !== 'admin') {
+  if (!isAdmin) {
     return <Navigate to="/userdashboard" replace />;
   }
 
@@ -447,58 +431,8 @@ function InfoPage({ title, subtitle, session }) {
 }
 
 function App() {
+  const { session, loading: authLoading } = useAuth();
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [session, setSession] = useState(null);
-  const [authLoading, setAuthLoading] = useState(true);
-
-  useEffect(() => {
-    let active = true;
-    let authEventHandled = false;
-
-    const { data } = onAuthStateChange((_event, nextSession) => {
-      if (!active) return;
-      authEventHandled = true;
-      setSession(nextSession ?? null);
-      setAuthLoading(false);
-    });
-
-    const loadSession = async () => {
-      const { data: initialData } = await getCurrentSession();
-      if (!active) return;
-
-      if (initialData?.session) {
-        setSession(initialData.session);
-        setAuthLoading(false);
-        return;
-      }
-
-      if (hasOAuthParamsInUrl()) {
-        for (let attempt = 0; attempt < 8; attempt += 1) {
-          if (!active || authEventHandled) return;
-          await new Promise((resolve) => setTimeout(resolve, 180));
-          const { data: retryData } = await getCurrentSession();
-          if (!active) return;
-          if (retryData?.session) {
-            setSession(retryData.session);
-            setAuthLoading(false);
-            return;
-          }
-        }
-      }
-
-      if (!authEventHandled) {
-        setSession(null);
-        setAuthLoading(false);
-      }
-    };
-
-    loadSession();
-
-    return () => {
-      active = false;
-      data.subscription.unsubscribe();
-    };
-  }, []);
 
   useEffect(() => {
     const isLocalhost = /^(localhost|127\.0\.0\.1)$/.test(window.location.hostname);
@@ -535,9 +469,9 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<LandingPage session={session} />} />
-        <Route path="/login" element={<PublicOnlyRoute session={session}><Login /></PublicOnlyRoute>} />
-        <Route path="/register" element={<PublicOnlyRoute session={session}><Register /></PublicOnlyRoute>} />
-        <Route path="/forgot-password" element={<PublicOnlyRoute session={session}><ForgotPassword /></PublicOnlyRoute>} />
+        <Route path="/login" element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />
+        <Route path="/register" element={<PublicOnlyRoute><Register /></PublicOnlyRoute>} />
+        <Route path="/forgot-password" element={<PublicOnlyRoute><ForgotPassword /></PublicOnlyRoute>} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/help-center" element={<InfoPage title="Help Center" subtitle="Support articles and guidance are coming soon. For now, use account recovery and dashboard support actions." session={session} />} />
         <Route path="/documentation" element={<InfoPage title="Documentation" subtitle="Technical documentation is being prepared. A public knowledge base will be available soon." session={session} />} />
@@ -557,17 +491,17 @@ function App() {
         <Route path="/tools/url-scan" element={<InfoPage title="URL Scan" subtitle="The URL scan tool UI is coming soon. This placeholder keeps navigation working in production." session={session} />} />
         <Route path="/tools/saved-warnings" element={<InfoPage title="Saved Warnings" subtitle="Saved warning history is coming soon. This placeholder keeps navigation working in production." session={session} />} />
         <Route path="/tools/account-settings" element={<Navigate to="/settings" replace />} />
-        <Route path="/userdashboard" element={<ProtectedRoute session={session}><UserLayout /></ProtectedRoute>}>
+        <Route path="/userdashboard" element={<ProtectedRoute><UserLayout /></ProtectedRoute>}>
           <Route index element={<UserDashboard />} />
         </Route>
-        <Route element={<ProtectedRoute session={session}><UserLayout /></ProtectedRoute>}>
+        <Route element={<ProtectedRoute><UserLayout /></ProtectedRoute>}>
           <Route path="/scan" element={<ScanPage />} />
           <Route path="/scan-history" element={<ScanHistoryPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/scan-details/:id" element={<ScanDetailsPage />} />
         </Route>
         <Route path="/admindashboard" element={<Navigate to="/admin" replace />} />
-        <Route element={<AdminRoute session={session}><AdminLayout /></AdminRoute>}>
+        <Route element={<AdminRoute><AdminLayout /></AdminRoute>}>
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/reports" element={<AdminReports />} />
           <Route path="/admin/flagged" element={<AdminFlaggedUrls />} />

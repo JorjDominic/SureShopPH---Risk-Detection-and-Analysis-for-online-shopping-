@@ -1,27 +1,18 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
+import { useAuth } from '../../context/AuthContext';
 import '../../styles/dashboard.css';
 
 const PAGE_SIZE = 20;
 
 function ScanHistoryPage() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { user, loading } = useAuth();
   const [scans, setScans] = useState([]);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(false);
   const [filter, setFilter] = useState('all');
-
-  useEffect(() => {
-    let active = true;
-    supabase.auth.getUser().then(({ data }) => {
-      if (!active) return;
-      setUser(data?.user ?? null);
-      setLoading(false);
-    });
-    return () => { active = false; };
-  }, []);
+  const [pageLoading, setPageLoading] = useState(true);
 
   const loadScans = useCallback(async (currentUser, pageNum, riskFilter) => {
     let query = supabase
@@ -42,14 +33,14 @@ function ScanHistoryPage() {
   useEffect(() => {
     if (!user) return;
     let active = true;
-    setLoading(true);
+    setPageLoading(true);
 
     loadScans(user, 0, filter).then((data) => {
       if (!active) return;
       setScans(data);
       setPage(0);
       setHasMore(data.length === PAGE_SIZE);
-      setLoading(false);
+      setPageLoading(false);
     });
 
     return () => { active = false; };
@@ -120,7 +111,7 @@ function ScanHistoryPage() {
               </div>
             </div>
 
-            {loading ? (
+            {(loading || pageLoading) ? (
               <div className="ss-dashboard-panel">
                 <div className="udb-empty-state">
                   <i className="fas fa-spinner fa-spin"></i>

@@ -2,12 +2,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
+import { useAuth } from '../../context/AuthContext';
 
 import AdminSubNav, { MODERATION_TABS } from '../../components/AdminSubNav';
 import '../../styles/dashboard.css';
 
 function AdminFlaggedUrls() {
-  const [user, setUser] = useState(null);
+  const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
 
   const [highRiskScans, setHighRiskScans] = useState([]);
@@ -21,15 +22,11 @@ function AdminFlaggedUrls() {
   const alertRef = useRef(null);
 
   useEffect(() => {
+    if (authLoading) return;
     let active = true;
 
     const load = async () => {
-      const { data: authData } = await supabase.auth.getUser();
-      if (!active) return;
-      const u = authData?.user ?? null;
-      setUser(u);
-
-      if (!u) { setLoading(false); return; }
+      if (!user) { setLoading(false); return; }
 
       const { data } = await supabase
         .from('scans')
@@ -46,7 +43,7 @@ function AdminFlaggedUrls() {
 
     load();
     return () => { active = false; };
-  }, []);
+  }, [authLoading, user]);
 
   const filtered = highRiskScans.filter((s) => {
     const term = searchTerm.toLowerCase();

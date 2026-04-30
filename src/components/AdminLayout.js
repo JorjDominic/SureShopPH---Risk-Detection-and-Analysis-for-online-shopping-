@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Outlet, useNavigate, useOutletContext } from 'react-router-dom';
-import { supabase } from '../config/supabase';
+import { useAuth } from '../context/AuthContext';
 import { logoutUser } from '../services/authService';
 import AdminHeader from './AdminHeader';
 import DashboardFooter from './DashboardFooter';
@@ -15,16 +15,8 @@ import DashboardFooter from './DashboardFooter';
  */
 function AdminLayout() {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+  const { user } = useAuth();
   const [logoutBusy, setLogoutBusy] = useState(false);
-
-  useEffect(() => {
-    let active = true;
-    supabase.auth.getUser().then(({ data }) => {
-      if (active) setUser(data?.user ?? null);
-    });
-    return () => { active = false; };
-  }, []);
 
   const handleLogout = async () => {
     setLogoutBusy(true);

@@ -2,12 +2,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
+import { useAuth } from '../../context/AuthContext';
 
 import AdminSubNav, { TRAINING_TABS } from '../../components/AdminSubNav';
 import '../../styles/dashboard.css';
 
 function AdminLogs() {
-  const [user, setUser] = useState(null);
+  const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -43,20 +44,15 @@ function AdminLogs() {
   }, []);
 
   useEffect(() => {
+    if (authLoading) return;
     let active = true;
 
-    supabase.auth.getUser().then(({ data: authData }) => {
-      if (!active) return;
-      const u = authData?.user ?? null;
-      setUser(u);
+    if (!user) { setLoading(false); return undefined; }
 
-      if (!u) { setLoading(false); return; }
-
-      loadData().finally(() => { if (active) setLoading(false); });
-    });
+    loadData().finally(() => { if (active) setLoading(false); });
 
     return () => { active = false; };
-  }, [loadData]);
+  }, [authLoading, user, loadData]);
 
   const handleRefresh = async () => {
     setRefreshing(true);

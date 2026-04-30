@@ -2,14 +2,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
+import { useAuth } from '../../context/AuthContext';
 import { logoutUser } from '../../services/authService';
 
 import '../../styles/dashboard.css';
 
 function AdminSettings() {
   const navigate = useNavigate();
-
-  const [user, setUser] = useState(null);
+  const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
   const [logoutBusy, setLogoutBusy] = useState(false);
 
@@ -27,26 +27,16 @@ function AdminSettings() {
   const pwAlertRef = useRef(null);
 
   useEffect(() => {
-    let active = true;
-
-    supabase.auth.getUser().then(({ data: authData }) => {
-      if (!active) return;
-      const u = authData?.user ?? null;
-      setUser(u);
-
-      if (u) {
-        const name =
-          u.user_metadata?.full_name ||
-          u.user_metadata?.name ||
-          '';
-        setDisplayName(name);
-      }
-
-      if (active) setLoading(false);
-    });
-
-    return () => { active = false; };
-  }, []);
+    if (authLoading) return;
+    if (user) {
+      const name =
+        user.user_metadata?.full_name ||
+        user.user_metadata?.name ||
+        '';
+      setDisplayName(name);
+    }
+    setLoading(false);
+  }, [authLoading, user]);
 
   const handleProfileSave = async (e) => {
     e.preventDefault();

@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
+import { useAuth } from '../../context/AuthContext';
 import {
   generateActivationKey,
   revokeAllActivationKeys,
@@ -13,8 +14,8 @@ function UserDashboard() {
   const navigate = useNavigate();
   const location = useLocation();
   const isAdminView = location.state?.adminView ?? false;
+  const { user, isAdmin, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null);
   const [stats, setStats] = useState({ total: 0, highRisk: 0, protected: 0 });
   const [recentScans, setRecentScans] = useState([]);
   const [extensionActive, setExtensionActive] = useState(false);
@@ -24,35 +25,28 @@ function UserDashboard() {
   const [keyCopied, setKeyCopied] = useState(false);
 
   useEffect(() => {
+    if (authLoading) return;
+    if (!user) { setLoading(false); return; }
+    if (isAdmin && !isAdminView) {
+      navigate('/admin', { replace: true });
+      return;
+    }
+
     let active = true;
 
     const loadData = async () => {
-      const { data: authData } = await supabase.auth.getUser();
-      const currentUser = authData?.user ?? null;
-
-      if (!active) return;
-      if (!currentUser) { setLoading(false); return; }
-
-      const role = currentUser.app_metadata?.role || currentUser.user_metadata?.role;
-      if (role === 'admin' && !isAdminView) {
-        navigate('/admin', { replace: true });
-        return;
-      }
-
-      setUser(currentUser);
-
       try {
         const [scansRes, tokenRes] = await Promise.all([
           supabase
             .from('scan_history')
             .select('risk_level, scan_mode, url, created_at, id')
-            .eq('user_id', currentUser.id)
+            .eq('user_id', user.id)
             .order('created_at', { ascending: false })
             .limit(50),
           supabase
             .from('access_tokens')
             .select('id')
-            .eq('user_id', currentUser.id)
+            .eq('user_id', user.id)
             .eq('revoked', false)
             .limit(1),
         ]);
@@ -77,7 +71,7 @@ function UserDashboard() {
 
     loadData();
     return () => { active = false; };
-  }, [navigate, isAdminView]);
+  }, [authLoading, user, isAdmin, isAdminView, navigate]);
 
   const displayName = useMemo(() => {
     if (!user) return 'Shopper';

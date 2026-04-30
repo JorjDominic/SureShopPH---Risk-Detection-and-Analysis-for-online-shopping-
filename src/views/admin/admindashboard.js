@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
+import { useAuth } from '../../context/AuthContext';
 
 import DashboardIcon from '../../components/DashboardIcon';
 import '../../styles/dashboard.css';
@@ -148,7 +149,7 @@ function DonutChart({ segments }) {
 
 /* ── Main admin dashboard ─────────────────────────────────── */
 function AdminDashboard() {
-  const [user, setUser] = useState(null);
+  const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
 
   const [kpis, setKpis] = useState({ total: 0, highRisk: 0, pendingReports: 0 });
@@ -157,15 +158,11 @@ function AdminDashboard() {
   const [recentScans, setRecentScans] = useState([]);
 
   useEffect(() => {
+    if (authLoading) return;
     let active = true;
 
     const load = async () => {
-      const { data: authData } = await supabase.auth.getUser();
-      if (!active) return;
-      const u = authData?.user ?? null;
-      setUser(u);
-
-      if (!u) { setLoading(false); return; }
+      if (!user) { setLoading(false); return; }
 
       try {
         const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
@@ -234,7 +231,7 @@ function AdminDashboard() {
 
     load();
     return () => { active = false; };
-  }, []);
+  }, [authLoading, user]);
 
   const formatDate = (iso) => {
     if (!iso) return '\u2014';

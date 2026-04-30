@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
+import { useAuth } from '../../context/AuthContext';
 
 import AdminSubNav, { MODERATION_TABS } from '../../components/AdminSubNav';
 import '../../styles/dashboard.css';
@@ -9,7 +10,7 @@ import '../../styles/dashboard.css';
 const FILTERS = ['All', 'Pending', 'Verified', 'Dismissed'];
 
 function AdminReports() {
-  const [user, setUser] = useState(null);
+  const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
   const [reports, setReports] = useState([]);
   const [filter, setFilter] = useState('All');
@@ -37,20 +38,15 @@ function AdminReports() {
   }, [filter]);
 
   useEffect(() => {
+    if (authLoading) return;
     let active = true;
 
-    supabase.auth.getUser().then(({ data: authData }) => {
-      if (!active) return;
-      const u = authData?.user ?? null;
-      setUser(u);
+    if (!user) { setLoading(false); return undefined; }
 
-      if (!u) { setLoading(false); return; }
-
-      loadReports().finally(() => { if (active) setLoading(false); });
-    });
+    loadReports().finally(() => { if (active) setLoading(false); });
 
     return () => { active = false; };
-  }, [loadReports]);
+  }, [authLoading, user, loadReports]);
 
   const updateStatus = async (id, newStatus) => {
     setBusyId(id);

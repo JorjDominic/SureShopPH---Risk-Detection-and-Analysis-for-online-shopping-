@@ -1,25 +1,15 @@
 import { useEffect, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
+import { useAuth } from '../../context/AuthContext';
 import '../../styles/dashboard.css';
 
 function ScanDetailsPage() {
   const { id } = useParams();
-  const [user, setUser] = useState(null);
-  const [authLoading, setAuthLoading] = useState(true);
+  const { user, loading: authLoading } = useAuth();
   const [scan, setScan] = useState(null);
   const [scanLoading, setScanLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-
-  useEffect(() => {
-    let active = true;
-    supabase.auth.getUser().then(({ data }) => {
-      if (!active) return;
-      setUser(data?.user ?? null);
-      setAuthLoading(false);
-    });
-    return () => { active = false; };
-  }, []);
 
   useEffect(() => {
     if (!user || !id) return;

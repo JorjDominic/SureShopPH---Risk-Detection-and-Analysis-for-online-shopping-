@@ -1,26 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { supabase } from '../../config/supabase';
+import { useAuth } from '../../context/AuthContext';
+import { runScan } from '../../services/scanService';
 import '../../styles/dashboard.css';
 
 function ScanPage() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { user, loading } = useAuth();
   const [url, setUrl] = useState('');
   const [scanType, setScanType] = useState('product');
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
-
-  useEffect(() => {
-    let active = true;
-    supabase.auth.getUser().then(({ data }) => {
-      if (!active) return;
-      setUser(data?.user ?? null);
-      setLoading(false);
-    });
-    return () => { active = false; };
-  }, []);
 
   const handleScan = async (e) => {
     e.preventDefault();
@@ -30,16 +20,18 @@ function ScanPage() {
     setScanning(true);
 
     try {
-      // Call Supabase edge function or API if available
-      const { data, error: fnError } = await supabase.functions.invoke('scan', {
-        body: { url: url.trim(), scan_type: scanType, user_id: user?.id },
+      const scanResult = await runScan({
+        url: url.trim(),
+        scanType,
+        userId: user?.id,
       });
-
-      if (fnError) throw fnError;
-      setResult(data);
-    } catch {
-      // Fallback: show extension-required message
-      setResult({ fallback: true });
+      setResult(scanResult);
+      if (!scanResult.persisted && scanResult.persistError) {
+        // Non-fatal: analysis ran, but it could not be saved to history.
+        setError(`Scan completed, but it could not be saved to your history: ${scanResult.persistError}`);
+      }
+    } catch (err) {
+      setError(err?.message || 'Scan failed. Please try again.');
     } finally {
       setScanning(false);
     }
@@ -115,7 +107,7 @@ function ScanPage() {
             </form>
 
             {/* Scan result */}
-            {result && !result.fallback && (
+            {result && (
               <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--ss-dashboard-border)' }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1rem' }}>
                   <h3 style={{ margin: 0, color: 'var(--ss-dashboard-text)' }}>{result.product_name || url}</h3>
@@ -135,6 +127,30 @@ function ScanPage() {
                   </>
                 )}
                 {result.notes && <p style={{ fontSize: '0.875rem', margin: '0.75rem 0 0' }}>{result.notes}</p>}
+                {Array.isArray(result.flags) && result.flags.length > 0 && (
+                  <div style={{ marginTop: '0.75rem', display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                    {result.flags.map((f) => (
+                      <span
+                        key={f}
+                        style={{
+                          fontSize: '0.72rem',
+                          padding: '0.18rem 0.55rem',
+                          borderRadius: 999,
+                          background: 'rgba(148,163,184,0.18)',
+                          color: 'var(--ss-dashboard-muted)',
+                          fontFamily: 'monospace',
+                        }}
+                      >
+                        {f}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                {result.source && (
+                  <p style={{ fontSize: '0.72rem', margin: '0.75rem 0 0', color: 'var(--ss-dashboard-muted)' }}>
+                    Analysis source: {result.source === 'edge' ? 'server model' : 'local heuristic'}
+                  </p>
+                )}
                 {result.id && (
                   <div style={{ marginTop: '1rem' }}>
                     <Link to={`/scan-details/${result.id}`} className="ss-dashboard-btn ss-dashboard-btn-secondary">
@@ -142,27 +158,6 @@ function ScanPage() {
                     </Link>
                   </div>
                 )}
-              </div>
-            )}
-
-            {result?.fallback && (
-              <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--ss-dashboard-border)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
-                  <i className="fas fa-info-circle" style={{ color: 'var(--ss-dashboard-blue)', fontSize: '1.2rem' }}></i>
-                  <h3 style={{ margin: 0, fontSize: '0.95rem', color: 'var(--ss-dashboard-text)' }}>Use the Browser Extension for Live Scans</h3>
-                </div>
-                <p style={{ fontSize: '0.875rem', margin: '0 0 1rem' }}>
-                  Automated URL scanning requires the SureShop browser extension. The extension reads
-                  listing data directly from the page and submits it for analysis.
-                </p>
-                <a
-                  href="https://github.com/JorjDominic/Browser-Extension"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="ss-dashboard-btn ss-dashboard-btn-primary"
-                >
-                  <i className="fas fa-puzzle-piece"></i> Download Extension
-                </a>
               </div>
             )}
             </div>

@@ -1,6 +1,7 @@
+
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import { supabase } from '../../config/supabase';
+import { useAuth } from '../../context/AuthContext';
 
 import AdminSubNav, { TRAINING_TABS } from '../../components/AdminSubNav';
 import '../../styles/dashboard.css';
@@ -266,9 +267,8 @@ function HealthPill({ ok, redWhenBad = false, okLabel, badLabel, title }) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 function AdminTraining() {
-  // Auth
-  const [user, setUser] = useState(null);
-  const [authLoading, setAuthLoading] = useState(true);
+  // Auth (sourced from AuthContext)
+  const { user, loading: authLoading } = useAuth();
 
   // Page loading skeleton
   const [pageReady, setPageReady] = useState(false);
@@ -309,19 +309,14 @@ function AdminTraining() {
 
   // Auth check + fake load delay
   useEffect(() => {
+    if (authLoading) return undefined;
     let active = true;
 
-    supabase.auth.getUser().then(({ data: authData }) => {
-      if (!active) return;
-      setUser(authData?.user ?? null);
-      setAuthLoading(false);
-
-      // Simulate content load (mock — no real call)
-      setTimeout(() => { if (active) setPageReady(true); }, 800);
-    });
+    // Simulate content load (mock — no real call)
+    setTimeout(() => { if (active) setPageReady(true); }, 800);
 
     return () => { active = false; };
-  }, []);
+  }, [authLoading]);
 
   // Ctrl+Enter submit
   const handleTextareaKeyDown = (e) => {

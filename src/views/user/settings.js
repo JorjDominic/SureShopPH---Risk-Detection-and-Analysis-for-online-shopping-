@@ -1,40 +1,31 @@
 import { useEffect, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
+import { useAuth } from '../../context/AuthContext';
 import '../../styles/dashboard.css';
 
 function SettingsPage() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { user, loading, refreshUser } = useAuth();
 
   const [displayName, setDisplayName] = useState('');
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileMsg, setProfileMsg] = useState(null);
 
-  const [, setCurrentPassword] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [changingPassword, setChangingPassword] = useState(false);
   const [passwordMsg, setPasswordMsg] = useState(null);
 
   useEffect(() => {
-    let active = true;
-    supabase.auth.getUser().then(async ({ data }) => {
-      if (!active) return;
-      const u = data?.user ?? null;
-      setUser(u);
-      if (u) {
-        const name =
-          u.user_metadata?.full_name ||
-          u.user_metadata?.name ||
-          u.email?.split('@')[0] ||
-          '';
-        setDisplayName(name);
-      }
-      setLoading(false);
-    });
-    return () => { active = false; };
-  }, []);
+    if (!user) return;
+    const name =
+      user.user_metadata?.full_name ||
+      user.user_metadata?.name ||
+      user.email?.split('@')[0] ||
+      '';
+    setDisplayName(name);
+  }, [user]);
 
   const handleSaveProfile = async (e) => {
     e.preventDefault();
@@ -45,6 +36,7 @@ function SettingsPage() {
         data: { full_name: displayName.trim() },
       });
       if (error) throw error;
+      await refreshUser();
       setProfileMsg({ type: 'success', text: 'Display name updated successfully.' });
     } catch (err) {
       setProfileMsg({ type: 'error', text: err.message || 'Failed to update profile.' });
@@ -57,20 +49,57 @@ function SettingsPage() {
     e.preventDefault();
     setPasswordMsg(null);
 
+    if (!currentPassword) {
+      setPasswordMsg({ type: 'error', text: 'Please enter your current password.' });
+      return;
+    }
     if (newPassword.length < 8) {
       setPasswordMsg({ type: 'error', text: 'New password must be at least 8 characters.' });
+      return;
+    }
+    if (!/[A-Z]/.test(newPassword) || !/[a-z]/.test(newPassword) || !/\d/.test(newPassword)) {
+      setPasswordMsg({
+        type: 'error',
+        text: 'New password must include uppercase, lowercase, and a number.',
+      });
+      return;
+    }
+    if (newPassword === currentPassword) {
+      setPasswordMsg({ type: 'error', text: 'New password must be different from your current password.' });
       return;
     }
     if (newPassword !== confirmPassword) {
       setPasswordMsg({ type: 'error', text: 'Passwords do not match.' });
       return;
     }
+    if (!user?.email) {
+      setPasswordMsg({ type: 'error', text: 'No email on this account. Please sign in again.' });
+      return;
+    }
 
     setChangingPassword(true);
     try {
-      const { error } = await supabase.auth.updateUser({ password: newPassword });
-      if (error) throw error;
-      setPasswordMsg({ type: 'success', text: 'Password changed successfully.' });
+      // Re-authenticate using the current password before allowing the change.
+      const { error: reauthError } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: currentPassword,
+      });
+      if (reauthError) {
+        const msg = (reauthError.message || '').toLowerCase();
+        const friendly = msg.includes('invalid login credentials')
+          ? 'Current password is incorrect.'
+          : reauthError.message || 'Could not verify current password.';
+        setPasswordMsg({ type: 'error', text: friendly });
+        return;
+      }
+
+      const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
+      if (updateError) throw updateError;
+
+      // Best-effort hardening: invalidate other active sessions after a password change.
+      await supabase.auth.signOut({ scope: 'others' });
+
+      setPasswordMsg({ type: 'success', text: 'Password changed successfully. Other devices have been signed out.' });
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
@@ -164,6 +193,19 @@ function SettingsPage() {
                 <div className={`udb-alert udb-alert-${passwordMsg.type}`} style={{ marginBottom: '1.25rem' }}>{passwordMsg.text}</div>
               )}
               <form onSubmit={handleChangePassword}>
+                <div className="udb-form-group" style={{ marginBottom: '1.25rem', maxWidth: 580 }}>
+                  <label htmlFor="current-password">Current Password</label>
+                  <input
+                    id="current-password"
+                    type="password"
+                    className="udb-form-input"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    placeholder="Enter your current password"
+                    autoComplete="current-password"
+                    required
+                  />
+                </div>
                 <div className="udb-settings-grid">
                   <div className="udb-form-group">
                     <label htmlFor="new-password">New Password</label>
@@ -176,6 +218,7 @@ function SettingsPage() {
                       placeholder="At least 8 characters"
                       minLength={8}
                       autoComplete="new-password"
+                      required
                     />
                   </div>
                   <div className="udb-form-group">
@@ -188,6 +231,7 @@ function SettingsPage() {
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="Repeat new password"
                       autoComplete="new-password"
+                      required
                     />
                   </div>
                 </div>

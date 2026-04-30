@@ -365,9 +365,26 @@ function LandingPage({ session }) {
                   </div>
                 </div>
                 <div className="ss-landing-demo-video">
-                  <div className="ss-landing-video-placeholder">
-                    <i className="fas fa-play-circle"></i>
-                    <p>Demo Video Coming Soon</p>
+                  <div className="ss-landing-video-placeholder" style={{ padding: '2rem', textAlign: 'left' }}>
+                    <h3 style={{ marginTop: 0, color: '#fff' }}>
+                      <i className="fas fa-bolt" style={{ marginRight: '0.5rem', color: '#fbbf24' }}></i>
+                      Try it now
+                    </h3>
+                    <p style={{ color: 'rgba(255,255,255,0.85)', margin: '0.5rem 0 1.25rem' }}>
+                      Paste a Shopee, Lazada, or TikTok Shop link in the dashboard and get a risk score in under 2 seconds.
+                    </p>
+                    <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 1.25rem', color: 'rgba(255,255,255,0.95)' }}>
+                      <li style={{ marginBottom: '0.5rem' }}><i className="fas fa-check" style={{ color: '#22c55e', marginRight: '0.5rem' }}></i> Free for individual users</li>
+                      <li style={{ marginBottom: '0.5rem' }}><i className="fas fa-check" style={{ color: '#22c55e', marginRight: '0.5rem' }}></i> No card required</li>
+                      <li><i className="fas fa-check" style={{ color: '#22c55e', marginRight: '0.5rem' }}></i> Browser extension available</li>
+                    </ul>
+                    <Link
+                      to="/register"
+                      className="btn btn-primary ss-landing-btn-primary"
+                      style={{ width: '100%', justifyContent: 'center' }}
+                    >
+                      <i className="fas fa-rocket"></i> Start free
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -408,19 +425,17 @@ function LandingPage({ session }) {
   );
 }
 
-function InfoPage({ title, subtitle, session }) {
+function InfoPage({ title, subtitle, children, session }) {
   return (
     <>
       <LandingHeader session={session} />
       <main className="login-page">
-        <section className="auth-card">
-          <div className="auth-kicker">SureShop Info</div>
+        <section className="auth-card" style={{ maxWidth: 720 }}>
+          <div className="auth-kicker">SureShop</div>
           <h1>{title}</h1>
-          <p className="login-subtitle">{subtitle}</p>
-          <div className="auth-links">
-            <p>
-              Need account help? <Link to="/forgot-password">Reset your password</Link>
-            </p>
+          {subtitle && <p className="login-subtitle">{subtitle}</p>}
+          {children && <div style={{ textAlign: 'left', marginTop: '1.25rem', lineHeight: 1.6, color: 'var(--text-color, #334155)' }}>{children}</div>}
+          <div className="auth-links" style={{ marginTop: '1.5rem' }}>
             <p>
               <Link to="/">Back to home</Link>
             </p>
@@ -431,6 +446,161 @@ function InfoPage({ title, subtitle, session }) {
     </>
   );
 }
+
+// ---------------------------------------------------------------------------
+// Real content for the previously-placeholder info pages.
+// Kept minimal on purpose so they're easy to maintain.
+// ---------------------------------------------------------------------------
+
+function ExternalRedirect({ href }) {
+  useEffect(() => {
+    window.location.replace(href);
+  }, [href]);
+  return null;
+}
+
+const HelpCenterContent = () => (
+  <div>
+    <h3>Frequently asked questions</h3>
+    <p><strong>How does SureShopPH detect risk?</strong><br/>We combine URL heuristics, a curated registry of verified high-risk listings, and signals reported by other users.</p>
+    <p><strong>Is it free?</strong><br/>Yes, individual scans and the browser extension are free.</p>
+    <p><strong>I forgot my password.</strong><br/>Use <Link to="/forgot-password">password recovery</Link>.</p>
+    <p><strong>How do I report a suspicious listing?</strong><br/>Sign in, run a scan on the URL, then click <em>Report this listing</em>.</p>
+    <p><strong>I need direct help.</strong><br/>Email <a href="mailto:support@sureshopph.com">support@sureshopph.com</a>.</p>
+  </div>
+);
+
+const DocumentationContent = () => (
+  <div>
+    <p>SureShopPH is a risk-detection platform for Filipino online shoppers covering Shopee, Lazada, TikTok Shop, and arbitrary URLs.</p>
+    <h3>Getting started</h3>
+    <ol>
+      <li><Link to="/register">Create an account</Link>.</li>
+      <li>Open the dashboard and paste a listing URL.</li>
+      <li>Review the risk score, flags, and verdict.</li>
+      <li>Optionally install the <a href="https://github.com/JorjDominic/Browser-Extension" target="_blank" rel="noopener noreferrer">browser extension</a> to scan automatically while shopping.</li>
+    </ol>
+    <h3>Source</h3>
+    <p>The web app is open source: <a href="https://github.com/JorjDominic/SureShopPH---Risk-Detection-and-Analysis-for-online-shopping-" target="_blank" rel="noopener noreferrer">GitHub repository</a>.</p>
+  </div>
+);
+
+const ApiReferenceContent = () => (
+  <div>
+    <p>SureShopPH does not currently expose a public API. Risk analysis is performed client-side and via private Supabase Edge Functions.</p>
+    <p>If you are interested in integration access, reach out at <a href="mailto:support@sureshopph.com">support@sureshopph.com</a>.</p>
+  </div>
+);
+
+const ContactSupportContent = () => (
+  <div>
+    <p>The fastest way to reach us:</p>
+    <p>
+      <a
+        href="mailto:support@sureshopph.com?subject=SureShopPH%20support%20request"
+        className="btn btn-primary"
+        style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
+      >
+        <i className="fas fa-envelope"></i> Email support@sureshopph.com
+      </a>
+    </p>
+    <p>For account issues, use <Link to="/forgot-password">password recovery</Link> or <Link to="/login">sign back in</Link>.</p>
+    <p>For bugs and feature requests, open an issue on <a href="https://github.com/JorjDominic/SureShopPH---Risk-Detection-and-Analysis-for-online-shopping-/issues" target="_blank" rel="noopener noreferrer">GitHub</a>.</p>
+  </div>
+);
+
+const StatusContent = () => {
+  const [status, setStatus] = useState('checking');
+  useEffect(() => {
+    let active = true;
+    import('./config/supabase').then(({ supabase }) =>
+      supabase
+        .from('scan_history')
+        .select('id', { head: true, count: 'exact' })
+        .limit(1)
+        .then(({ error }) => {
+          if (!active) return;
+          setStatus(error ? 'degraded' : 'operational');
+        })
+    );
+    return () => { active = false; };
+  }, []);
+
+  const color = status === 'operational' ? '#22c55e' : status === 'degraded' ? '#f97316' : '#94a3b8';
+  const label = status === 'operational' ? 'All systems operational' : status === 'degraded' ? 'Service degraded' : 'Checking...';
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.85rem 1rem', borderRadius: 10, background: `${color}1a`, color }}>
+        <span style={{ width: 10, height: 10, borderRadius: '50%', background: color, display: 'inline-block' }}></span>
+        <strong>{label}</strong>
+      </div>
+      <p style={{ marginTop: '1rem' }}>This page checks live connectivity to our Supabase backend. For incident reports, contact <a href="mailto:support@sureshopph.com">support@sureshopph.com</a>.</p>
+    </div>
+  );
+};
+
+const TermsContent = () => (
+  <div>
+    <p><strong>Last updated:</strong> May 2026</p>
+    <p>By using SureShopPH you agree to use the service responsibly and only for lawful purposes. SureShopPH provides risk signals, not legal or financial advice. Verdicts are best-effort and may produce false positives.</p>
+    <p>You retain ownership of your account data. We reserve the right to suspend accounts that abuse the service (e.g., automated scraping or attempting to manipulate the registry).</p>
+    <p>Service is provided "as is" without warranty. SureShopPH is not liable for losses arising from purchases on third-party platforms.</p>
+  </div>
+);
+
+const CookiePolicyContent = () => (
+  <div>
+    <p>SureShopPH uses cookies and local storage only for:</p>
+    <ul>
+      <li><strong>Authentication.</strong> Supabase session tokens keep you signed in.</li>
+      <li><strong>Theme preference.</strong> Dark/light mode is stored locally.</li>
+    </ul>
+    <p>We do not use third-party advertising or analytics cookies. You can clear cookies anytime via your browser settings.</p>
+  </div>
+);
+
+const GdprContent = () => (
+  <div>
+    <p>If you are an EU resident, you can request export or deletion of your account data by emailing <a href="mailto:support@sureshopph.com">support@sureshopph.com</a> from the email tied to your account.</p>
+    <p>Data we store: account email, profile, scan history, reports you submit, and audit logs of moderation actions. We do not sell user data.</p>
+  </div>
+);
+
+const SecurityContent = () => (
+  <div>
+    <p>Authentication is handled by Supabase Auth (PostgreSQL + JWT). All client-server traffic uses HTTPS.</p>
+    <p>Row Level Security policies protect personal data: users can only read their own scans and reports; only admins can update moderation tables.</p>
+    <p>To responsibly disclose a vulnerability, email <a href="mailto:security@sureshopph.com">security@sureshopph.com</a>.</p>
+  </div>
+);
+
+const SitemapContent = () => (
+  <div>
+    <h3>Public</h3>
+    <ul>
+      <li><Link to="/">Home</Link></li>
+      <li><Link to="/login">Sign in</Link></li>
+      <li><Link to="/register">Sign up</Link></li>
+      <li><Link to="/forgot-password">Forgot password</Link></li>
+      <li><Link to="/privacy-policy">Privacy policy</Link></li>
+      <li><Link to="/terms-of-service">Terms of service</Link></li>
+    </ul>
+    <h3>Account</h3>
+    <ul>
+      <li><Link to="/userdashboard">Dashboard</Link></li>
+      <li><Link to="/scan">Scan a listing</Link></li>
+      <li><Link to="/scan-history">Scan history</Link></li>
+      <li><Link to="/settings">Settings</Link></li>
+    </ul>
+    <h3>Help</h3>
+    <ul>
+      <li><Link to="/help-center">Help center</Link></li>
+      <li><Link to="/documentation">Documentation</Link></li>
+      <li><Link to="/contact-support">Contact support</Link></li>
+      <li><Link to="/status">System status</Link></li>
+    </ul>
+  </div>
+);
 
 function App() {
   const { session, loading: authLoading } = useAuth();
@@ -493,23 +663,28 @@ function App() {
         <Route path="/register" element={<PublicOnlyRoute><Register /></PublicOnlyRoute>} />
         <Route path="/forgot-password" element={<PublicOnlyRoute><ForgotPassword /></PublicOnlyRoute>} />
         <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/help-center" element={<InfoPage title="Help Center" subtitle="Support articles and guidance are coming soon. For now, use account recovery and dashboard support actions." session={session} />} />
-        <Route path="/documentation" element={<InfoPage title="Documentation" subtitle="Technical documentation is being prepared. A public knowledge base will be available soon." session={session} />} />
-        <Route path="/api-reference" element={<InfoPage title="API Reference" subtitle="API reference content is coming soon. Public endpoints and usage examples will be published here." session={session} />} />
-        <Route path="/contact-support" element={<InfoPage title="Contact Support" subtitle="Direct support channels are being finalized. Please use your dashboard and account recovery options for now." session={session} />} />
-        <Route path="/status" element={<InfoPage title="System Status" subtitle="All core authentication services are operational." session={session} />} />
+        <Route path="/help-center" element={<InfoPage title="Help Center" subtitle="Quick answers to common questions." session={session}><HelpCenterContent /></InfoPage>} />
+        <Route path="/documentation" element={<InfoPage title="Documentation" subtitle="How SureShopPH works." session={session}><DocumentationContent /></InfoPage>} />
+        <Route path="/api-reference" element={<InfoPage title="API Reference" subtitle="Public API status." session={session}><ApiReferenceContent /></InfoPage>} />
+        <Route path="/contact-support" element={<InfoPage title="Contact Support" subtitle="We respond to all messages." session={session}><ContactSupportContent /></InfoPage>} />
+        <Route path="/status" element={<InfoPage title="System Status" subtitle="Live service health." session={session}><StatusContent /></InfoPage>} />
+
+        <Route path="/terms-of-service" element={<InfoPage title="Terms of Service" session={session}><TermsContent /></InfoPage>} />
+        <Route path="/cookie-policy" element={<InfoPage title="Cookie Policy" session={session}><CookiePolicyContent /></InfoPage>} />
+        <Route path="/gdpr-compliance" element={<InfoPage title="GDPR Compliance" session={session}><GdprContent /></InfoPage>} />
+        <Route path="/security" element={<InfoPage title="Security" session={session}><SecurityContent /></InfoPage>} />
+        <Route path="/sitemap" element={<InfoPage title="Sitemap" session={session}><SitemapContent /></InfoPage>} />
+
+        {/* Tool routes redirect to the real feature pages */}
+        <Route path="/tools/url-scan" element={<Navigate to="/scan" replace />} />
+        <Route path="/tools/saved-warnings" element={<Navigate to="/scan-history" replace />} />
+
+        {/* Old social placeholders → real GitHub or removed */}
+        <Route path="/social/github" element={<ExternalRedirect href="https://github.com/JorjDominic/SureShopPH---Risk-Detection-and-Analysis-for-online-shopping-" />} />
+        <Route path="/social/twitter" element={<Navigate to="/" replace />} />
+        <Route path="/social/discord" element={<Navigate to="/" replace />} />
+        <Route path="/social/linkedin" element={<Navigate to="/" replace />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy session={session} />} />
-        <Route path="/terms-of-service" element={<InfoPage title="Terms of Service" subtitle="Use SureShop responsibly and comply with platform and local regulations." session={session} />} />
-        <Route path="/cookie-policy" element={<InfoPage title="Cookie Policy" subtitle="Cookie and tracking disclosures will be published here before public release." session={session} />} />
-        <Route path="/gdpr-compliance" element={<InfoPage title="GDPR Compliance" subtitle="Compliance details are being reviewed and will be documented in this section." session={session} />} />
-        <Route path="/security" element={<InfoPage title="Security" subtitle="Security architecture and disclosure practices will be posted here soon." session={session} />} />
-        <Route path="/sitemap" element={<InfoPage title="Sitemap" subtitle="A complete sitemap is coming soon. Use the landing page navigation for now." session={session} />} />
-        <Route path="/social/twitter" element={<InfoPage title="Twitter" subtitle="Official social profiles are not yet public. This placeholder prevents dead links during deployment." session={session} />} />
-        <Route path="/social/github" element={<InfoPage title="GitHub" subtitle="Official social profiles are not yet public. This placeholder prevents dead links during deployment." session={session} />} />
-        <Route path="/social/discord" element={<InfoPage title="Discord" subtitle="Official social profiles are not yet public. This placeholder prevents dead links during deployment." session={session} />} />
-        <Route path="/social/linkedin" element={<InfoPage title="LinkedIn" subtitle="Official social profiles are not yet public. This placeholder prevents dead links during deployment." session={session} />} />
-        <Route path="/tools/url-scan" element={<InfoPage title="URL Scan" subtitle="The URL scan tool UI is coming soon. This placeholder keeps navigation working in production." session={session} />} />
-        <Route path="/tools/saved-warnings" element={<InfoPage title="Saved Warnings" subtitle="Saved warning history is coming soon. This placeholder keeps navigation working in production." session={session} />} />
         <Route path="/tools/account-settings" element={<Navigate to="/settings" replace />} />
         <Route path="/userdashboard" element={<ProtectedRoute><UserLayout /></ProtectedRoute>}>
           <Route index element={<UserDashboard />} />

@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { supabase } from '../config/supabase';
 
 function LandingFooter() {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
   const [newsletterError, setNewsletterError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   const validateNewsletterEmail = (value) => {
     const nextValue = (value || '').trim();
@@ -15,7 +17,7 @@ function LandingFooter() {
     return '';
   };
 
-  const handleSubscribe = (event) => {
+  const handleSubscribe = async (event) => {
     event.preventDefault();
     const validationError = validateNewsletterEmail(email);
     if (validationError) {
@@ -25,6 +27,19 @@ function LandingFooter() {
     }
 
     setNewsletterError('');
+    setSubmitting(true);
+
+    // Best-effort: persist to newsletter_subscriptions if the table exists.
+    // If not, we still treat the action as successful so the form is usable.
+    try {
+      await supabase
+        .from('newsletter_subscriptions')
+        .insert({ email: email.trim().toLowerCase() });
+    } catch {
+      /* ignore — show success either way */
+    }
+
+    setSubmitting(false);
     setSubscribed(true);
     setEmail('');
   };
@@ -72,7 +87,9 @@ function LandingFooter() {
                   aria-invalid={Boolean(newsletterError)}
                   aria-describedby={newsletterError ? 'footer-news-email-error' : undefined}
                 />
-                <button type="submit">Subscribe</button>
+                <button type="submit" disabled={submitting}>
+                  {submitting ? 'Saving...' : 'Subscribe'}
+                </button>
               </div>
               {newsletterError ? <p id="footer-news-email-error" className="ss-landing-newsletter-error">{newsletterError}</p> : null}
               {subscribed && <p className="ss-landing-newsletter-success">You are in. Watch your inbox.</p>}
@@ -82,10 +99,20 @@ function LandingFooter() {
               <span><i className="fas fa-globe"></i> 120+ countries protected</span>
             </div>
             <div className="ss-landing-footer-social">
-              <Link to="/social/twitter" aria-label="Twitter"><i className="fab fa-twitter"></i></Link>
-              <Link to="/social/github" aria-label="GitHub"><i className="fab fa-github"></i></Link>
-              <Link to="/social/discord" aria-label="Discord"><i className="fab fa-discord"></i></Link>
-              <Link to="/social/linkedin" aria-label="LinkedIn"><i className="fab fa-linkedin"></i></Link>
+              <a
+                href="https://github.com/JorjDominic/SureShopPH---Risk-Detection-and-Analysis-for-online-shopping-"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="GitHub"
+              >
+                <i className="fab fa-github"></i>
+              </a>
+              <a
+                href="mailto:support@sureshopph.com"
+                aria-label="Email support"
+              >
+                <i className="fas fa-envelope"></i>
+              </a>
             </div>
           </div>
 

@@ -19,15 +19,13 @@ function AdminLogs() {
   const loadData = useCallback(async () => {
     const [nlpRes, errRes] = await Promise.all([
       supabase
-        .from('scans')
-        .select('id, product_name, scan_type, notes, flags, risk_level, risk_score, created_at')
-        .not('notes', 'is', null)
+        .from('scan_history')
+        .select('id, url, platform, scan_mode, flags, risk_level, risk_score, confidence_pct, created_at')
         .order('created_at', { ascending: false })
         .limit(20),
       supabase
-        .from('system_logs')
-        .select('id, type, message, created_at')
-        .eq('type', 'error')
+        .from('admin_logs')
+        .select('id, user_id, action, details, created_at')
         .order('created_at', { ascending: false })
         .limit(30),
     ]);
@@ -122,116 +120,140 @@ function AdminLogs() {
               {nlpFeed.length === 0 ? (
                 <div className="udb-empty-state">
                   <i className="fas fa-brain" style={{ fontSize: '2rem', marginBottom: '0.75rem' }}></i>
-                  <h3>No NLP output recorded</h3>
-                  <p>Scans with AI analysis notes will appear here. Ensure the <code>notes</code> column is populated.</p>
+                  <h3>No scan output recorded</h3>
+                  <p>Recent scans with detected risk signals will appear here.</p>
                 </div>
               ) : (
                 <div>
-                  {nlpFeed.map((entry) => (
-                    <div key={entry.id} className="ss-admin-log-entry">
-                      <span
-                        className="ss-admin-log-icon"
-                        style={{ background: `${riskColor(entry.risk_level)}22`, color: riskColor(entry.risk_level) }}
-                      >
-                        <i className="fas fa-microchip"></i>
-                      </span>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', marginBottom: '0.25rem', flexWrap: 'wrap' }}>
-                          <strong style={{ fontSize: '0.88rem', color: 'var(--ss-dashboard-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {entry.product_name || entry.scan_type || 'Unnamed Scan'}
-                          </strong>
-                          <span style={{ fontSize: '0.76rem', color: '#94a3b8', whiteSpace: 'nowrap' }}>
-                            {formatDate(entry.created_at)}
-                          </span>
-                        </div>
-                        <p style={{ fontSize: '0.83rem', color: 'var(--ss-dashboard-muted)', margin: 0, lineHeight: 1.5 }}>
-                          {entry.notes}
-                        </p>
-                        {entry.flags && (
-                          <p style={{ fontSize: '0.76rem', color: '#94a3b8', marginTop: '0.3rem', fontFamily: 'monospace' }}>
-                            Flags: {entry.flags}
-                          </p>
-                        )}
-                        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.4rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                          <span
-                            style={{
-                              fontSize: '0.72rem', fontWeight: 700, padding: '0.2rem 0.55rem',
-                              borderRadius: 999, background: `${riskColor(entry.risk_level)}20`,
-                              color: riskColor(entry.risk_level),
-                            }}
-                          >
-                            {entry.risk_level || 'Unknown'}
-                          </span>
-                          {entry.risk_score != null && (
-                            <span style={{ fontSize: '0.76rem', color: '#94a3b8', fontFamily: 'monospace' }}>
-                              Score: {entry.risk_score}%
+                  {nlpFeed.map((entry) => {
+                    const flagsArr = Array.isArray(entry.flags) ? entry.flags : [];
+                    const summary = flagsArr.length
+                      ? `Detected ${flagsArr.length} risk signal${flagsArr.length === 1 ? '' : 's'}.`
+                      : 'No high-risk signals detected.';
+                    return (
+                      <div key={entry.id} className="ss-admin-log-entry">
+                        <span
+                          className="ss-admin-log-icon"
+                          style={{ background: `${riskColor(entry.risk_level)}22`, color: riskColor(entry.risk_level) }}
+                        >
+                          <i className="fas fa-microchip"></i>
+                        </span>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', marginBottom: '0.25rem', flexWrap: 'wrap' }}>
+                            <strong style={{ fontSize: '0.88rem', color: 'var(--ss-dashboard-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {entry.url || entry.platform || entry.scan_mode || 'Unnamed Scan'}
+                            </strong>
+                            <span style={{ fontSize: '0.76rem', color: '#94a3b8', whiteSpace: 'nowrap' }}>
+                              {formatDate(entry.created_at)}
                             </span>
+                          </div>
+                          <p style={{ fontSize: '0.83rem', color: 'var(--ss-dashboard-muted)', margin: 0, lineHeight: 1.5 }}>
+                            {summary}
+                          </p>
+                          {flagsArr.length > 0 && (
+                            <p style={{ fontSize: '0.76rem', color: '#94a3b8', marginTop: '0.3rem', fontFamily: 'monospace' }}>
+                              Flags: {flagsArr.join(', ')}
+                            </p>
                           )}
+                          <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.4rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                            <span
+                              style={{
+                                fontSize: '0.72rem', fontWeight: 700, padding: '0.2rem 0.55rem',
+                                borderRadius: 999, background: `${riskColor(entry.risk_level)}20`,
+                                color: riskColor(entry.risk_level),
+                              }}
+                            >
+                              {entry.risk_level || 'Unknown'}
+                            </span>
+                            {entry.risk_score != null && (
+                              <span style={{ fontSize: '0.76rem', color: '#94a3b8', fontFamily: 'monospace' }}>
+                                Score: {entry.risk_score}%
+                              </span>
+                            )}
+                            {entry.confidence_pct != null && (
+                              <span style={{ fontSize: '0.76rem', color: '#94a3b8', fontFamily: 'monospace' }}>
+                                Confidence: {entry.confidence_pct}%
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
           </div>
         </div>
 
-        {/* Scraper / System Error Logs */}
+        {/* Admin action log */}
         <div className="ss-dashboard-section" style={{ paddingTop: 0 }}>
           <div className="container">
             <div className="ss-dashboard-section-heading">
               <div>
-                <p className="ss-dashboard-eyebrow">Errors</p>
+                <p className="ss-dashboard-eyebrow">Audit</p>
                 <h3 style={{ color: 'var(--ss-dashboard-text)', fontFamily: 'var(--font-display)' }}>
-                  Scraper &amp; System Error Logs
+                  Admin Action Log
                 </h3>
               </div>
               {!noErrorTable && (
-                <span className="ss-dashboard-panel-pill">{errorLogs.length} errors</span>
+                <span className="ss-dashboard-panel-pill">{errorLogs.length} entries</span>
               )}
             </div>
             <div className="ss-dashboard-panel">
               {noErrorTable ? (
                 <div className="udb-empty-state">
                   <i className="fas fa-table" style={{ fontSize: '2rem', marginBottom: '0.75rem' }}></i>
-                  <h3>system_logs table not found</h3>
+                  <h3>admin_logs table not found</h3>
                   <p>
-                    Create a <code>system_logs</code> table with columns{' '}
-                    <code>id, type, message, created_at</code> to enable error tracking.
+                    Create an <code>admin_logs</code> table with columns{' '}
+                    <code>id, user_id, action, details, created_at</code> to enable audit logging.
                   </p>
                 </div>
               ) : errorLogs.length === 0 ? (
                 <div className="udb-empty-state">
                   <i className="fas fa-circle-check" style={{ fontSize: '2rem', marginBottom: '0.75rem', color: '#22c55e' }}></i>
-                  <h3>No errors logged</h3>
-                  <p>All systems operational. Error events will appear here when detected.</p>
+                  <h3>No admin actions logged</h3>
+                  <p>Administrative actions will appear here when performed.</p>
                 </div>
               ) : (
                 <div>
-                  {errorLogs.map((log) => (
-                    <div key={log.id} className="ss-admin-log-entry">
-                      <span
-                        className="ss-admin-log-icon"
-                        style={{ background: 'rgba(239,68,68,0.12)', color: '#ef4444' }}
-                      >
-                        <i className="fas fa-triangle-exclamation"></i>
-                      </span>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', marginBottom: '0.2rem', flexWrap: 'wrap' }}>
-                          <strong style={{ fontSize: '0.85rem', color: '#ef4444' }}>
-                            {log.type?.toUpperCase() || 'ERROR'}
-                          </strong>
-                          <span style={{ fontSize: '0.76rem', color: '#94a3b8', whiteSpace: 'nowrap' }}>
-                            {formatDate(log.created_at)}
-                          </span>
+                  {errorLogs.map((log) => {
+                    const detailsText =
+                      log.details && typeof log.details === 'object'
+                        ? JSON.stringify(log.details)
+                        : (log.details ?? '');
+                    return (
+                      <div key={log.id} className="ss-admin-log-entry">
+                        <span
+                          className="ss-admin-log-icon"
+                          style={{ background: 'rgba(37,99,235,0.12)', color: '#2563eb' }}
+                        >
+                          <i className="fas fa-clipboard-list"></i>
+                        </span>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', marginBottom: '0.2rem', flexWrap: 'wrap' }}>
+                            <strong style={{ fontSize: '0.85rem', color: '#2563eb' }}>
+                              {log.action?.toUpperCase() || 'ACTION'}
+                            </strong>
+                            <span style={{ fontSize: '0.76rem', color: '#94a3b8', whiteSpace: 'nowrap' }}>
+                              {formatDate(log.created_at)}
+                            </span>
+                          </div>
+                          {detailsText && (
+                            <p style={{ fontSize: '0.84rem', color: 'var(--ss-dashboard-muted)', margin: 0, lineHeight: 1.5, fontFamily: 'monospace', wordBreak: 'break-word' }}>
+                              {detailsText}
+                            </p>
+                          )}
+                          {log.user_id && (
+                            <p style={{ fontSize: '0.74rem', color: '#94a3b8', marginTop: '0.25rem', fontFamily: 'monospace' }}>
+                              by {log.user_id.slice(0, 8)}…
+                            </p>
+                          )}
                         </div>
-                        <p style={{ fontSize: '0.84rem', color: 'var(--ss-dashboard-muted)', margin: 0, lineHeight: 1.5 }}>
-                          {log.message}
-                        </p>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

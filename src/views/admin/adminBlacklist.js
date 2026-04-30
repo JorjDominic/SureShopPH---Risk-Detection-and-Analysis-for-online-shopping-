@@ -29,8 +29,8 @@ function AdminFlaggedUrls() {
       if (!user) { setLoading(false); return; }
 
       const { data } = await supabase
-        .from('scans')
-        .select('id, user_id, product_name, scan_type, risk_score, risk_level, created_at')
+        .from('scan_history')
+        .select('id, user_id, url, platform, scan_mode, risk_score, risk_level, created_at')
         .gte('risk_score', 80)
         .order('risk_score', { ascending: false })
         .order('created_at', { ascending: false });
@@ -48,8 +48,9 @@ function AdminFlaggedUrls() {
   const filtered = highRiskScans.filter((s) => {
     const term = searchTerm.toLowerCase();
     return (
-      (s.product_name ?? '').toLowerCase().includes(term) ||
-      (s.scan_type ?? '').toLowerCase().includes(term)
+      (s.url ?? '').toLowerCase().includes(term) ||
+      (s.platform ?? '').toLowerCase().includes(term) ||
+      (s.scan_mode ?? '').toLowerCase().includes(term)
     );
   });
 
@@ -61,13 +62,21 @@ function AdminFlaggedUrls() {
     setFlagBusy(true);
     setFlagAlert(null);
 
-    const { error } = await supabase.from('flagged_urls').upsert(
-      { url, reason: flagReason.trim() || 'Manual admin flag', flagged_by: user.id },
+    const { error } = await supabase.from('high_risk_listings').upsert(
+      {
+        url,
+        platform: 'web',
+        risk_score: 100,
+        risk_level: 'High',
+        flags: [flagReason.trim() || 'Manual admin flag'],
+        verified: true,
+        verified_by: user.id,
+      },
       { onConflict: 'url' }
     );
 
     if (error) {
-      setFlagAlert({ type: 'error', message: error.message || 'Could not save flag. Ensure the flagged_urls table exists.' });
+      setFlagAlert({ type: 'error', message: error.message || 'Could not save flag. Ensure the high_risk_listings table exists.' });
     } else {
       setFlagAlert({ type: 'success', message: `“${url}” has been flagged as high risk.` });
       setFlagUrl('');
@@ -205,8 +214,9 @@ function AdminFlaggedUrls() {
                   <table className="ss-dashboard-table">
                     <thead>
                       <tr>
-                        <th>Product Name</th>
-                        <th>Scan Type</th>
+                        <th>URL</th>
+                        <th>Platform</th>
+                        <th>Scan Mode</th>
                         <th>Risk Score</th>
                         <th>Risk Level</th>
                         <th>User ID</th>
@@ -216,10 +226,11 @@ function AdminFlaggedUrls() {
                     <tbody>
                       {filtered.map((s) => (
                         <tr key={s.id}>
-                          <td style={{ maxWidth: 240, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {s.product_name || '\u2014'}
+                          <td style={{ maxWidth: 280, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {s.url || '\u2014'}
                           </td>
-                          <td>{s.scan_type ? s.scan_type.charAt(0).toUpperCase() + s.scan_type.slice(1) : '\u2014'}</td>
+                          <td>{s.platform || '\u2014'}</td>
+                          <td>{s.scan_mode ? s.scan_mode.charAt(0).toUpperCase() + s.scan_mode.slice(1) : '\u2014'}</td>
                           <td>
                             <span
                               style={{

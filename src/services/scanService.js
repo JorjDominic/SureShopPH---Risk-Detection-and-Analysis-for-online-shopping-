@@ -14,19 +14,18 @@ import { supabase } from '../config/supabase';
 //   4. Persist to `public.scan_history` (best-effort, non-fatal on insert
 //      failure — the analysis result is still returned).
 //
-// scan_history columns referenced (must exist in DB):
-//   id          uuid PK (default uuid_generate_v4())
-//   user_id     uuid (auth.users.id)
-//   url         text
-//   scan_mode   text   ('product' | 'url')
-//   platform    text   (e.g. 'shopee', 'lazada', 'tiktok', 'web')
-//   product_name text  (best-effort label / hostname)
-//   risk_score  int    (0–100)
-//   risk_level  text   ('Low' | 'Medium' | 'High')
-//   notes       text   (human-readable summary of signals)
-//   flags       jsonb  (array of detected signal codes)
-//   source      text   ('edge' | 'heuristic')
-//   created_at  timestamptz default now()
+// scan_history columns (actual DB schema):
+//   id               uuid PK
+//   user_id          uuid (auth.users.id)
+//   platform         text   (e.g. 'shopee', 'lazada', 'tiktok', 'web')
+//   url              text
+//   risk_score       int4   (0–100)
+//   risk_level       text   ('Low' | 'Medium' | 'High')
+//   flags            jsonb  (array of detected signal codes)
+//   confidence_level text   ('Low' | 'Medium' | 'High')
+//   confidence_pct   int4   (0–100)
+//   scan_mode        text   ('product' | 'url')
+//   created_at       timestamptz default now()
 // ---------------------------------------------------------------------------
 
 const HIGH_RISK_TLDS = new Set([
@@ -273,17 +272,32 @@ export const runScan = async ({ url, scanType = 'product', userId }) => {
       ? `${platform === 'web' ? parsed.hostname : platform} listing`
       : parsed.hostname);
 
+  // Confidence = how sure we are about the verdict.
+  // Edge results are taken at face value; the heuristic gets a confidence
+  // proportional to how many distinct signals fired (or how clean it was).
+  let confidencePct;
+  if (typeof analysis.confidence_pct === 'number') {
+    confidencePct = Math.max(0, Math.min(100, Math.round(analysis.confidence_pct)));
+  } else if (analysis.source === 'edge') {
+    confidencePct = 90;
+  } else {
+    const flagsCount = Array.isArray(analysis.flags) ? analysis.flags.length : 0;
+    confidencePct = Math.max(40, Math.min(95, 50 + flagsCount * 10));
+  }
+  const confidenceLevel =
+    confidencePct >= 80 ? 'High' : confidencePct >= 55 ? 'Medium' : 'Low';
+
+  // Row written to DB — must match `public.scan_history` columns exactly.
   const row = {
     user_id: userId,
-    url: parsed.href,
-    scan_mode: scanType,
     platform: edge?.platform || platform,
-    product_name: productName,
+    url: parsed.href,
     risk_score: analysis.risk_score,
     risk_level: analysis.risk_level,
-    notes: analysis.notes,
     flags: analysis.flags,
-    source: analysis.source,
+    confidence_level: confidenceLevel,
+    confidence_pct: confidencePct,
+    scan_mode: scanType,
   };
 
   let persisted = false;
@@ -306,9 +320,14 @@ export const runScan = async ({ url, scanType = 'product', userId }) => {
     persistError = err?.message || 'Insert failed.';
   }
 
+  // The returned object also carries UI-only fields that aren't in the DB
+  // (product_name, notes, source) so the scan page can render rich detail.
   return {
     ...row,
     id: insertedId,
+    product_name: productName,
+    notes: analysis.notes,
+    source: analysis.source,
     persisted,
     persistError,
   };

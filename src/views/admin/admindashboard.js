@@ -168,17 +168,16 @@ function AdminDashboard() {
         const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
         const [totalRes, highRes, recentRes, pendingRes] = await Promise.all([
-          supabase.from('scans').select('*', { count: 'exact', head: true }),
-          supabase.from('scans').select('*', { count: 'exact', head: true }).eq('risk_level', 'High'),
+          supabase.from('scan_history').select('*', { count: 'exact', head: true }),
+          supabase.from('scan_history').select('*', { count: 'exact', head: true }).eq('risk_level', 'High'),
           supabase
-            .from('scans')
-            .select('id, scan_type, product_name, risk_level, risk_score, created_at, user_id')
+            .from('scan_history')
+            .select('id, scan_mode, platform, url, risk_level, risk_score, created_at, user_id')
             .order('created_at', { ascending: false })
             .limit(8),
           supabase
-            .from('reports')
-            .select('*', { count: 'exact', head: true })
-            .eq('status', 'pending'),
+            .from('user_reports')
+            .select('*', { count: 'exact', head: true }),
         ]);
 
         if (!active) return;
@@ -193,7 +192,7 @@ function AdminDashboard() {
 
         /* ── 30-day trend ── */
         const { data: rawTrend } = await supabase
-          .from('scans')
+          .from('scan_history')
           .select('created_at')
           .gte('created_at', thirtyDaysAgo);
 
@@ -210,12 +209,12 @@ function AdminDashboard() {
         setTrendData(trend);
 
         /* ── Type / platform distribution ── */
-        const { data: typeRows } = await supabase.from('scans').select('scan_type');
+        const { data: typeRows } = await supabase.from('scan_history').select('scan_mode');
         if (!active) return;
 
         const counts = { product: 0, url: 0 };
         for (const row of (typeRows ?? [])) {
-          const t = row.scan_type?.toLowerCase();
+          const t = row.scan_mode?.toLowerCase();
           if (t in counts) counts[t]++;
         }
         setTypeSegments([
@@ -311,12 +310,12 @@ function AdminDashboard() {
               <article className="ss-dashboard-stat-card tone-blue">
                 <div className="ss-dashboard-stat-top">
                   <div>
-                    <p>Pending Reports</p>
+                    <p>User Reports</p>
                     <h3>{kpis.pendingReports.toLocaleString()}</h3>
                   </div>
                   <span className="ss-dashboard-stat-icon"><DashboardIcon type="shield" /></span>
                 </div>
-                <small>User dispute reports awaiting review</small>
+                <small>User dispute reports submitted</small>
               </article>
 
               <article className="ss-dashboard-stat-card tone-success">
@@ -425,9 +424,9 @@ function AdminDashboard() {
                           <td style={{ fontFamily: 'monospace', fontSize: '0.78rem', color: '#94a3b8' }}>
                             {scan.user_id?.slice(0, 8)}\u2026
                           </td>
-                          <td>{scan.scan_type ? scan.scan_type.charAt(0).toUpperCase() + scan.scan_type.slice(1) : '\u2014'}</td>
+                          <td>{scan.scan_mode ? scan.scan_mode.charAt(0).toUpperCase() + scan.scan_mode.slice(1) : '\u2014'}</td>
                           <td style={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {scan.product_name || '\u2014'}
+                            {scan.url || scan.platform || '\u2014'}
                           </td>
                           <td>
                             <span className={`ss-dashboard-risk ${riskClass(scan.risk_level)}`}>

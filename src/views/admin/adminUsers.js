@@ -370,7 +370,7 @@ function AdminUsers() {
 
         {/* ── Table ── */}
         <div className="ss-dashboard-section">
-          <div className="container">
+          <div style={{ width: '100%', paddingInline: '1.5rem', boxSizing: 'border-box' }}>
             <div className="ss-dashboard-panel" style={{ padding: 0, overflow: 'hidden', borderRadius: 16 }}>
               {pageUsers.length === 0 ? (
                 <div className="udb-empty-state" style={{ padding: '3rem' }}>

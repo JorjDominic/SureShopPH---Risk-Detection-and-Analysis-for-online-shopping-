@@ -273,7 +273,7 @@ function AdminUsers() {
 
         {/* ── Page Header ── */}
         <div className="ss-dashboard-section">
-          <div className="container">
+          <div style={{ maxWidth: 1440, margin: '0 auto', padding: '0 1.5rem' }}>
             <div className="ss-dashboard-section-heading">
               <div>
                 <p className="ss-dashboard-eyebrow">Admin › Users</p>
@@ -370,7 +370,7 @@ function AdminUsers() {
 
         {/* ── Table ── */}
         <div className="ss-dashboard-section">
-          <div style={{ width: '100%', paddingInline: '1.5rem', boxSizing: 'border-box' }}>
+          <div style={{ maxWidth: 1440, margin: '0 auto', padding: '0 1.5rem' }}>
             <div className="ss-dashboard-panel" style={{ padding: 0, overflow: 'hidden', borderRadius: 16 }}>
               {pageUsers.length === 0 ? (
                 <div className="udb-empty-state" style={{ padding: '3rem' }}>

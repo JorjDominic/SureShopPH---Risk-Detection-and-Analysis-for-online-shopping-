@@ -91,7 +91,7 @@ function AdminLogs() {
 
         {/* Header */}
         <div className="ss-dashboard-section">
-          <div className="container">
+          <div style={{ maxWidth: 1440, margin: '0 auto', padding: '0 1.5rem' }}>
             <div className="ss-dashboard-section-heading">
               <div>
                 <h2>System &amp; AI Logs</h2>
@@ -112,7 +112,7 @@ function AdminLogs() {
 
         {/* NLP / AI Performance Feed */}
         <div className="ss-dashboard-section" style={{ paddingTop: 0 }}>
-          <div className="container">
+          <div style={{ maxWidth: 1440, margin: '0 auto', padding: '0 1.5rem' }}>
             <div className="ss-dashboard-section-heading">
               <div>
                 <p className="ss-dashboard-eyebrow">AI Output</p>
@@ -194,7 +194,7 @@ function AdminLogs() {
 
         {/* Admin action log */}
         <div className="ss-dashboard-section" style={{ paddingTop: 0 }}>
-          <div className="container">
+          <div style={{ maxWidth: 1440, margin: '0 auto', padding: '0 1.5rem' }}>
             <div className="ss-dashboard-section-heading">
               <div>
                 <p className="ss-dashboard-eyebrow">Audit</p>

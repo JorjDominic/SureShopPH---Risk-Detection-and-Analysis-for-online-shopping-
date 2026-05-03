@@ -229,7 +229,7 @@ function AdminReports() {
         <AdminSubNav eyebrow="Admin › Moderation" tabs={MODERATION_TABS} />
 
         <div className="ss-dashboard-section">
-          <div className="container">
+          <div style={{ maxWidth: 1440, margin: '0 auto', padding: '0 1.5rem' }}>
             <div className="ss-dashboard-section-heading">
               <div>
                 <h2>User Reports</h2>

@@ -437,7 +437,7 @@ function AdminTraining() {
 
         {/* ── Page Header ──────────────────────────────────────────── */}
         <div className="ss-dashboard-section">
-          <div className="container">
+          <div style={{ maxWidth: 1440, margin: '0 auto', padding: '0 1.5rem' }}>
             <div className="ss-dashboard-section-heading">
               <div>
                 <h2 style={{ color: 'var(--ss-dashboard-text)', fontFamily: 'var(--font-display)', letterSpacing: '-0.04em', fontSize: '1.85rem' }}>
@@ -454,7 +454,7 @@ function AdminTraining() {
 
         {/* ── Stats Bar ────────────────────────────────────────────── */}
         <div className="ss-dashboard-section" style={{ paddingTop: 0 }}>
-          <div className="container">
+          <div style={{ maxWidth: 1440, margin: '0 auto', padding: '0 1.5rem' }}>
             <div className="ss-dashboard-stats-grid">
 
               {/* Card 1 — Total Samples */}
@@ -608,7 +608,7 @@ function AdminTraining() {
 
         {/* ── Dataset Health Bar ───────────────────────────────────── */}
         <div className="ss-dashboard-section" style={{ paddingTop: 0 }}>
-          <div className="container">
+          <div style={{ maxWidth: 1440, margin: '0 auto', padding: '0 1.5rem' }}>
             <div className="ss-dashboard-panel" style={{ padding: '1rem 1.15rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
                 <i className="fas fa-heart-pulse" style={{ color: 'var(--ss-dashboard-teal)' }} />
@@ -694,7 +694,7 @@ function AdminTraining() {
 
         {/* ── Two-column layout: Form + Table ──────────────────────── */}
         <div className="ss-dashboard-section" style={{ paddingTop: 0 }}>
-          <div className="container">
+          <div style={{ maxWidth: 1440, margin: '0 auto', padding: '0 1.5rem' }}>
             <div
               style={{
                 display: 'grid',
@@ -1234,7 +1234,7 @@ function AdminTraining() {
 
         {/* ── Training History ─────────────────────────────────────── */}
         <div className="ss-dashboard-section" style={{ paddingTop: 0 }}>
-          <div className="container">
+          <div style={{ maxWidth: 1440, margin: '0 auto', padding: '0 1.5rem' }}>
             <div className="ss-dashboard-panel">
               <button
                 type="button"
@@ -1336,7 +1336,7 @@ function AdminTraining() {
             padding: '0.85rem 0',
           }}
         >
-          <div className="container">
+          <div style={{ maxWidth: 1440, margin: '0 auto', padding: '0 1.5rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
               <div>
                 <p style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--ss-dashboard-text)', margin: 0 }}>

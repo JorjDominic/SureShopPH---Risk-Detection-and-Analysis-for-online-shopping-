@@ -264,7 +264,7 @@ function AdminDashboard() {
 
         {/* Page title */}
         <div className="ss-dashboard-section">
-          <div className="container">
+          <div style={{ maxWidth: 1440, margin: '0 auto', padding: '0 1.5rem' }}>
             <div className="ss-dashboard-section-heading">
               <div>
                 <p className="ss-dashboard-eyebrow">Admin Panel</p>
@@ -284,7 +284,7 @@ function AdminDashboard() {
 
         {/* KPI Cards */}
         <div className="ss-dashboard-section">
-          <div className="container">
+          <div style={{ maxWidth: 1440, margin: '0 auto', padding: '0 1.5rem' }}>
             <div className="ss-dashboard-stats-grid">
               <article className="ss-dashboard-stat-card tone-teal">
                 <div className="ss-dashboard-stat-top">
@@ -335,7 +335,7 @@ function AdminDashboard() {
 
         {/* Charts row */}
         <div className="ss-dashboard-section">
-          <div className="container">
+          <div style={{ maxWidth: 1440, margin: '0 auto', padding: '0 1.5rem' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.7fr) minmax(0, 1fr)', gap: '1.25rem' }}>
 
               {/* Line chart */}
@@ -388,7 +388,7 @@ function AdminDashboard() {
 
         {/* Recent scans */}
         <div className="ss-dashboard-section">
-          <div className="container">
+          <div style={{ maxWidth: 1440, margin: '0 auto', padding: '0 1.5rem' }}>
             <div className="ss-dashboard-section-heading">
               <div>
                 <p className="ss-dashboard-eyebrow">Live Feed</p>
@@ -461,7 +461,7 @@ function AdminDashboard() {
 
         {/* Quick nav */}
         <div className="ss-dashboard-section">
-          <div className="container">
+          <div style={{ maxWidth: 1440, margin: '0 auto', padding: '0 1.5rem' }}>
             <div className="ss-dashboard-actions-grid">
               <Link to="/admin/reports" className="ss-dashboard-action-card">
                 <div className="ss-dashboard-action-top">

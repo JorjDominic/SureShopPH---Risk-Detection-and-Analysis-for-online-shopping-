@@ -115,7 +115,7 @@ function AdminSettings() {
 
         {/* Header */}
         <div className="ss-dashboard-section">
-          <div className="container">
+          <div style={{ maxWidth: 1440, margin: '0 auto', padding: '0 1.5rem' }}>
             <p className="ss-dashboard-eyebrow">Admin &rsaquo; Configuration</p>
             <h2 style={{ color: 'var(--ss-dashboard-text)', fontFamily: 'var(--font-display)', letterSpacing: '-0.04em', fontSize: '1.85rem' }}>
               Admin Settings
@@ -125,7 +125,7 @@ function AdminSettings() {
 
         {/* Profile section */}
         <div className="ss-dashboard-section" style={{ paddingTop: 0 }}>
-          <div className="container">
+          <div style={{ maxWidth: 1440, margin: '0 auto', padding: '0 1.5rem' }}>
             <div className="ss-dashboard-panel">
               <p className="ss-dashboard-eyebrow" style={{ marginBottom: '0.5rem' }}>Profile</p>
               <h3 style={{ color: 'var(--ss-dashboard-text)', marginBottom: '1.25rem', fontFamily: 'var(--font-display)' }}>
@@ -214,7 +214,7 @@ function AdminSettings() {
 
         {/* Security — Password Change */}
         <div className="ss-dashboard-section" style={{ paddingTop: 0 }}>
-          <div className="container">
+          <div style={{ maxWidth: 1440, margin: '0 auto', padding: '0 1.5rem' }}>
             <div className="ss-dashboard-panel">
               <p className="ss-dashboard-eyebrow" style={{ marginBottom: '0.5rem' }}>Security</p>
               <h3 style={{ color: 'var(--ss-dashboard-text)', marginBottom: '1.25rem', fontFamily: 'var(--font-display)' }}>
@@ -294,7 +294,7 @@ function AdminSettings() {
 
         {/* System Config */}
         <div className="ss-dashboard-section" style={{ paddingTop: 0 }}>
-          <div className="container">
+          <div style={{ maxWidth: 1440, margin: '0 auto', padding: '0 1.5rem' }}>
             <div className="ss-dashboard-panel">
               <p className="ss-dashboard-eyebrow" style={{ marginBottom: '0.5rem' }}>System</p>
               <h3 style={{ color: 'var(--ss-dashboard-text)', marginBottom: '1rem', fontFamily: 'var(--font-display)' }}>
@@ -329,7 +329,7 @@ function AdminSettings() {
 
         {/* User Management (frontend stub) */}
         <div className="ss-dashboard-section" style={{ paddingTop: 0 }}>
-          <div className="container">
+          <div style={{ maxWidth: 1440, margin: '0 auto', padding: '0 1.5rem' }}>
             <div className="ss-dashboard-panel">
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', marginBottom: '1rem' }}>
                 <div>
@@ -476,7 +476,7 @@ function AdminSettings() {
 
         {/* Danger zone */}
         <div className="ss-dashboard-section" style={{ paddingTop: 0 }}>
-          <div className="container">
+          <div style={{ maxWidth: 1440, margin: '0 auto', padding: '0 1.5rem' }}>
             <div className="ss-dashboard-panel" style={{ borderColor: 'rgba(239,68,68,0.22)' }}>
               <p style={{ fontSize: '0.75rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#ef4444', marginBottom: '0.5rem' }}>
                 Danger Zone

@@ -110,7 +110,7 @@ function AdminFlaggedUrls() {
 
         {/* Header */}
         <div className="ss-dashboard-section">
-          <div className="container">
+          <div style={{ maxWidth: 1440, margin: '0 auto', padding: '0 1.5rem' }}>
             <div className="ss-dashboard-section-heading">
               <div>
                 <h2>High-Risk URL Registry</h2>
@@ -124,7 +124,7 @@ function AdminFlaggedUrls() {
 
         {/* Hard-Flag Form */}
         <div className="ss-dashboard-section" style={{ paddingTop: 0 }}>
-          <div className="container">
+          <div style={{ maxWidth: 1440, margin: '0 auto', padding: '0 1.5rem' }}>
             <div className="ss-dashboard-panel">
               <p className="ss-dashboard-eyebrow" style={{ marginBottom: '0.6rem' }}>Manual Flag</p>
               <h3 style={{ color: 'var(--ss-dashboard-text)', marginBottom: '1rem', fontFamily: 'var(--font-display)' }}>
@@ -189,7 +189,7 @@ function AdminFlaggedUrls() {
 
         {/* High-risk scan table */}
         <div className="ss-dashboard-section" style={{ paddingTop: 0 }}>
-          <div className="container">
+          <div style={{ maxWidth: 1440, margin: '0 auto', padding: '0 1.5rem' }}>
             <div className="ss-dashboard-section-heading">
               <div>
                 <h3 style={{ color: 'var(--ss-dashboard-text)', fontFamily: 'var(--font-display)' }}>High-Risk Scans (Score &ge; 80)</h3>

@@ -371,7 +371,7 @@ function AdminUsers() {
         {/* ── Table ── */}
         <div className="ss-dashboard-section">
           <div style={{ maxWidth: 1440, margin: '0 auto', padding: '0 1.5rem' }}>
-            <div className="ss-dashboard-panel" style={{ padding: 0, overflow: 'hidden', borderRadius: 16 }}>
+            <div className="ss-dashboard-panel" style={{ borderRadius: 16 }}>
               {pageUsers.length === 0 ? (
                 <div className="udb-empty-state" style={{ padding: '3rem' }}>
                   <i className="fas fa-users" style={{ fontSize: '2rem', marginBottom: '0.75rem' }}></i>

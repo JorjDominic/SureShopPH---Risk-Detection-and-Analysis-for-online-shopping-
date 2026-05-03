@@ -48,7 +48,7 @@ function ScanPage() {
 
         {/* Page title */}
         <div className="ss-dashboard-section">
-          <div className="container">
+          <div style={{ maxWidth: 1440, margin: "0 auto", padding: "0 1.5rem" }}>
             <div className="ss-dashboard-section-heading">
               <div>
                 <p className="ss-dashboard-eyebrow">Analysis</p>
@@ -60,7 +60,7 @@ function ScanPage() {
 
         {/* Scan form */}
         <div className="ss-dashboard-section">
-          <div className="container">
+          <div style={{ maxWidth: 1440, margin: "0 auto", padding: "0 1.5rem" }}>
             <div className="ss-dashboard-section-heading">
               <div>
                 <p className="ss-dashboard-eyebrow">Submit</p>
@@ -184,7 +184,7 @@ function ScanPage() {
 
         {/* How it works */}
         <div className="ss-dashboard-section">
-          <div className="container">
+          <div style={{ maxWidth: 1440, margin: "0 auto", padding: "0 1.5rem" }}>
             <div className="ss-dashboard-section-heading">
               <div>
                 <p className="ss-dashboard-eyebrow">About</p>
@@ -219,7 +219,7 @@ function ScanPage() {
 
         {/* Nav */}
         <div className="ss-dashboard-section">
-          <div className="container">
+          <div style={{ maxWidth: 1440, margin: "0 auto", padding: "0 1.5rem" }}>
             <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
               <Link to="/userdashboard" className="ss-dashboard-btn ss-dashboard-btn-secondary">
                 <i className="fas fa-tachometer-alt"></i> Back to Dashboard

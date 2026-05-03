@@ -59,7 +59,7 @@ function ScanDetailsPage() {
 
         {/* Page title */}
         <div className="ss-dashboard-section">
-          <div className="container">
+          <div style={{ maxWidth: 1440, margin: "0 auto", padding: "0 1.5rem" }}>
             <div className="ss-dashboard-section-heading">
               <div>
                 <p className="ss-dashboard-eyebrow">Report</p>
@@ -71,7 +71,7 @@ function ScanDetailsPage() {
 
         {scanLoading ? (
           <div className="ss-dashboard-section">
-            <div className="container">
+            <div style={{ maxWidth: 1440, margin: "0 auto", padding: "0 1.5rem" }}>
               <div className="ss-dashboard-panel">
                 <div className="udb-empty-state">
                   <i className="fas fa-spinner fa-spin"></i>
@@ -82,7 +82,7 @@ function ScanDetailsPage() {
           </div>
         ) : notFound ? (
           <div className="ss-dashboard-section">
-            <div className="container">
+            <div style={{ maxWidth: 1440, margin: "0 auto", padding: "0 1.5rem" }}>
               <div className="ss-dashboard-panel">
                 <div className="udb-empty-state">
                   <i className="fas fa-search"></i>
@@ -101,7 +101,7 @@ function ScanDetailsPage() {
           <>
             {/* Risk summary */}
             <div className="ss-dashboard-section">
-              <div className="container">
+              <div style={{ maxWidth: 1440, margin: "0 auto", padding: "0 1.5rem" }}>
                 <div className="ss-dashboard-section-heading">
                   <div>
                     <p className="ss-dashboard-eyebrow">Risk</p>
@@ -151,7 +151,7 @@ function ScanDetailsPage() {
             {/* Analysis details */}
             {(scan.notes || scan.flags || scan.confidence_pct != null) && (
               <div className="ss-dashboard-section">
-                <div className="container">
+                <div style={{ maxWidth: 1440, margin: "0 auto", padding: "0 1.5rem" }}>
                   <div className="ss-dashboard-section-heading">
                     <div>
                       <p className="ss-dashboard-eyebrow">Analysis</p>
@@ -203,7 +203,7 @@ function ScanDetailsPage() {
             {/* Raw data */}
             {scan.raw_data && (
               <div className="ss-dashboard-section">
-                <div className="container">
+                <div style={{ maxWidth: 1440, margin: "0 auto", padding: "0 1.5rem" }}>
                   <div className="ss-dashboard-section-heading">
                     <div>
                       <p className="ss-dashboard-eyebrow">Advanced</p>
@@ -223,7 +223,7 @@ function ScanDetailsPage() {
 
         {/* Nav */}
         <div className="ss-dashboard-section">
-          <div className="container">
+          <div style={{ maxWidth: 1440, margin: "0 auto", padding: "0 1.5rem" }}>
             <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
               <Link to="/scan-history" className="ss-dashboard-btn ss-dashboard-btn-secondary">
                 <i className="fas fa-arrow-left"></i> Back to History

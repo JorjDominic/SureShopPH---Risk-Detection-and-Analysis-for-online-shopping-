@@ -44,7 +44,7 @@ function DashboardHeader({ user, onLogout, logoutBusy }) {
     <>
       <header className={`ss-landing-header${isScrolled ? ' is-scrolled' : ''}`}>
       <nav className="ss-landing-navbar">
-        <div style={{ maxWidth: 1440, margin: '0 auto', padding: '0 1.5rem' }}>
+        <div className="container">
           <div className="ss-landing-navbar-container">
             <Link to="/" className="ss-landing-logo-link">
               <div className="ss-landing-logo-icon">

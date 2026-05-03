@@ -165,7 +165,7 @@ function UserDashboard() {
 
         {/* Welcome */}
         <div className="ss-dashboard-section">
-          <div className="container">
+          <div style={{ maxWidth: 1440, margin: "0 auto", padding: "0 1.5rem" }}>
             <div className="ss-dashboard-section-heading">
               <div>
                 <p className="ss-dashboard-eyebrow">Overview</p>
@@ -177,7 +177,7 @@ function UserDashboard() {
 
         {/* Quick Actions */}
         <div className="ss-dashboard-section">
-          <div className="container">
+          <div style={{ maxWidth: 1440, margin: "0 auto", padding: "0 1.5rem" }}>
             <div className="ss-dashboard-section-heading">
               <div>
                 <p className="ss-dashboard-eyebrow">Tools</p>
@@ -228,7 +228,7 @@ function UserDashboard() {
 
         {/* Browser Extension */}
         <div className="ss-dashboard-section">
-          <div className="container">
+          <div style={{ maxWidth: 1440, margin: "0 auto", padding: "0 1.5rem" }}>
             <div className="ss-dashboard-section-heading">
               <div>
                 <p className="ss-dashboard-eyebrow">Integration</p>
@@ -332,7 +332,7 @@ function UserDashboard() {
 
         {/* Stats */}
         <div className="ss-dashboard-section">
-          <div className="container">
+          <div style={{ maxWidth: 1440, margin: "0 auto", padding: "0 1.5rem" }}>
             <div className="ss-dashboard-section-heading">
               <div>
                 <p className="ss-dashboard-eyebrow">Summary</p>
@@ -376,7 +376,7 @@ function UserDashboard() {
 
         {/* Recent Scans */}
         <div className="ss-dashboard-section">
-          <div className="container">
+          <div style={{ maxWidth: 1440, margin: "0 auto", padding: "0 1.5rem" }}>
             <div className="ss-dashboard-section-heading">
               <div>
                 <p className="ss-dashboard-eyebrow">Activity</p>

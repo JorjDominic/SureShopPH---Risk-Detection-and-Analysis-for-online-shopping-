@@ -78,7 +78,7 @@ function ScanHistoryPage() {
 
         {/* Page title */}
         <div className="ss-dashboard-section">
-          <div className="container">
+          <div style={{ maxWidth: 1440, margin: "0 auto", padding: "0 1.5rem" }}>
             <div className="ss-dashboard-section-heading">
               <div>
                 <p className="ss-dashboard-eyebrow">Activity</p>
@@ -90,7 +90,7 @@ function ScanHistoryPage() {
 
         {/* Table section */}
         <div className="ss-dashboard-section">
-          <div className="container">
+          <div style={{ maxWidth: 1440, margin: "0 auto", padding: "0 1.5rem" }}>
             <div className="ss-dashboard-section-heading">
               <div>
                 <p className="ss-dashboard-eyebrow">Results</p>

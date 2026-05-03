@@ -119,7 +119,7 @@ function SettingsPage() {
 
         {/* Page title */}
         <div className="ss-dashboard-section">
-          <div className="container">
+          <div style={{ maxWidth: 1440, margin: "0 auto", padding: "0 1.5rem" }}>
             <div className="ss-dashboard-section-heading">
               <div>
                 <p className="ss-dashboard-eyebrow">Account</p>
@@ -131,7 +131,7 @@ function SettingsPage() {
 
         {/* Profile section */}
         <div className="ss-dashboard-section">
-          <div className="container">
+          <div style={{ maxWidth: 1440, margin: "0 auto", padding: "0 1.5rem" }}>
             <div className="ss-dashboard-section-heading">
               <div>
                 <p className="ss-dashboard-eyebrow">Profile</p>
@@ -181,7 +181,7 @@ function SettingsPage() {
 
         {/* Password section */}
         <div className="ss-dashboard-section">
-          <div className="container">
+          <div style={{ maxWidth: 1440, margin: "0 auto", padding: "0 1.5rem" }}>
             <div className="ss-dashboard-section-heading">
               <div>
                 <p className="ss-dashboard-eyebrow">Security</p>
@@ -252,7 +252,7 @@ function SettingsPage() {
 
         {/* Account info */}
         <div className="ss-dashboard-section">
-          <div className="container">
+          <div style={{ maxWidth: 1440, margin: "0 auto", padding: "0 1.5rem" }}>
             <div className="ss-dashboard-section-heading">
               <div>
                 <p className="ss-dashboard-eyebrow">Details</p>
@@ -289,7 +289,7 @@ function SettingsPage() {
         </div>
 
         <div className="ss-dashboard-section">
-          <div className="container">
+          <div style={{ maxWidth: 1440, margin: "0 auto", padding: "0 1.5rem" }}>
             <Link to="/userdashboard" className="ss-dashboard-btn ss-dashboard-btn-secondary">
               <i className="fas fa-tachometer-alt"></i> Back to Dashboard
             </Link>

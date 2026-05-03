@@ -22,6 +22,7 @@ function AdminUsers() {
   const [page, setPage] = useState(0);
 
   const [busyId, setBusyId] = useState(null);
+  const [roleBusyId, setRoleBusyId] = useState(null);
   const [actionAlert, setActionAlert] = useState(null);
   const alertRef = useRef(null);
 
@@ -191,6 +192,43 @@ function AdminUsers() {
     [user]
   );
 
+  // ── Change role ────────────────────────────────────────────────────────────
+  const handleChangeRole = useCallback(
+    async (targetUser, newRole) => {
+      if (targetUser.role === newRole) return;
+      setRoleBusyId(targetUser.id);
+      setActionAlert(null);
+      try {
+        const { error } = await supabase
+          .from('profiles')
+          .update({ role: newRole })
+          .eq('id', targetUser.id);
+        if (error) throw error;
+        await logAdminAction({
+          userId: user.id,
+          action: 'user.role_changed',
+          details: { target_user_id: targetUser.id, from: targetUser.role, to: newRole },
+        });
+        setAllUsers((prev) =>
+          prev.map((u) => (u.id === targetUser.id ? { ...u, role: newRole } : u))
+        );
+        setActionAlert({
+          type: 'success',
+          message: `Role updated to "${newRole}" for ${targetUser.email || targetUser.id.slice(0, 8)}.`,
+        });
+      } catch (err) {
+        setActionAlert({
+          type: 'error',
+          message: err?.message || 'Could not update role. Check RLS policies on the profiles table.',
+        });
+      } finally {
+        setRoleBusyId(null);
+        alertRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    },
+    [user]
+  );
+
   // ── Derived list (search + status filter + pagination) ──────────────────
   const filtered = useMemo(() => {
     const term = search.toLowerCase().trim();
@@ -333,7 +371,7 @@ function AdminUsers() {
         {/* ── Table ── */}
         <div className="ss-dashboard-section">
           <div className="container">
-            <div className="ss-dashboard-panel" style={{ padding: 0, overflow: 'hidden' }}>
+            <div className="ss-dashboard-panel" style={{ padding: 0, overflow: 'hidden', borderRadius: 16 }}>
               {pageUsers.length === 0 ? (
                 <div className="udb-empty-state" style={{ padding: '3rem' }}>
                   <i className="fas fa-users" style={{ fontSize: '2rem', marginBottom: '0.75rem' }}></i>
@@ -355,7 +393,8 @@ function AdminUsers() {
                         <th style={{ textAlign: 'center' }}>Reports</th>
                         <th>Last Active</th>
                         <th style={{ textAlign: 'center' }}>Status</th>
-                        <th style={{ textAlign: 'right' }}>Actions</th>
+                        <th style={{ textAlign: 'center' }}>Role</th>
+                        <th style={{ textAlign: 'right', minWidth: 160 }}>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -420,6 +459,35 @@ function AdminUsers() {
                             <span className={`ss-admin-status-badge ${u.disabled ? 'dismissed' : 'verified'}`}>
                               {u.disabled ? 'Disabled' : 'Active'}
                             </span>
+                          </td>
+
+                          {/* Role selector */}
+                          <td style={{ textAlign: 'center' }}>
+                            {roleBusyId === u.id ? (
+                              <i className="fas fa-spinner fa-spin" style={{ color: 'var(--ss-dashboard-muted)' }}></i>
+                            ) : (
+                              <select
+                                value={u.role}
+                                onChange={(e) => handleChangeRole(u, e.target.value)}
+                                disabled={u.id === user.id}
+                                title={u.id === user.id ? "You can't change your own role" : 'Change role'}
+                                style={{
+                                  border: '1px solid var(--ss-dashboard-border)',
+                                  borderRadius: 8,
+                                  padding: '0.3rem 0.6rem',
+                                  fontSize: '0.8rem',
+                                  fontWeight: 600,
+                                  background: u.role === 'admin'
+                                    ? 'rgba(14,165,164,0.1)'
+                                    : 'var(--ss-dashboard-bg, #f8fafc)',
+                                  color: u.role === 'admin' ? '#0e9494' : 'inherit',
+                                  cursor: u.id === user.id ? 'not-allowed' : 'pointer',
+                                }}
+                              >
+                                <option value="user">user</option>
+                                <option value="admin">admin</option>
+                              </select>
+                            )}
                           </td>
 
                           {/* Disable / Enable action */}

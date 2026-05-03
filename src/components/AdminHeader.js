@@ -73,6 +73,9 @@ function AdminHeader({ user, onLogout, logoutBusy }) {
               >
                 Training
               </Link>
+              <Link to="/admin/users" className={isActive('/admin/users') ? 'active' : ''}>
+                Users
+              </Link>
               <Link to="/admin/settings" className={isActive('/admin/settings') ? 'active' : ''}>
                 Settings
               </Link>

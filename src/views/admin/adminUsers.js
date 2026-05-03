@@ -36,7 +36,7 @@ function AdminUsers() {
         .select('user_id'),
       supabase
         .from('profiles')
-        .select('id, email, full_name, created_at, disabled'),
+        .select('id, email, full_name, role, created_at'),
       supabase
         .from('banned_users')
         .select('user_id'),
@@ -46,6 +46,7 @@ function AdminUsers() {
     if (profileRes.error) {
       setNoProfilesTable(true);
     }
+    // banned_users table is optional — missing it just means no disabled state
 
     // ── Aggregate scan stats by user_id ──────────────────────────────
     const scansByUser = {};
@@ -74,7 +75,7 @@ function AdminUsers() {
     for (const p of profileRes.data ?? []) {
       profileMap[p.id] = p;
     }
-    const bannedSet = new Set((bannedRes.data ?? []).map((b) => b.user_id));
+    const bannedSet = new Set((bannedRes.error ? [] : (bannedRes.data ?? [])).map((b) => b.user_id));
 
     // ── Union of all known user IDs ──────────────────────────────────
     const allIds = new Set([
@@ -91,8 +92,9 @@ function AdminUsers() {
         id: uid,
         email: profile?.email ?? null,
         fullName: profile?.full_name ?? null,
+        role: profile?.role ?? 'user',
         createdAt: profile?.created_at ?? null,
-        disabled: bannedSet.has(uid) || profile?.disabled === true,
+        disabled: bannedSet.has(uid),
         scanTotal: scans.total,
         scanHighRisk: scans.highRisk,
         reportCount: reportsByUser[uid] ?? 0,
@@ -178,7 +180,8 @@ function AdminUsers() {
           message:
             err?.message ||
             `Could not ${willDisable ? 'disable' : 'enable'} user. ` +
-            'Ensure the banned_users table exists in Supabase.',
+            (willDisable ? 'Ensure the banned_users table exists in Supabase.' : err?.message || ''),
+
         });
       } finally {
         setBusyId(null);
@@ -362,8 +365,11 @@ function AdminUsers() {
                           <td>
                             {u.email ? (
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
-                                <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>
+                                <span style={{ fontWeight: 600, fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                                   {u.fullName || u.email.split('@')[0]}
+                                  {u.role === 'admin' && (
+                                    <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '0.1rem 0.45rem', borderRadius: 999, background: 'rgba(14,165,164,0.15)', color: '#0e9494' }}>admin</span>
+                                  )}
                                 </span>
                                 <span style={{ fontSize: '0.775rem', color: 'var(--ss-dashboard-muted)' }}>
                                   {u.email}

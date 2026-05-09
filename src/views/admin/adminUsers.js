@@ -6,7 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import { logAdminAction } from '../../services/adminLogService';
 import '../../styles/dashboard.css';
 
-const PAGE_SIZE = 25;
+const PAGE_SIZE = 10;
 
 function AdminUsers() {
   const { user, loading: authLoading } = useAuth();

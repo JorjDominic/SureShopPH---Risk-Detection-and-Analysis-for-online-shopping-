@@ -8,12 +8,15 @@ import { logAdminAction } from '../../services/adminLogService';
 import AdminSubNav, { MODERATION_TABS } from '../../components/AdminSubNav';
 import '../../styles/dashboard.css';
 
+const PAGE_SIZE = 10;
+
 function AdminFlaggedUrls() {
   const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
 
   const [highRiskScans, setHighRiskScans] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [blPage, setBlPage] = useState(0);
 
   const [flagUrl, setFlagUrl] = useState('');
   const [flagReason, setFlagReason] = useState('');
@@ -47,6 +50,8 @@ function AdminFlaggedUrls() {
     return () => { active = false; };
   }, [authLoading, user]);
 
+  useEffect(() => { setBlPage(0); }, [searchTerm]);
+
   const filtered = highRiskScans.filter((s) => {
     const term = searchTerm.toLowerCase();
     return (
@@ -55,6 +60,9 @@ function AdminFlaggedUrls() {
       (s.scan_mode ?? '').toLowerCase().includes(term)
     );
   });
+
+  const blPageCount = Math.ceil(filtered.length / PAGE_SIZE);
+  const pagedFiltered = filtered.slice(blPage * PAGE_SIZE, (blPage + 1) * PAGE_SIZE);
 
   const handleHardFlag = async (e) => {
     e.preventDefault();
@@ -116,7 +124,7 @@ function AdminFlaggedUrls() {
                 <h2>High-Risk URL Registry</h2>
               </div>
               <p style={{ alignSelf: 'center', color: 'var(--ss-dashboard-muted)', fontSize: '0.9rem' }}>
-                {highRiskScans.length} high-risk record{highRiskScans.length !== 1 ? 's' : ''}
+                {filtered.length} high-risk record{filtered.length !== 1 ? 's' : ''}
               </p>
             </div>
           </div>
@@ -231,7 +239,7 @@ function AdminFlaggedUrls() {
                       </tr>
                     </thead>
                     <tbody>
-                      {filtered.map((s) => (
+                      {pagedFiltered.map((s) => (
                         <tr key={s.id}>
                           <td style={{ maxWidth: 280, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {s.url || '\u2014'}
@@ -261,6 +269,33 @@ function AdminFlaggedUrls() {
                       ))}
                     </tbody>
                   </table>
+                </div>
+              )}
+              {blPageCount > 1 && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  <span style={{ fontSize: '0.85rem', color: '#64748b' }}>
+                    Page {blPage + 1} of {blPageCount}
+                  </span>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button
+                      type="button"
+                      className="ss-dashboard-btn ss-dashboard-btn-secondary"
+                      disabled={blPage === 0}
+                      onClick={() => setBlPage((p) => Math.max(0, p - 1))}
+                      style={{ minHeight: 36, padding: '0 0.9rem', fontSize: '0.83rem' }}
+                    >
+                      <i className="fas fa-chevron-left"></i> Prev
+                    </button>
+                    <button
+                      type="button"
+                      className="ss-dashboard-btn ss-dashboard-btn-secondary"
+                      disabled={blPage >= blPageCount - 1}
+                      onClick={() => setBlPage((p) => Math.min(blPageCount - 1, p + 1))}
+                      style={{ minHeight: 36, padding: '0 0.9rem', fontSize: '0.83rem' }}
+                    >
+                      Next <i className="fas fa-chevron-right"></i>
+                    </button>
+                  </div>
                 </div>
               )}
             </div>

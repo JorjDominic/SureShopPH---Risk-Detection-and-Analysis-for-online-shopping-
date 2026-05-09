@@ -7,6 +7,8 @@ import { useAuth } from '../../context/AuthContext';
 import AdminSubNav, { TRAINING_TABS } from '../../components/AdminSubNav';
 import '../../styles/dashboard.css';
 
+const PAGE_SIZE = 10;
+
 function AdminLogs() {
   const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -16,6 +18,8 @@ function AdminLogs() {
   const [errorLogs, setErrorLogs] = useState([]);
   const [noErrorTable, setNoErrorTable] = useState(false);
   const [actionFilter, setActionFilter] = useState('all');
+  const [nlpPage, setNlpPage] = useState(0);
+  const [logsPage, setLogsPage] = useState(0);
 
   const loadData = useCallback(async () => {
     let logsQuery = supabase
@@ -58,6 +62,8 @@ function AdminLogs() {
     return () => { active = false; };
   }, [authLoading, user, loadData]);
 
+  useEffect(() => { setLogsPage(0); }, [actionFilter]);
+
   const handleRefresh = async () => {
     setRefreshing(true);
     await loadData();
@@ -79,6 +85,11 @@ function AdminLogs() {
     if (l === 'medium') return '#f97316';
     return '#22c55e';
   };
+
+  const nlpPageCount = Math.ceil(nlpFeed.length / PAGE_SIZE);
+  const pagedNlp = nlpFeed.slice(nlpPage * PAGE_SIZE, (nlpPage + 1) * PAGE_SIZE);
+  const logsPageCount = Math.ceil(errorLogs.length / PAGE_SIZE);
+  const pagedLogs = errorLogs.slice(logsPage * PAGE_SIZE, (logsPage + 1) * PAGE_SIZE);
 
   if (loading) return <div className="ss-dashboard-page" aria-busy="true" />;
   if (!user) return <Navigate to="/login" replace />;
@@ -131,7 +142,7 @@ function AdminLogs() {
                 </div>
               ) : (
                 <div>
-                  {nlpFeed.map((entry) => {
+                  {pagedNlp.map((entry) => {
                     const flagsArr = Array.isArray(entry.flags) ? entry.flags : [];
                     const summary = flagsArr.length
                       ? `Detected ${flagsArr.length} risk signal${flagsArr.length === 1 ? '' : 's'}.`
@@ -188,6 +199,33 @@ function AdminLogs() {
                   })}
                 </div>
               )}
+              {nlpPageCount > 1 && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  <span style={{ fontSize: '0.85rem', color: '#64748b' }}>
+                    Page {nlpPage + 1} of {nlpPageCount}
+                  </span>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button
+                      type="button"
+                      className="ss-dashboard-btn ss-dashboard-btn-secondary"
+                      disabled={nlpPage === 0}
+                      onClick={() => setNlpPage((p) => Math.max(0, p - 1))}
+                      style={{ minHeight: 36, padding: '0 0.9rem', fontSize: '0.83rem' }}
+                    >
+                      <i className="fas fa-chevron-left"></i> Prev
+                    </button>
+                    <button
+                      type="button"
+                      className="ss-dashboard-btn ss-dashboard-btn-secondary"
+                      disabled={nlpPage >= nlpPageCount - 1}
+                      onClick={() => setNlpPage((p) => Math.min(nlpPageCount - 1, p + 1))}
+                      style={{ minHeight: 36, padding: '0 0.9rem', fontSize: '0.83rem' }}
+                    >
+                      Next <i className="fas fa-chevron-right"></i>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -238,7 +276,7 @@ function AdminLogs() {
                 </div>
               ) : (
                 <div>
-                  {errorLogs.map((log) => {
+                  {pagedLogs.map((log) => {
                     const detailsText =
                       log.details && typeof log.details === 'object'
                         ? JSON.stringify(log.details)
@@ -274,6 +312,33 @@ function AdminLogs() {
                       </div>
                     );
                   })}
+                </div>
+              )}
+              {logsPageCount > 1 && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  <span style={{ fontSize: '0.85rem', color: '#64748b' }}>
+                    Page {logsPage + 1} of {logsPageCount}
+                  </span>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button
+                      type="button"
+                      className="ss-dashboard-btn ss-dashboard-btn-secondary"
+                      disabled={logsPage === 0}
+                      onClick={() => setLogsPage((p) => Math.max(0, p - 1))}
+                      style={{ minHeight: 36, padding: '0 0.9rem', fontSize: '0.83rem' }}
+                    >
+                      <i className="fas fa-chevron-left"></i> Prev
+                    </button>
+                    <button
+                      type="button"
+                      className="ss-dashboard-btn ss-dashboard-btn-secondary"
+                      disabled={logsPage >= logsPageCount - 1}
+                      onClick={() => setLogsPage((p) => Math.min(logsPageCount - 1, p + 1))}
+                      style={{ minHeight: 36, padding: '0 0.9rem', fontSize: '0.83rem' }}
+                    >
+                      Next <i className="fas fa-chevron-right"></i>
+                    </button>
+                  </div>
                 </div>
               )}
             </div>

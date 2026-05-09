@@ -9,7 +9,7 @@ import AdminSubNav, { MODERATION_TABS } from '../../components/AdminSubNav';
 import '../../styles/dashboard.css';
 
 const STATUS_FILTERS = ['All', 'Pending', 'Verified', 'Dismissed', 'Duplicate'];
-const PAGE_SIZE = 25;
+const PAGE_SIZE = 10;
 
 function AdminReports() {
   const { user, loading: authLoading } = useAuth();

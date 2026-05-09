@@ -156,6 +156,8 @@ function AdminDashboard() {
   const [trendData, setTrendData] = useState([]);
   const [typeSegments, setTypeSegments] = useState([]);
   const [recentScans, setRecentScans] = useState([]);
+  const [scanPage, setScanPage] = useState(0);
+  const SCAN_PAGE_SIZE = 10;
 
   useEffect(() => {
     if (authLoading) return;
@@ -174,7 +176,7 @@ function AdminDashboard() {
             .from('scan_history')
             .select('id, scan_mode, platform, url, risk_level, risk_score, created_at, user_id')
             .order('created_at', { ascending: false })
-            .limit(8),
+            .limit(200),
           supabase
             .from('user_reports')
             .select('*', { count: 'exact', head: true })
@@ -420,7 +422,7 @@ function AdminDashboard() {
                       </tr>
                     </thead>
                     <tbody>
-                      {recentScans.map((scan) => (
+                      {recentScans.slice(scanPage * SCAN_PAGE_SIZE, (scanPage + 1) * SCAN_PAGE_SIZE).map((scan) => (
                         <tr key={scan.id}>
                           <td style={{ fontFamily: 'monospace', fontSize: '0.78rem', color: '#94a3b8' }}>
                             {scan.user_id?.slice(0, 8)}\u2026
@@ -453,6 +455,33 @@ function AdminDashboard() {
                       ))}
                     </tbody>
                   </table>
+                </div>
+              )}
+              {recentScans.length > SCAN_PAGE_SIZE && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  <span style={{ fontSize: '0.85rem', color: '#64748b' }}>
+                    Page {scanPage + 1} of {Math.ceil(recentScans.length / SCAN_PAGE_SIZE)}
+                  </span>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button
+                      type="button"
+                      className="ss-dashboard-btn ss-dashboard-btn-secondary"
+                      disabled={scanPage === 0}
+                      onClick={() => setScanPage((p) => Math.max(0, p - 1))}
+                      style={{ minHeight: 36, padding: '0 0.9rem', fontSize: '0.83rem' }}
+                    >
+                      <i className="fas fa-chevron-left"></i> Prev
+                    </button>
+                    <button
+                      type="button"
+                      className="ss-dashboard-btn ss-dashboard-btn-secondary"
+                      disabled={(scanPage + 1) * SCAN_PAGE_SIZE >= recentScans.length}
+                      onClick={() => setScanPage((p) => p + 1)}
+                      style={{ minHeight: 36, padding: '0 0.9rem', fontSize: '0.83rem' }}
+                    >
+                      Next <i className="fas fa-chevron-right"></i>
+                    </button>
+                  </div>
                 </div>
               )}
             </div>

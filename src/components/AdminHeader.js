@@ -76,6 +76,9 @@ function AdminHeader({ user, onLogout, logoutBusy }) {
               <Link to="/admin/users" className={isActive('/admin/users') ? 'active' : ''}>
                 Users
               </Link>
+              <Link to="/admin/controls" className={isActive('/admin/controls') ? 'active' : ''}>
+                Controls
+              </Link>
               <Link to="/admin/settings" className={isActive('/admin/settings') ? 'active' : ''}>
                 Settings
               </Link>
@@ -140,6 +143,9 @@ function AdminHeader({ user, onLogout, logoutBusy }) {
               </Link>
               <Link to="/admin/settings" onClick={closeMobile} className={isActive('/admin/settings') ? 'active' : ''}>
                 <i className="fas fa-cog"></i> Settings
+              </Link>
+              <Link to="/admin/controls" onClick={closeMobile} className={isActive('/admin/controls') ? 'active' : ''}>
+                <i className="fas fa-sliders"></i> Controls
               </Link>
               <Link to="/userdashboard" onClick={closeMobile}>
                 <i className="fas fa-user"></i> User View

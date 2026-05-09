@@ -21,6 +21,7 @@ import AdminLogs from './views/admin/adminLogs';
 import AdminSettings from './views/admin/adminSettings';
 import AdminTraining from './views/admin/adminTraining';
 import AdminUsers from './views/admin/adminUsers';
+import AdminControls from './views/admin/adminControls';
 import AdminLayout from './components/AdminLayout';
 import UserLayout from './components/UserLayout';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -705,6 +706,7 @@ function App() {
           <Route path="/admin/settings" element={<AdminSettings />} />
           <Route path="/admin/training" element={<AdminTraining />} />
           <Route path="/admin/users" element={<AdminUsers />} />
+          <Route path="/admin/controls" element={<AdminControls />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

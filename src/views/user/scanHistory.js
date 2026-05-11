@@ -35,24 +35,18 @@ function ScanHistoryPage() {
     let active = true;
     setPageLoading(true);
 
-    loadScans(user, 0, filter).then((data) => {
+    loadScans(user, page, filter).then((data) => {
       if (!active) return;
       setScans(data);
-      setPage(0);
       setHasMore(data.length === PAGE_SIZE);
       setPageLoading(false);
     });
 
     return () => { active = false; };
-  }, [user, filter, loadScans]);
+  }, [user, filter, page, loadScans]);
 
-  const handleLoadMore = async () => {
-    const nextPage = page + 1;
-    const more = await loadScans(user, nextPage, filter);
-    setScans((prev) => [...prev, ...more]);
-    setPage(nextPage);
-    setHasMore(more.length === PAGE_SIZE);
-  };
+  // Reset to page 0 when filter changes
+  useEffect(() => { setPage(0); }, [filter]);
 
   const formatDate = (iso) => {
     if (!iso) return '—';
@@ -152,7 +146,7 @@ function ScanHistoryPage() {
                     <tbody>
                       {scans.map((scan, i) => (
                         <tr key={scan.id}>
-                          <td style={{ color: '#94a3b8', fontSize: '0.8rem' }}>{i + 1}</td>
+                          <td style={{ color: '#94a3b8', fontSize: '0.8rem' }}>{page * PAGE_SIZE + i + 1}</td>
                           <td>{scan.scan_mode ? scan.scan_mode.charAt(0).toUpperCase() + scan.scan_mode.slice(1) : '—'}</td>
                           <td style={{ maxWidth: 260, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {scan.url || '—'}
@@ -178,10 +172,26 @@ function ScanHistoryPage() {
                   </table>
                 </div>
 
-                {hasMore && (
-                  <div style={{ marginTop: '1.25rem', textAlign: 'center' }}>
-                    <button type="button" className="ss-dashboard-btn ss-dashboard-btn-secondary" onClick={handleLoadMore}>
-                      <i className="fas fa-chevron-down"></i> Load More
+                {(page > 0 || hasMore) && (
+                  <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', marginTop: '1.25rem', alignItems: 'center' }}>
+                    <button
+                      type="button"
+                      className="ss-dashboard-btn ss-dashboard-btn-secondary"
+                      onClick={() => setPage((p) => Math.max(0, p - 1))}
+                      disabled={page === 0}
+                    >
+                      <i className="fas fa-chevron-left"></i> Prev
+                    </button>
+                    <span style={{ fontSize: '0.85rem', color: 'var(--ss-dashboard-muted)' }}>
+                      Page {page + 1}
+                    </span>
+                    <button
+                      type="button"
+                      className="ss-dashboard-btn ss-dashboard-btn-secondary"
+                      onClick={() => setPage((p) => p + 1)}
+                      disabled={!hasMore}
+                    >
+                      Next <i className="fas fa-chevron-right"></i>
                     </button>
                   </div>
                 )}

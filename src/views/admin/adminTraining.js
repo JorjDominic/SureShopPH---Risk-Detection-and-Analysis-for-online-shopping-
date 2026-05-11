@@ -8,6 +8,7 @@ import '../../styles/dashboard.css';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const SAMPLE_MINIMUM = 200;
+const SAMPLE_PAGE_SIZE = 10;
 const MOCK_TOTAL = 47;
 const MOCK_SUSPICIOUS = 24;
 const MOCK_CREDIBLE = 23;
@@ -276,6 +277,7 @@ function AdminTraining() {
   // Sample table
   const [samples, setSamples] = useState(INITIAL_SAMPLES);
   const [filterTab, setFilterTab] = useState('all'); // 'all' | 'suspicious' | 'credible'
+  const [samplePage, setSamplePage] = useState(0);
 
   // Submit form
   const [reviewText, setReviewText] = useState('');
@@ -318,6 +320,9 @@ function AdminTraining() {
     return () => { active = false; };
   }, [authLoading]);
 
+  // Reset sample page when filter tab changes
+  useEffect(() => { setSamplePage(0); }, [filterTab]);
+
   // Ctrl+Enter submit
   const handleTextareaKeyDown = (e) => {
     if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
@@ -358,6 +363,9 @@ function AdminTraining() {
   const filteredSamples = filterTab === 'all'
     ? samples
     : samples.filter((s) => s.label === filterTab);
+
+  const samplePageCount = Math.ceil(filteredSamples.length / SAMPLE_PAGE_SIZE);
+  const pagedSamples = filteredSamples.slice(samplePage * SAMPLE_PAGE_SIZE, (samplePage + 1) * SAMPLE_PAGE_SIZE);
 
   // Derived stats
   const suspiciousCount = samples.filter((s) => s.label === 'suspicious').length;
@@ -1117,6 +1125,7 @@ function AdminTraining() {
                     <p>Add some annotated reviews using the form to build the training dataset.</p>
                   </div>
                 ) : (
+                  <>
                   <div className="ss-dashboard-table-wrap">
                     <table className="ss-dashboard-table" style={{ minWidth: 580 }}>
                       <thead>
@@ -1129,7 +1138,7 @@ function AdminTraining() {
                         </tr>
                       </thead>
                       <tbody>
-                        {filteredSamples.map((sample) => (
+                        {pagedSamples.map((sample) => (
                           <tr key={sample.id}>
                             {/* Text — truncated, full on hover */}
                             <td>
@@ -1225,6 +1234,30 @@ function AdminTraining() {
                       </tbody>
                     </table>
                   </div>
+                  {samplePageCount > 1 && (
+                    <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', marginTop: '1.25rem', alignItems: 'center' }}>
+                      <button
+                        type="button"
+                        className="ss-dashboard-btn ss-dashboard-btn-secondary"
+                        onClick={() => setSamplePage((p) => Math.max(0, p - 1))}
+                        disabled={samplePage === 0}
+                      >
+                        <i className="fas fa-chevron-left"></i> Prev
+                      </button>
+                      <span style={{ fontSize: '0.85rem', color: 'var(--ss-dashboard-muted)' }}>
+                        Page {samplePage + 1} of {samplePageCount}
+                      </span>
+                      <button
+                        type="button"
+                        className="ss-dashboard-btn ss-dashboard-btn-secondary"
+                        onClick={() => setSamplePage((p) => Math.min(samplePageCount - 1, p + 1))}
+                        disabled={samplePage >= samplePageCount - 1}
+                      >
+                        Next <i className="fas fa-chevron-right"></i>
+                      </button>
+                    </div>
+                  )}
+                  </>
                 )}
               </div>
 

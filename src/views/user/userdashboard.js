@@ -18,6 +18,7 @@ function UserDashboard() {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ total: 0, highRisk: 0, protected: 0 });
   const [recentScans, setRecentScans] = useState([]);
+  const [scanPage, setScanPage] = useState(0);
   const [extensionActive, setExtensionActive] = useState(false);
   const [keyBusy, setKeyBusy] = useState(false);
   const [keyError, setKeyError] = useState(null);
@@ -60,7 +61,7 @@ function UserDashboard() {
           highRisk: high,
           protected: allScans.length - high,
         });
-        setRecentScans(allScans.slice(0, 10));
+        setRecentScans(allScans);
         setExtensionActive((tokenRes.data?.length ?? 0) > 0);
       } catch {
         // non-critical: leave defaults
@@ -72,6 +73,10 @@ function UserDashboard() {
     loadData();
     return () => { active = false; };
   }, [authLoading, user, isAdmin, isAdminView, navigate]);
+
+  const SCAN_PAGE_SIZE = 10;
+  const scanPageCount = Math.ceil(recentScans.length / SCAN_PAGE_SIZE);
+  const pagedScans = recentScans.slice(scanPage * SCAN_PAGE_SIZE, (scanPage + 1) * SCAN_PAGE_SIZE);
 
   const displayName = useMemo(() => {
     if (!user) return 'Shopper';
@@ -396,6 +401,7 @@ function UserDashboard() {
                 </div>
               </div>
             ) : (
+              <>
               <div className="ss-dashboard-panel">
                 <div className="ss-dashboard-table-wrap">
                   <table className="ss-dashboard-table">
@@ -409,7 +415,7 @@ function UserDashboard() {
                       </tr>
                     </thead>
                     <tbody>
-                      {recentScans.map((scan) => (
+                      {pagedScans.map((scan) => (
                         <tr key={scan.id}>
                           <td>{scan.scan_mode ? scan.scan_mode.charAt(0).toUpperCase() + scan.scan_mode.slice(1) : '—'}</td>
                           <td style={{ maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -436,6 +442,30 @@ function UserDashboard() {
                   </table>
                 </div>
               </div>
+              {scanPageCount > 1 && (
+                <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', marginTop: '1.25rem', alignItems: 'center' }}>
+                  <button
+                    type="button"
+                    className="ss-dashboard-btn ss-dashboard-btn-secondary"
+                    onClick={() => setScanPage((p) => Math.max(0, p - 1))}
+                    disabled={scanPage === 0}
+                  >
+                    <i className="fas fa-chevron-left"></i> Prev
+                  </button>
+                  <span style={{ fontSize: '0.85rem', color: 'var(--ss-dashboard-muted)' }}>
+                    Page {scanPage + 1} of {scanPageCount}
+                  </span>
+                  <button
+                    type="button"
+                    className="ss-dashboard-btn ss-dashboard-btn-secondary"
+                    onClick={() => setScanPage((p) => Math.min(scanPageCount - 1, p + 1))}
+                    disabled={scanPage >= scanPageCount - 1}
+                  >
+                    Next <i className="fas fa-chevron-right"></i>
+                  </button>
+                </div>
+              )}
+              </>
             )}
           </div>
         </div>

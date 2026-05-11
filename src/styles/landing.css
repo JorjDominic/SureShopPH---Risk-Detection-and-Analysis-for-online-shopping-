@@ -1064,7 +1064,7 @@ h1, h2, h3, .ss-landing-logo-text {
 
 .ss-landing-header .container {
     border: 1px solid rgba(255, 255, 255, 0.35);
-    background: rgba(255, 255, 255, 0.96);
+    background: rgba(255, 255, 255, 1);
     border-radius: 999px;
     box-shadow: 0 10px 22px -18px rgba(15, 23, 42, 0.42);
 }
@@ -1699,7 +1699,7 @@ body.ss-theme-dark .ss-landing-feature-card,
 body.ss-theme-dark .ss-landing-step-card,
 body.ss-theme-dark .ss-landing-community-content,
 body.ss-theme-dark .ss-landing-glass-card {
-    background: rgba(15, 23, 42, 0.8);
+    background: rgba(15, 23, 42, 1);
     border-color: rgba(148, 163, 184, 0.2);
 }
 

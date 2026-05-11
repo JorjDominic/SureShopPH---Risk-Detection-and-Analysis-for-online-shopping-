@@ -317,15 +317,15 @@ function LandingPage({ session }) {
             </div>
             <div className="ss-landing-community-stats">
               <div className="ss-landing-community-stat">
-                <div className="ss-landing-community-number">50K+</div>
+                <div className="ss-landing-community-number">XX+</div>
                 <p>Active Users</p>
               </div>
               <div className="ss-landing-community-stat">
-                <div className="ss-landing-community-number">1M+</div>
+                <div className="ss-landing-community-number">XX+</div>
                 <p>Listings Scanned</p>
               </div>
               <div className="ss-landing-community-stat">
-                <div className="ss-landing-community-number">25K+</div>
+                <div className="ss-landing-community-number">XX+</div>
                 <p>Risks Flagged</p>
               </div>
             </div>

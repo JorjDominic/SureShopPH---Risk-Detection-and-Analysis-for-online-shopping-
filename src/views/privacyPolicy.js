@@ -189,7 +189,8 @@ function PrivacyPolicy({ session }) {
                   <li>
                     <strong>High-Risk URL Registry:</strong> URLs flagged by our system and
                     confirmed as elevated risk may appear in our internal high-risk registry in
-                    anonymized, aggregated form — no personally identifiable information is included.
+                    anonymized and aggregated form with no personally identifiable information
+                    included.
                     This registry informs our risk-scoring model and is not used to block access.
                   </li>
                   <li>

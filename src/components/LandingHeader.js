@@ -90,10 +90,6 @@ function LandingHeader({ session }) {
 
             <div className="ss-landing-nav-right">
               <div className="ss-landing-auth-links">
-                <span className="ss-landing-live-pill" aria-label="Live protection status">
-                  <span className="ss-landing-live-dot" />
-                  Live Shield Active
-                </span>
                 {session ? (
                   <>
                     <Link to="/userdashboard" className="ss-landing-nav-link">Dashboard</Link>

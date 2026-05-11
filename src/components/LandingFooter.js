@@ -64,10 +64,10 @@ function LandingFooter() {
               <span className="ss-landing-logo-text">SureShop</span>
             </div>
             <p className="ss-landing-footer-description">
-              Advanced scam detection and prevention system for safe online shopping. Protecting users since 2023.
+              AI-powered risk detection and analysis for Filipino online shopping. Built to help buyers identify potential risks in online marketplace listings.
             </p>
             <form className="ss-landing-footer-newsletter" onSubmit={handleSubscribe}>
-              <label htmlFor="footer-news-email">Get weekly scam alerts</label>
+              <label htmlFor="footer-news-email">Get risk detection updates</label>
               <div className="ss-landing-newsletter-row">
                 <input
                   id="footer-news-email"
@@ -96,7 +96,7 @@ function LandingFooter() {
             </form>
             <div className="ss-landing-trust-row">
               <span><i className="fas fa-lock"></i> End-to-end encrypted</span>
-              <span><i className="fas fa-globe"></i> 120+ countries protected</span>
+              <span><i className="fas fa-map-marker-alt"></i> Built for Filipino online shoppers</span>
             </div>
             <div className="ss-landing-footer-social">
               <a
@@ -143,8 +143,6 @@ function LandingFooter() {
             <ul className="ss-landing-footer-links">
               <li><Link to="/privacy-policy">Privacy Policy</Link></li>
               <li><Link to="/terms-of-service">Terms of Service</Link></li>
-              <li><Link to="/cookie-policy">Cookie Policy</Link></li>
-              <li><Link to="/gdpr-compliance">GDPR Compliance</Link></li>
               <li><Link to="/security">Security</Link></li>
             </ul>
           </div>
@@ -152,16 +150,12 @@ function LandingFooter() {
 
         <div className="ss-landing-footer-bottom">
           <div className="ss-landing-footer-copyright">
-            <p>&copy; 2023-2026 SureShop. All rights reserved.</p>
+            <p>&copy; 2026 SureShopPH. All rights reserved.</p>
           </div>
           <div className="ss-landing-footer-legal">
             <Link to="/privacy-policy">Privacy</Link>
             <span className="ss-landing-footer-divider">•</span>
             <Link to="/terms-of-service">Terms</Link>
-            <span className="ss-landing-footer-divider">•</span>
-            <Link to="/cookie-policy">Cookies</Link>
-            <span className="ss-landing-footer-divider">•</span>
-            <Link to="/sitemap">Sitemap</Link>
           </div>
         </div>
       </div>

@@ -169,7 +169,7 @@ function Login() {
           <div className="auth-kicker">Secure Access</div>
           <h1>Welcome back</h1>
           <p className="login-subtitle">
-            Continue to your SureShop protection dashboard and real-time scam alerts.
+            Continue to your SureShopPH risk detection dashboard.
           </p>
 
           {message ? (

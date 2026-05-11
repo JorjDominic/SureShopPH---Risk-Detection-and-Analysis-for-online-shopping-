@@ -30,7 +30,7 @@ function PrivacyPolicy({ session }) {
                 protect it.
               </p>
               <p className="ss-policy-updated">
-                <i className="fas fa-calendar-alt"></i> Last updated: <strong>April 27, 2026</strong>
+                <i className="fas fa-calendar-alt"></i> Last updated: <strong>May 11, 2026</strong>
               </p>
             </div>
           </div>
@@ -66,9 +66,9 @@ function PrivacyPolicy({ session }) {
                 </h2>
                 <p>
                   SureShopPH ("<strong>SureShop</strong>", "we", "our", or "us") is an AI-powered
-                  risk detection and analysis platform designed to protect Filipino consumers from
-                  fraudulent online marketplace listings. We operate the SureShopPH web application
-                  and browser extension.
+                  risk detection and analysis platform designed to help Filipino consumers identify
+                  potential risks in online marketplace listings. We operate the SureShopPH web
+                  application and browser extension.
                 </p>
                 <p>
                   This Privacy Policy applies to all users who access our website, create an
@@ -106,8 +106,8 @@ function PrivacyPolicy({ session }) {
                     information, and listing content as extracted by the browser extension.
                   </li>
                   <li>
-                    <strong>Scan Results:</strong> Risk scores, detected red flags, and analysis
-                    metadata associated with your scans.
+                    <strong>Scan Results:</strong> Risk scores, detected risk indicators, and
+                    analysis metadata associated with your scans.
                   </li>
                   <li>
                     <strong>Usage Logs:</strong> Pages visited within the application, timestamps,
@@ -119,6 +119,15 @@ function PrivacyPolicy({ session }) {
                     analytics purposes.
                   </li>
                 </ul>
+
+                <h3>Browser Extension Data Collection</h3>
+                <p>
+                  The SureShopPH browser extension operates exclusively on Shopee, Lazada, and
+                  Facebook Marketplace listing pages. It does not activate on any other website and
+                  does not monitor, collect, or transmit data from general browsing activity outside
+                  of these three platforms. Data collection only occurs when the user actively
+                  initiates a scan by clicking the scan button in the extension side panel.
+                </p>
 
                 <h3>Information from Third Parties</h3>
                 <ul className="ss-policy-list">
@@ -149,7 +158,7 @@ function PrivacyPolicy({ session }) {
                     Improve and train our risk detection models using aggregated, anonymized scan
                     data. Individual scans are anonymized before being used for model improvements.
                   </li>
-                  <li>Detect and prevent fraudulent, abusive, or unauthorized use of our Services.</li>
+                  <li>Detect and prevent abusive or unauthorized use of our Services.</li>
                   <li>
                     Send transactional emails such as account verification, password reset
                     instructions, and security alerts.
@@ -205,6 +214,11 @@ function PrivacyPolicy({ session }) {
                   We retain your account information for as long as your account is active. Scan
                   history records are retained for a rolling period of <strong>24 months</strong> to
                   allow you to review past analyses.
+                </p>
+                <p>
+                  Listing content collected by the browser extension during a scan is processed
+                  temporarily in memory solely to generate the risk assessment and is not permanently
+                  stored on the server after the analysis is complete.
                 </p>
                 <p>
                   When you delete your account, your personal information and scan history are
@@ -331,10 +345,11 @@ function PrivacyPolicy({ session }) {
                   Children's Privacy
                 </h2>
                 <p>
-                  SureShop is not directed to children under <strong>13 years of age</strong>. We do
-                  not knowingly collect personal information from children. If you believe a child
-                  has provided us with personal data, please contact us immediately and we will
-                  delete the information.
+                  SureShopPH is intended for users who are <strong>18 years of age or older</strong>{' '}
+                  in accordance with the legal age of contractual capacity under Philippine law. We
+                  do not knowingly collect personal information from individuals under 18 years of
+                  age. If you believe a minor has provided us with personal data, please contact us
+                  immediately and we will delete the information.
                 </p>
               </section>
 
@@ -373,7 +388,7 @@ function PrivacyPolicy({ session }) {
                     <i className="fas fa-globe"></i>
                     <div>
                       <strong>Website</strong>
-                      <span>sureshopph.vercel.app</span>
+                      <span>sureshopph.site</span>
                     </div>
                   </div>
                   <div className="ss-policy-contact-row">
@@ -397,8 +412,6 @@ function PrivacyPolicy({ session }) {
                 </Link>
                 <div className="ss-policy-related">
                   <Link to="/terms-of-service">Terms of Service</Link>
-                  <span>·</span>
-                  <Link to="/cookie-policy">Cookie Policy</Link>
                 </div>
               </div>
 

@@ -110,9 +110,9 @@ function ReportListingModal({ open, onClose, userId, listingUrl, defaultType = '
       }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div
+      <div className="ss-report-modal-card"
         style={{
-          background: '#fff', borderRadius: 18, width: 'min(520px, 100%)',
+          borderRadius: 18, width: 'min(520px, 100%)',
           padding: '1.5rem', boxShadow: '0 30px 80px rgba(15,23,42,0.25)',
         }}
       >
@@ -121,7 +121,7 @@ function ReportListingModal({ open, onClose, userId, listingUrl, defaultType = '
             <p style={{ margin: 0, fontSize: '0.72rem', fontWeight: 800, color: '#dc2626', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
               Report
             </p>
-            <h3 id="report-modal-title" style={{ margin: '0.25rem 0 0', fontSize: '1.15rem', color: 'var(--ss-dashboard-text, #0f172a)' }}>
+            <h3 id="report-modal-title" className="ss-report-modal-title" style={{ margin: '0.25rem 0 0', fontSize: '1.15rem' }}>
               Report this listing
             </h3>
           </div>
@@ -129,13 +129,14 @@ function ReportListingModal({ open, onClose, userId, listingUrl, defaultType = '
             type="button"
             onClick={onClose}
             aria-label="Close"
-            style={{ background: 'transparent', border: 0, fontSize: '1.25rem', color: '#64748b', cursor: 'pointer' }}
+            className="ss-report-modal-close"
+            style={{ background: 'transparent', border: 0, fontSize: '1.25rem', cursor: 'pointer' }}
           >
             <i className="fas fa-times"></i>
           </button>
         </div>
 
-        <p style={{ fontSize: '0.82rem', color: '#475569', margin: '0 0 1rem', wordBreak: 'break-all' }}>
+        <p className="ss-report-modal-url" style={{ fontSize: '0.82rem', margin: '0 0 1rem', wordBreak: 'break-all' }}>
           {listingUrl}
         </p>
 

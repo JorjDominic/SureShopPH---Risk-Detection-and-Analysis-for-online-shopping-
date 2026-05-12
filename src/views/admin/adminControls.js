@@ -216,7 +216,7 @@ function AdminControls() {
     padding: '0.65rem 0.9rem',
     borderRadius: 12,
     border: '1px solid rgba(148,163,184,0.35)',
-    background: 'rgba(255,255,255,0.7)',
+    background: 'var(--ss-input-bg)',
     color: 'var(--ss-dashboard-text)',
     fontSize: '0.9rem',
     fontFamily: 'inherit',

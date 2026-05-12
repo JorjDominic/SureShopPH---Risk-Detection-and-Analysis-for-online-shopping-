@@ -137,10 +137,10 @@ function DonutChart({ segments }) {
           />
         ))}
       </g>
-      <text x={CX} y={CY - 4} textAnchor="middle" fontSize="18" fontWeight="800" fill="#0f172a">
+      <text x={CX} y={CY - 4} textAnchor="middle" fontSize="18" fontWeight="800" className="ss-donut-total">
         {total}
       </text>
-      <text x={CX} y={CY + 14} textAnchor="middle" fontSize="9" fill="#64748b" fontWeight="600">
+      <text x={CX} y={CY + 14} textAnchor="middle" fontSize="9" fontWeight="600" className="ss-donut-label">
         SCANS
       </text>
     </svg>

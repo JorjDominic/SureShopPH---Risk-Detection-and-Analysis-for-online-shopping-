@@ -12,6 +12,12 @@
   --ss-dashboard-red: #dc2626;
   --ss-dashboard-green: #16a34a;
   --ss-dashboard-shadow: 0 24px 50px -28px rgba(15, 23, 42, 0.35);
+  --ss-input-bg: rgba(255, 255, 255, 0.7);
+  --ss-code-bg: rgba(15, 23, 42, 0.04);
+  --ss-key-box-bg: #f1f5f9;
+  --ss-key-box-border: #cbd5e1;
+  --ss-key-box-label: #475569;
+  --ss-key-box-code: #0f172a;
 }
 
 .ss-dashboard-page {
@@ -812,11 +818,16 @@ body.ss-theme-dark .ss-dashboard-table tbody td {
   color: #cbd5e1;
 }
 
+body.ss-theme-dark .ss-dashboard-table tbody tr:hover td {
+  background: rgba(148, 163, 184, 0.06);
+}
+
 /* ── Dark mode: form inputs ── */
 body.ss-theme-dark .udb-form-input {
   background: rgba(15, 23, 42, 0.65);
   border-color: rgba(148, 163, 184, 0.22);
   color: #f1f5f9;
+  color-scheme: dark;
 }
 
 body.ss-theme-dark .udb-form-input::placeholder {
@@ -1983,7 +1994,7 @@ body.ss-theme-dark .ss-signout-btn-cancel:hover:not(:disabled) {
 
 
 /* =========================================================================
- * Page Transitions � eliminate white flash & add gentle fade between routes
+ * Page Transitions � eliminate white flash & add gentle fade between routes
  * ========================================================================= */
 
 /* Paint dashboard bg on body so the brief loading skeleton frame is not white */
@@ -1994,6 +2005,13 @@ html, body {
 body.ss-theme-dark,
 body.ss-theme-dark html {
   background-color: var(--ss-dashboard-bg) !important;
+  color-scheme: dark;
+  --ss-input-bg: rgba(15, 23, 42, 0.65);
+  --ss-code-bg: rgba(148, 163, 184, 0.08);
+  --ss-key-box-bg: rgba(15, 23, 42, 0.55);
+  --ss-key-box-border: rgba(148, 163, 184, 0.22);
+  --ss-key-box-label: #94a3b8;
+  --ss-key-box-code: #f1f5f9;
 }
 
 /* Fade in main content on every navigation. Each <main> remounts on route
@@ -2019,7 +2037,7 @@ body.ss-theme-dark html {
   animation: ssRouteFadeIn 260ms ease-out both;
 }
 
-/* Topbar should not animate � it is sticky and shared visually across routes */
+/* Topbar should not animate � it is sticky and shared visually across routes */
 .ss-dashboard-topbar,
 .ss-landing-header {
   animation: none !important;
@@ -2043,4 +2061,306 @@ body.ss-theme-dark html {
               border-color .18s ease,
               box-shadow .18s ease,
               transform .12s ease;
+}
+
+/* ==========================================================================
+   UDB-* DARK MODE OVERRIDES
+   Covers: user dashboard, scan, scan history, scan details, settings pages
+   ========================================================================== */
+
+body.ss-theme-dark .udb-page {
+  background: #0f172a;
+}
+
+body.ss-theme-dark .udb-header {
+  background: rgba(15, 23, 42, 0.97);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+body.ss-theme-dark .udb-logo {
+  color: #f1f5f9;
+}
+
+body.ss-theme-dark .udb-user-greeting {
+  color: #94a3b8;
+}
+
+body.ss-theme-dark .udb-nav-link {
+  color: #cbd5e1;
+}
+
+body.ss-theme-dark .udb-nav-link:hover {
+  background: rgba(148, 163, 184, 0.1);
+  color: #22c55e;
+}
+
+body.ss-theme-dark .udb-nav-link.active {
+  color: #22c55e;
+  background: rgba(34, 197, 94, 0.1);
+}
+
+body.ss-theme-dark .udb-nav-link.logout-link {
+  color: #f87171;
+}
+
+body.ss-theme-dark .udb-nav-link.logout-link:hover {
+  background: rgba(220, 38, 38, 0.12);
+  color: #f87171;
+}
+
+body.ss-theme-dark .udb-section {
+  background: rgba(15, 23, 42, 0.72);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(148, 163, 184, 0.1);
+}
+
+body.ss-theme-dark .udb-section-title {
+  color: #f1f5f9;
+}
+
+body.ss-theme-dark .udb-page-title h1 {
+  color: #f1f5f9;
+}
+
+body.ss-theme-dark .udb-welcome-text {
+  color: #94a3b8;
+}
+
+/* Action cards */
+body.ss-theme-dark .udb-action-card {
+  background: rgba(15, 23, 42, 0.72);
+  border-color: rgba(148, 163, 184, 0.15);
+  color: #f1f5f9;
+}
+
+body.ss-theme-dark .udb-action-card:hover {
+  border-color: rgba(34, 197, 94, 0.3);
+  box-shadow: 0 4px 16px rgba(34, 197, 94, 0.1);
+}
+
+body.ss-theme-dark .udb-action-card h3 {
+  color: #f1f5f9;
+}
+
+body.ss-theme-dark .udb-action-card p {
+  color: #94a3b8;
+}
+
+/* Stat cards */
+body.ss-theme-dark .udb-stat-card {
+  background: rgba(15, 23, 42, 0.72);
+  border-color: rgba(148, 163, 184, 0.15);
+}
+
+body.ss-theme-dark .udb-stat-card.risk-high {
+  border-color: rgba(252, 165, 165, 0.25);
+  background: rgba(127, 29, 29, 0.18);
+}
+
+body.ss-theme-dark .udb-stat-card.risk-low {
+  border-color: rgba(187, 247, 208, 0.2);
+  background: rgba(20, 83, 45, 0.18);
+}
+
+body.ss-theme-dark .udb-stat-card-header h3 {
+  color: #94a3b8;
+}
+
+body.ss-theme-dark .udb-stat-number {
+  color: #f1f5f9;
+}
+
+body.ss-theme-dark .udb-stat-meta {
+  color: #94a3b8;
+}
+
+/* Table */
+body.ss-theme-dark .udb-table thead th {
+  color: #64748b;
+  border-bottom-color: rgba(148, 163, 184, 0.12);
+}
+
+body.ss-theme-dark .udb-table tbody td {
+  color: #cbd5e1;
+  border-bottom-color: rgba(148, 163, 184, 0.08);
+}
+
+body.ss-theme-dark .udb-table tbody tr:hover td {
+  background: rgba(148, 163, 184, 0.06);
+}
+
+/* Extension / key boxes */
+body.ss-theme-dark .udb-extension-activated {
+  background: rgba(20, 83, 45, 0.25);
+  border-color: rgba(187, 247, 208, 0.18);
+}
+
+body.ss-theme-dark .udb-extension-activated p {
+  color: #86efac;
+}
+
+body.ss-theme-dark .udb-key-box {
+  background: rgba(120, 53, 15, 0.2);
+  border-color: rgba(253, 230, 138, 0.2);
+}
+
+body.ss-theme-dark .udb-key-box p {
+  color: #fcd34d;
+}
+
+body.ss-theme-dark .udb-key-box code {
+  background: rgba(15, 23, 42, 0.7);
+  border-color: rgba(148, 163, 184, 0.2);
+  color: #f1f5f9;
+}
+
+body.ss-theme-dark .udb-key-warning {
+  color: #fcd34d;
+}
+
+/* Buttons */
+body.ss-theme-dark .udb-btn-secondary {
+  background: rgba(148, 163, 184, 0.1);
+  color: #cbd5e1;
+  border-color: rgba(148, 163, 184, 0.2);
+}
+
+body.ss-theme-dark .udb-btn-secondary:hover {
+  background: rgba(148, 163, 184, 0.18);
+  opacity: 1;
+}
+
+/* Alert messages */
+body.ss-theme-dark .udb-alert-success {
+  background: rgba(20, 83, 45, 0.25);
+  border-color: rgba(187, 247, 208, 0.2);
+  color: #86efac;
+}
+
+body.ss-theme-dark .udb-alert-error {
+  background: rgba(127, 29, 29, 0.25);
+  border-color: rgba(252, 165, 165, 0.2);
+  color: #fca5a5;
+}
+
+/* Form labels */
+body.ss-theme-dark .udb-form-group label {
+  color: #cbd5e1;
+}
+
+/* Scan info cards */
+body.ss-theme-dark .udb-scan-info-card {
+  background: rgba(15, 23, 42, 0.65);
+  border-color: rgba(148, 163, 184, 0.15);
+}
+
+body.ss-theme-dark .udb-scan-info-card h4 {
+  color: #f1f5f9;
+}
+
+body.ss-theme-dark .udb-scan-info-card p {
+  color: #94a3b8;
+}
+
+/* Scan result */
+body.ss-theme-dark .udb-scan-result {
+  background: rgba(15, 23, 42, 0.65);
+  border-color: rgba(148, 163, 184, 0.15);
+}
+
+body.ss-theme-dark .udb-scan-result h3 {
+  color: #f1f5f9;
+}
+
+/* Risk meter track */
+body.ss-theme-dark .udb-risk-meter {
+  background: rgba(148, 163, 184, 0.15);
+}
+
+/* Detail items (scan details page) */
+body.ss-theme-dark .udb-detail-item {
+  background: rgba(15, 23, 42, 0.65);
+  border-color: rgba(148, 163, 184, 0.15);
+}
+
+body.ss-theme-dark .udb-detail-item span {
+  color: #f1f5f9;
+}
+
+/* Empty state */
+body.ss-theme-dark .udb-empty-state h3 {
+  color: #94a3b8;
+}
+
+body.ss-theme-dark .udb-empty-state i {
+  color: rgba(148, 163, 184, 0.3);
+}
+
+/* Footer */
+body.ss-theme-dark .udb-footer {
+  background: #020617;
+  border-top: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+/* Admin training: sticky bar */
+body.ss-theme-dark .ss-train-sticky-bar {
+  background: rgba(2, 6, 23, 0.88);
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+/* ==========================================================================
+   REPORT LISTING MODAL
+   ========================================================================== */
+
+.ss-report-modal-card {
+  background: #fff;
+}
+
+.ss-report-modal-title {
+  color: var(--ss-dashboard-text, #0f172a);
+}
+
+.ss-report-modal-close {
+  color: #64748b;
+}
+
+.ss-report-modal-url {
+  color: #475569;
+}
+
+body.ss-theme-dark .ss-report-modal-card {
+  background: #1e293b;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+body.ss-theme-dark .ss-report-modal-title {
+  color: #f1f5f9;
+}
+
+body.ss-theme-dark .ss-report-modal-close {
+  color: #94a3b8;
+}
+
+body.ss-theme-dark .ss-report-modal-url {
+  color: #94a3b8;
+}
+
+/* ==========================================================================
+   ADMIN DASHBOARD — SVG CHART TEXT
+   ========================================================================== */
+
+.ss-donut-total {
+  fill: #0f172a;
+}
+
+.ss-donut-label {
+  fill: #64748b;
+}
+
+body.ss-theme-dark .ss-donut-total {
+  fill: #f1f5f9;
+}
+
+body.ss-theme-dark .ss-donut-label {
+  fill: #94a3b8;
 }

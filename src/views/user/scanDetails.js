@@ -211,7 +211,7 @@ function ScanDetailsPage() {
                     </div>
                   </div>
                   <div className="ss-dashboard-panel">
-                    <pre style={{ background: 'rgba(15,23,42,0.04)', border: '1px solid var(--ss-dashboard-border)', borderRadius: 12, padding: '1rem', fontSize: '0.78rem', color: 'var(--ss-dashboard-text)', overflowX: 'auto', margin: 0, lineHeight: 1.6 }}>
+                    <pre style={{ background: 'var(--ss-code-bg)', border: '1px solid var(--ss-dashboard-border)', borderRadius: 12, padding: '1rem', fontSize: '0.78rem', color: 'var(--ss-dashboard-text)', overflowX: 'auto', margin: 0, lineHeight: 1.6 }}>
                       {JSON.stringify(scan.raw_data, null, 2)}
                     </pre>
                   </div>

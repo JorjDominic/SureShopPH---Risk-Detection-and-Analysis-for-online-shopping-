@@ -249,12 +249,12 @@ function UserDashboard() {
                     <p style={{ margin: 0 }}>Your browser extension is successfully linked to your account. You can now scan products in real time.</p>
 
                     {generatedKey && (
-                      <div style={{ marginTop: '1rem', padding: '0.85rem 1rem', background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: 8 }}>
-                        <p style={{ margin: '0 0 0.4rem', fontSize: '0.78rem', color: '#475569', fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                      <div style={{ marginTop: '1rem', padding: '0.85rem 1rem', background: 'var(--ss-key-box-bg)', border: '1px solid var(--ss-key-box-border)', borderRadius: 8 }}>
+                        <p style={{ margin: '0 0 0.4rem', fontSize: '0.78rem', color: 'var(--ss-key-box-label)', fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
                           Your activation key (shown only once)
                         </p>
                         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                          <code style={{ fontFamily: 'monospace', fontSize: '0.95rem', fontWeight: 700, letterSpacing: '0.06em', color: '#0f172a' }}>
+                          <code style={{ fontFamily: 'monospace', fontSize: '0.95rem', fontWeight: 700, letterSpacing: '0.06em', color: 'var(--ss-key-box-code)' }}>
                             {generatedKey}
                           </code>
                           <button

@@ -50,6 +50,11 @@ function ScanDetailsPage() {
     return 'ss-dashboard-risk-low';
   };
 
+  const truncateUrl = (url, maxLength = 110) => {
+    if (!url) return '—';
+    return url.length > maxLength ? `${url.slice(0, maxLength)}...` : url;
+  };
+
   if (!authLoading && !user) return <Navigate to="/login" replace />;
   if (authLoading) return <div className="ss-dashboard-page" aria-busy="true" />;
 
@@ -113,7 +118,21 @@ function ScanDetailsPage() {
                 </div>
                 <div className="ss-dashboard-panel">
                   <p style={{ margin: '0 0 1.1rem', fontWeight: 600, color: 'var(--ss-dashboard-text)' }}>
-                    {scan.product_name || scan.url || 'Scan #' + id}
+                    {scan.product_name ? (
+                      scan.product_name
+                    ) : scan.url ? (
+                      <a
+                        href={scan.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title={scan.url}
+                        style={{ color: 'inherit', textDecoration: 'underline', wordBreak: 'break-word' }}
+                      >
+                        {truncateUrl(scan.url)}
+                      </a>
+                    ) : (
+                      'Scan #' + id
+                    )}
                   </p>
 
                   {scan.risk_score != null && (
@@ -140,7 +159,24 @@ function ScanDetailsPage() {
                     {scan.url && (
                       <div className="udb-detail-item" style={{ gridColumn: '1 / -1' }}>
                         <label>URL</label>
-                        <span style={{ wordBreak: 'break-all', fontSize: '0.85rem' }}>{scan.url}</span>
+                        <a
+                          href={scan.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title={scan.url}
+                          style={{
+                            display: 'inline-block',
+                            maxWidth: '100%',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            fontSize: '0.85rem',
+                            color: 'var(--ss-dashboard-text)',
+                            textDecoration: 'underline',
+                          }}
+                        >
+                          {truncateUrl(scan.url, 140)}
+                        </a>
                       </div>
                     )}
                   </div>

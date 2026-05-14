@@ -36,7 +36,7 @@ function ScanDetailsPage() {
       });
 
     return () => { active = false; };
-  }, [user, id]);
+  }, [user, id, isAdmin]);
 
   const formatDate = (iso) => {
     if (!iso) return '—';

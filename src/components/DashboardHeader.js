@@ -61,7 +61,7 @@ function DashboardHeader({ user, onLogout, logoutBusy }) {
             </Link>
 
             <div className="ss-dashboard-nav">
-              <Link to="/userdashboard" className={isActive('/userdashboard') ? 'active' : ''}>
+              <Link to="/userdashboard" state={{ adminView: true }} className={isActive('/userdashboard') ? 'active' : ''}>
                 Dashboard
               </Link>
               <Link to="/scan" className={isActive('/scan') ? 'active' : ''}>
@@ -115,7 +115,7 @@ function DashboardHeader({ user, onLogout, logoutBusy }) {
 
           {mobileOpen && (
             <div className="ss-mobile-dropdown">
-              <Link to="/userdashboard" onClick={closeMobile} className={isActive('/userdashboard') ? 'active' : ''}>
+              <Link to="/userdashboard" state={{ adminView: true }} onClick={closeMobile} className={isActive('/userdashboard') ? 'active' : ''}>
                 <i className="fas fa-tachometer-alt"></i> Dashboard
               </Link>
               <Link to="/scan" onClick={closeMobile} className={isActive('/scan') ? 'active' : ''}>

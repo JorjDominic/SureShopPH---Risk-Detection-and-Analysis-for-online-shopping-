@@ -841,6 +841,10 @@
     color: white;
 }
 
+.ss-landing-footer-logo .ss-landing-logo-text {
+    color: white;
+}
+
 .ss-landing-footer-links {
     list-style: none;
     padding: 0;
@@ -1754,6 +1758,11 @@ body.ss-theme-dark .ss-landing-stat-item span,
 body.ss-theme-dark .ss-landing-footer-heading,
 body.ss-theme-dark .ss-landing-footer-copyright p {
     color: #f8fafc;
+}
+
+body.ss-theme-dark .ss-landing-community .ss-landing-section-title,
+body.ss-theme-dark .ss-landing-features .ss-landing-section-title {
+    color: #1f2937 !important;
 }
 
 body.ss-theme-dark .ss-landing-mobile-menu {

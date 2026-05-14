@@ -367,9 +367,9 @@ function LandingPage({ session }) {
                   </div>
                 </div>
                 <div className="ss-landing-demo-video">
-                  <div className="ss-landing-video-placeholder" style={{ padding: '2rem', textAlign: 'left' }}>
-                    <h3 style={{ marginTop: 0, color: '#fff' }}>
-                      <i className="fas fa-bolt" style={{ marginRight: '0.5rem', color: '#fbbf24' }}></i>
+                  <div className="ss-landing-video-placeholder" style={{ padding: '2rem', textAlign: 'center' }}>
+                    <h3 style={{ marginTop: 0, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+                      <i className="fas fa-bolt" style={{ color: '#fbbf24' }}></i>
                       Try it now
                     </h3>
                     <p style={{ color: 'rgba(255,255,255,0.85)', margin: '0.5rem 0 1.25rem' }}>

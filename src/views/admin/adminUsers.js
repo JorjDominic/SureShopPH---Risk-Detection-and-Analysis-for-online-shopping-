@@ -471,6 +471,7 @@ function AdminUsers() {
                                 onChange={(e) => handleChangeRole(u, e.target.value)}
                                 disabled={u.id === user.id}
                                 title={u.id === user.id ? "You can't change your own role" : 'Change role'}
+                                className="ss-admin-role-select"
                                 style={{
                                   border: '1px solid var(--ss-dashboard-border)',
                                   borderRadius: 8,
@@ -479,7 +480,7 @@ function AdminUsers() {
                                   fontWeight: 600,
                                   background: u.role === 'admin'
                                     ? 'rgba(14,165,164,0.1)'
-                                    : 'var(--ss-dashboard-bg, #f8fafc)',
+                                    : 'var(--ss-input-bg)',
                                   color: u.role === 'admin' ? '#0e9494' : 'inherit',
                                   cursor: u.id === user.id ? 'not-allowed' : 'pointer',
                                 }}

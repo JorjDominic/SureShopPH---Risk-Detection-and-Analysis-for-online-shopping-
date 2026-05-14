@@ -7,7 +7,7 @@ import '../../styles/dashboard.css';
 
 function ScanDetailsPage() {
   const { id } = useParams();
-  const { user, loading: authLoading } = useAuth();
+  const { user, isAdmin, loading: authLoading } = useAuth();
   const [scan, setScan] = useState(null);
   const [scanLoading, setScanLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -18,12 +18,16 @@ function ScanDetailsPage() {
     let active = true;
     setScanLoading(true);
 
-    supabase
+    let query = supabase
       .from('scan_history')
       .select('*')
-      .eq('id', id)
-      .eq('user_id', user.id)
-      .maybeSingle()
+      .eq('id', id);
+
+    if (!isAdmin) {
+      query = query.eq('user_id', user.id);
+    }
+
+    query.maybeSingle()
       .then(({ data }) => {
         if (!active) return;
         if (!data) { setNotFound(true); }

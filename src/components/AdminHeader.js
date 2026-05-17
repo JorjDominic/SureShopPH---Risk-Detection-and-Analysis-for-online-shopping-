@@ -6,7 +6,9 @@ import SignOutModal from './SignOutModal';
 import '../styles/landing.css';
 import '../styles/dashboard.css';
 
-function AdminHeader({ user, onLogout, logoutBusy }) {
+const NOTIF_DOT_COLOR = { info: '#2563eb', warning: '#f97316', critical: '#dc2626' };
+
+function AdminHeader({ user, onLogout, logoutBusy, notification }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [showSignOutModal, setShowSignOutModal] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -95,6 +97,40 @@ function AdminHeader({ user, onLogout, logoutBusy }) {
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <button
+                type="button"
+                aria-label={notification ? 'Active notification' : 'No notifications'}
+                title={notification ? notification.message : 'No active notifications'}
+                style={{
+                  position: 'relative',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'default',
+                  color: notification
+                    ? (NOTIF_DOT_COLOR[notification.type] ?? '#2563eb')
+                    : 'rgba(148,163,184,0.55)',
+                  fontSize: '1.1rem',
+                  padding: '0.25rem',
+                  lineHeight: 1,
+                  transition: 'color 0.2s ease',
+                }}
+              >
+                <i className="fas fa-bell" />
+                {notification && (
+                  <span
+                    style={{
+                      position: 'absolute',
+                      top: 1,
+                      right: 1,
+                      width: 8,
+                      height: 8,
+                      borderRadius: '50%',
+                      background: NOTIF_DOT_COLOR[notification.type] ?? '#2563eb',
+                      border: '1.5px solid var(--ss-dashboard-bg, #fff)',
+                    }}
+                  />
+                )}
+              </button>
               <span className="ss-landing-live-pill ss-dashboard-live-pill">
                 <span className="ss-landing-live-dot" />
                 {displayName}

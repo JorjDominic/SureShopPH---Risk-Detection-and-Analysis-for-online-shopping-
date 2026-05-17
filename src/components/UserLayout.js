@@ -46,7 +46,7 @@ function UserLayout() {
 
   return (
     <div className="ss-dashboard-page">
-      <DashboardHeader user={user} onLogout={handleLogout} logoutBusy={logoutBusy} />
+      <DashboardHeader user={user} onLogout={handleLogout} logoutBusy={logoutBusy} notification={banner && !dismissed ? banner : null} />
       {banner && !dismissed && (
         <div
           role="alert"

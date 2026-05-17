@@ -6,7 +6,9 @@ import SignOutModal from './SignOutModal';
 import '../styles/landing.css';
 import '../styles/dashboard.css';
 
-function DashboardHeader({ user, onLogout, logoutBusy }) {
+const NOTIF_DOT_COLOR = { info: '#2563eb', warning: '#f97316', critical: '#dc2626' };
+
+function DashboardHeader({ user, onLogout, logoutBusy, notification }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [showSignOutModal, setShowSignOutModal] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -86,6 +88,37 @@ function DashboardHeader({ user, onLogout, logoutBusy }) {
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              {notification && (
+                <button
+                  type="button"
+                  aria-label="Active notification"
+                  title={notification.message}
+                  style={{
+                    position: 'relative',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'default',
+                    color: NOTIF_DOT_COLOR[notification.type] ?? '#2563eb',
+                    fontSize: '1.1rem',
+                    padding: '0.25rem',
+                    lineHeight: 1,
+                  }}
+                >
+                  <i className="fas fa-bell" />
+                  <span
+                    style={{
+                      position: 'absolute',
+                      top: 1,
+                      right: 1,
+                      width: 8,
+                      height: 8,
+                      borderRadius: '50%',
+                      background: NOTIF_DOT_COLOR[notification.type] ?? '#2563eb',
+                      border: '1.5px solid var(--ss-dashboard-bg, #fff)',
+                    }}
+                  />
+                </button>
+              )}
               <span className="ss-landing-live-pill ss-dashboard-live-pill">
                 <span className="ss-landing-live-dot" />
                 {displayName}

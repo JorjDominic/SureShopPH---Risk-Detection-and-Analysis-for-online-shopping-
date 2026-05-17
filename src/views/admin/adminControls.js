@@ -238,6 +238,11 @@ function AdminControls() {
       key: 'announcement',
       value: { enabled: bannerEnabled, type: bannerType, message: bannerMessage, dismissible: bannerDismissible },
     });
+    if (bannerError) {
+      setEmailError(`Failed to save banner: ${bannerError.message}`);
+      setEmailSending(false);
+      return;
+    }
 
     // Save schedule if set
     if (schedEnabled && scheduleStart) {
@@ -261,10 +266,8 @@ function AdminControls() {
     }
 
     setEmailSending(false);
-    if (!bannerError) {
-      setBannerSaved(true);
-      setTimeout(() => setBannerSaved(false), 2500);
-    }
+    setBannerSaved(true);
+    setTimeout(() => setBannerSaved(false), 2500);
   };
 
   const inputStyle = {

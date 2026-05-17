@@ -334,10 +334,12 @@ function AdminControls() {
           </div>
         </div>
 
-        {/* ── Feature Flags ────────────────────────────────────────────────── */}
-        <div className="ss-dashboard-section" style={{ paddingTop: 0 }}>
+        {/* ── Controls (merged) ───────────────────────────────────────────── */}
+        <div className="ss-dashboard-section" style={{ paddingTop: 0, paddingBottom: '2rem' }}>
           <div style={sectionContainerStyle}>
             <div className="ss-dashboard-panel">
+
+              {/* ── Feature Flags ───────────────────────────────────────── */}
               <div className="ss-dashboard-panel-header">
                 <div>
                   <p className="ss-dashboard-eyebrow" style={{ marginBottom: '0.25rem' }}>Controls</p>
@@ -349,7 +351,6 @@ function AdminControls() {
                   {[maintenanceMode, !scannerEnabled, !registrationsOpen, readOnlyMode].filter(Boolean).length} active restrictions
                 </span>
               </div>
-
               <div style={{ marginTop: '0.5rem' }}>
                 <FlagRow
                   id="flag-maintenance"
@@ -391,304 +392,168 @@ function AdminControls() {
                 />
               </div>
 
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  marginTop: '1.25rem',
-                  padding: '0.75rem 1rem',
-                  borderRadius: 10,
-                  background: 'rgba(148,163,184,0.08)',
-                  fontSize: '0.82rem',
-                  color: 'var(--ss-dashboard-muted)',
-                }}
-              >
-                <i className="fas fa-circle-info" style={{ color: '#2563eb', flexShrink: 0 }} />
-                Changes here are UI-only until backend wiring is complete. Flags will be saved to the <code style={{ background: 'rgba(0,0,0,0.06)', padding: '0.1rem 0.3rem', borderRadius: 4 }}>system_config</code> table.
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ── In-App Announcement ──────────────────────────────────────────── */}
-        <div className="ss-dashboard-section" style={{ paddingTop: 0 }}>
-          <div style={sectionContainerStyle}>
-            <div className="ss-dashboard-panel">
-              <div className="ss-dashboard-panel-header">
-                <div>
-                  <p className="ss-dashboard-eyebrow" style={{ marginBottom: '0.25rem' }}>Broadcast</p>
-                  <h3 style={{ color: 'var(--ss-dashboard-text)', fontFamily: 'var(--font-display)', margin: 0, fontSize: '1.2rem' }}>
-                    In-App Announcement
-                  </h3>
-                </div>
-                <Toggle
-                  id="banner-enabled"
-                  checked={bannerEnabled}
-                  onChange={(e) => setBannerEnabled(e.target.checked)}
-                />
-              </div>
-
-              <form onSubmit={handleBannerSave} style={{ marginTop: '1rem', display: 'grid', gap: '1rem' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: '1rem', alignItems: 'start' }}>
-                  {/* Left: type + message */}
-                  <div style={{ display: 'grid', gap: '0.75rem' }}>
-                    <div>
-                      <span style={labelStyle}>Banner Type</span>
-                      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                        {[
-                          { value: 'info',     label: 'Info',     icon: 'fa-circle-info',           color: '#2563eb' },
-                          { value: 'warning',  label: 'Warning',  icon: 'fa-triangle-exclamation',  color: '#c2410c' },
-                          { value: 'critical', label: 'Critical', icon: 'fa-circle-exclamation',    color: '#dc2626' },
-                        ].map((opt) => (
-                          <label
-                            key={opt.value}
-                            style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '0.4rem',
-                              padding: '0.4rem 0.8rem',
-                              borderRadius: 12,
-                              border: `1.5px solid ${bannerType === opt.value ? opt.color : 'rgba(148,163,184,0.3)'}`,
-                              background: bannerType === opt.value ? `${opt.color}14` : 'rgba(255,255,255,0.5)',
-                              cursor: 'pointer',
-                              fontWeight: 600,
-                              fontSize: '0.83rem',
-                              color: bannerType === opt.value ? opt.color : 'var(--ss-dashboard-muted)',
-                              transition: 'all 0.18s ease',
-                            }}
-                          >
-                            <input type="radio" name="bannerType" value={opt.value} checked={bannerType === opt.value} onChange={() => setBannerType(opt.value)} style={{ display: 'none' }} />
-                            <i className={`fas ${opt.icon}`} style={{ fontSize: '0.78rem' }} />
-                            {opt.label}
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <label htmlFor="banner-msg" style={labelStyle}>Message</label>
-                      <textarea
-                        id="banner-msg"
-                        value={bannerMessage}
-                        onChange={(e) => setBannerMessage(e.target.value)}
-                        placeholder="e.g. We are performing scheduled maintenance. Some features may be temporarily unavailable."
-                        rows={3}
-                        style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.55 }}
-                      />
-                      <p style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.25rem' }}>{bannerMessage.length}/300</p>
-                    </div>
-                  </div>
-
-                  {/* Right: live preview */}
+              {/* ── In-App Announcement ──────────────────────────────────── */}
+              <div style={{ marginTop: '1.75rem', paddingTop: '1.5rem', borderTop: '1px solid var(--ss-dashboard-border)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
                   <div>
-                    <span style={labelStyle}>Preview</span>
-                    {bannerEnabled && bannerMessage.trim() ? (
-                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', padding: '0.8rem 1rem', borderRadius: 12, background: bps.bg, border: `1px solid ${bps.border}`, color: bps.color }}>
-                        <i className={`fas ${bps.icon}`} style={{ marginTop: '0.1rem', flexShrink: 0 }} />
-                        <span style={{ flex: 1, fontSize: '0.87rem', lineHeight: 1.5 }}>{bannerMessage}</span>
-                        {bannerDismissible && <i className="fas fa-xmark" style={{ opacity: 0.6, flexShrink: 0, fontSize: '0.9rem' }} />}
-                      </div>
-                    ) : (
-                      <div style={{ padding: '1.25rem 1rem', borderRadius: 12, border: '1.5px dashed rgba(148,163,184,0.35)', textAlign: 'center', color: '#94a3b8', fontSize: '0.83rem' }}>
-                        <i className="fas fa-eye-slash" style={{ display: 'block', fontSize: '1.2rem', marginBottom: '0.4rem' }} />
-                        Enable and enter a message to preview.
-                      </div>
-                    )}
-                    <p style={{ fontSize: '0.78rem', color: '#94a3b8', marginTop: '0.6rem', lineHeight: 1.4 }}>
-                      <i className="fas fa-circle-info" style={{ marginRight: '0.35rem' }} />
-                      Shown at the top of every page for all logged-in users.
-                    </p>
+                    <p className="ss-dashboard-eyebrow" style={{ marginBottom: '0.2rem' }}>Broadcast</p>
+                    <h3 style={{ color: 'var(--ss-dashboard-text)', fontFamily: 'var(--font-display)', margin: 0, fontSize: '1.1rem' }}>
+                      In-App Announcement
+                    </h3>
                   </div>
+                  <Toggle id="banner-enabled" checked={bannerEnabled} onChange={(e) => setBannerEnabled(e.target.checked)} />
                 </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer', fontSize: '0.87rem', fontWeight: 600, color: 'var(--ss-dashboard-text)' }}>
-                    <Toggle id="banner-dismissible" checked={bannerDismissible} onChange={(e) => setBannerDismissible(e.target.checked)} />
-                    Allow users to dismiss this banner
-                  </label>
-                  <div style={{ display: 'flex', gap: '0.6rem' }}>
-                    <button type="submit" className="ss-dashboard-btn ss-dashboard-btn-primary" style={{ minHeight: 40, fontSize: '0.87rem' }}>
-                      {bannerSaved ? <><i className="fas fa-check" style={{ marginRight: '0.4rem' }} />Saved</> : <><i className="fas fa-floppy-disk" style={{ marginRight: '0.4rem' }} />Save Banner</>}
-                    </button>
-                    <button type="button" className="ss-dashboard-btn ss-dashboard-btn-secondary" style={{ minHeight: 40, fontSize: '0.87rem' }} onClick={() => { setBannerMessage(''); setBannerEnabled(false); }}>
-                      <i className="fas fa-xmark" style={{ marginRight: '0.35rem' }} />Clear
-                    </button>
+                <form onSubmit={handleBannerSave}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: '1rem', alignItems: 'start' }}>
+                    <div style={{ display: 'grid', gap: '0.75rem' }}>
+                      <div>
+                        <span style={labelStyle}>Banner Type</span>
+                        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                          {[
+                            { value: 'info',     label: 'Info',     icon: 'fa-circle-info',          color: '#2563eb' },
+                            { value: 'warning',  label: 'Warning',  icon: 'fa-triangle-exclamation', color: '#c2410c' },
+                            { value: 'critical', label: 'Critical', icon: 'fa-circle-exclamation',   color: '#dc2626' },
+                          ].map((opt) => (
+                            <label key={opt.value} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.35rem 0.75rem', borderRadius: 12, border: `1.5px solid ${bannerType === opt.value ? opt.color : 'rgba(148,163,184,0.3)'}`, background: bannerType === opt.value ? `${opt.color}14` : 'rgba(255,255,255,0.5)', cursor: 'pointer', fontWeight: 600, fontSize: '0.82rem', color: bannerType === opt.value ? opt.color : 'var(--ss-dashboard-muted)', transition: 'all 0.18s ease' }}>
+                              <input type="radio" name="bannerType" value={opt.value} checked={bannerType === opt.value} onChange={() => setBannerType(opt.value)} style={{ display: 'none' }} />
+                              <i className={`fas ${opt.icon}`} style={{ fontSize: '0.76rem' }} />{opt.label}
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <label htmlFor="banner-msg" style={labelStyle}>Message</label>
+                        <textarea id="banner-msg" value={bannerMessage} onChange={(e) => setBannerMessage(e.target.value)} placeholder="e.g. Scheduled maintenance in progress. Some features may be temporarily unavailable." rows={3} style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.55 }} />
+                        <p style={{ fontSize: '0.74rem', color: '#94a3b8', marginTop: '0.2rem' }}>{bannerMessage.length}/300</p>
+                      </div>
+                    </div>
+                    <div>
+                      <span style={labelStyle}>Preview</span>
+                      {bannerEnabled && bannerMessage.trim() ? (
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.65rem', padding: '0.75rem 1rem', borderRadius: 12, background: bps.bg, border: `1px solid ${bps.border}`, color: bps.color }}>
+                          <i className={`fas ${bps.icon}`} style={{ marginTop: '0.1rem', flexShrink: 0 }} />
+                          <span style={{ flex: 1, fontSize: '0.86rem', lineHeight: 1.5 }}>{bannerMessage}</span>
+                          {bannerDismissible && <i className="fas fa-xmark" style={{ opacity: 0.6, flexShrink: 0 }} />}
+                        </div>
+                      ) : (
+                        <div style={{ padding: '1.1rem', borderRadius: 12, border: '1.5px dashed rgba(148,163,184,0.35)', textAlign: 'center', color: '#94a3b8', fontSize: '0.82rem' }}>
+                          <i className="fas fa-eye-slash" style={{ display: 'block', fontSize: '1.1rem', marginBottom: '0.35rem' }} />
+                          Enable and enter a message to preview.
+                        </div>
+                      )}
+                      <p style={{ fontSize: '0.76rem', color: '#94a3b8', marginTop: '0.5rem', lineHeight: 1.4 }}>
+                        <i className="fas fa-circle-info" style={{ marginRight: '0.35rem' }} />Shown at the top of every page for all logged-in users.
+                      </p>
+                    </div>
                   </div>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem', marginTop: '0.9rem' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer', fontSize: '0.86rem', fontWeight: 600, color: 'var(--ss-dashboard-text)' }}>
+                      <Toggle id="banner-dismissible" checked={bannerDismissible} onChange={(e) => setBannerDismissible(e.target.checked)} />
+                      Allow users to dismiss this banner
+                    </label>
+                    <div style={{ display: 'flex', gap: '0.6rem' }}>
+                      <button type="submit" className="ss-dashboard-btn ss-dashboard-btn-primary" style={{ minHeight: 38, fontSize: '0.86rem' }}>
+                        {bannerSaved ? <><i className="fas fa-check" style={{ marginRight: '0.35rem' }} />Saved</> : <><i className="fas fa-floppy-disk" style={{ marginRight: '0.35rem' }} />Save Banner</>}
+                      </button>
+                      <button type="button" className="ss-dashboard-btn ss-dashboard-btn-secondary" style={{ minHeight: 38, fontSize: '0.86rem' }} onClick={() => { setBannerMessage(''); setBannerEnabled(false); }}>
+                        <i className="fas fa-xmark" style={{ marginRight: '0.3rem' }} />Clear
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </div>
 
-        {/* ── Schedule Maintenance + Email Notify ──────────────────────────── */}
-        <div className="ss-dashboard-section" style={{ paddingTop: 0, paddingBottom: '2rem' }}>
-          <div style={sectionContainerStyle}>
-            <div className="ss-dashboard-panel">
-              <div className="ss-dashboard-panel-header" style={{ marginBottom: '1.25rem' }}>
-                <div>
-                  <p className="ss-dashboard-eyebrow" style={{ marginBottom: '0.25rem' }}>Scheduling</p>
-                  <h3 style={{ color: 'var(--ss-dashboard-text)', fontFamily: 'var(--font-display)', margin: 0, fontSize: '1.2rem' }}>
+              {/* ── Schedule Maintenance ─────────────────────────────────── */}
+              <div style={{ marginTop: '1.75rem', paddingTop: '1.5rem', borderTop: '1px solid var(--ss-dashboard-border)' }}>
+                <div style={{ marginBottom: '1rem' }}>
+                  <p className="ss-dashboard-eyebrow" style={{ marginBottom: '0.2rem' }}>Scheduling</p>
+                  <h3 style={{ color: 'var(--ss-dashboard-text)', fontFamily: 'var(--font-display)', margin: 0, fontSize: '1.1rem' }}>
                     Schedule Maintenance Window
                   </h3>
-                  <p style={{ color: 'var(--ss-dashboard-muted)', fontSize: '0.83rem', marginTop: '0.3rem' }}>
-                    Set a future maintenance window. Toggle email notification to also send users a broadcast.
+                  <p style={{ color: 'var(--ss-dashboard-muted)', fontSize: '0.82rem', marginTop: '0.25rem' }}>
+                    Set a future maintenance window. Toggle email notification to also send a broadcast.
                   </p>
                 </div>
-              </div>
-
-              {/* Top row: dates + message */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1.2fr', gap: '1rem' }}>
-                <div>
-                  <label htmlFor="sched-start" style={labelStyle}>
-                    <i className="fas fa-calendar-plus" style={{ marginRight: '0.4rem', color: '#2563eb' }} />
-                    Start Date &amp; Time
-                  </label>
-                  <input id="sched-start" type="datetime-local" value={scheduleStart} onChange={(e) => setScheduleStart(e.target.value)} style={inputStyle} />
-                </div>
-                <div>
-                  <label htmlFor="sched-end" style={labelStyle}>
-                    <i className="fas fa-calendar-check" style={{ marginRight: '0.4rem', color: '#16a34a' }} />
-                    Estimated End
-                  </label>
-                  <input id="sched-end" type="datetime-local" value={scheduleEnd} onChange={(e) => setScheduleEnd(e.target.value)} style={inputStyle} />
-                </div>
-                <div>
-                  <label htmlFor="sched-msg" style={labelStyle}>
-                    <i className="fas fa-message" style={{ marginRight: '0.4rem', color: '#0f766e' }} />
-                    Maintenance Message
-                  </label>
-                  <textarea
-                    id="sched-msg"
-                    value={scheduleMessage}
-                    onChange={(e) => setScheduleMessage(e.target.value)}
-                    placeholder="Brief description shown to users during the maintenance window."
-                    rows={3}
-                    style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.55 }}
-                  />
-                </div>
-              </div>
-
-              {/* Notify toggle */}
-              <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid var(--ss-dashboard-border)' }}>
-                <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.65rem', cursor: 'pointer', fontSize: '0.87rem', fontWeight: 600, color: 'var(--ss-dashboard-text)', userSelect: 'none' }}>
-                  <Toggle id="sched-notify" checked={scheduleNotify} onChange={(e) => setScheduleNotify(e.target.checked)} />
-                  Notify users via email
-                </label>
-
-                {/* Email fields — shown only when notify is on */}
-                {scheduleNotify && (
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
-                    <div>
-                      <label htmlFor="email-target" style={labelStyle}>Recipients</label>
-                      <select id="email-target" value={emailTarget} onChange={(e) => setEmailTarget(e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
-                        <option value="all">All users</option>
-                        <option value="active">Active users (last 30 days)</option>
-                        <option value="admins">Admins only</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label htmlFor="email-subject" style={labelStyle}>Subject</label>
-                      <input id="email-subject" type="text" value={emailSubject} onChange={(e) => setEmailSubject(e.target.value)} placeholder="e.g. Scheduled maintenance on May 12" style={inputStyle} />
-                    </div>
-                    <div style={{ gridColumn: '1 / -1' }}>
-                      <label htmlFor="email-body" style={labelStyle}>Message Body</label>
-                      <textarea id="email-body" value={emailBody} onChange={(e) => setEmailBody(e.target.value)} placeholder="Plain text only." rows={4} style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6 }} />
-                    </div>
-                    <div style={{ gridColumn: '1 / -1' }}>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer', fontSize: '0.87rem', fontWeight: 600, color: emailConfirm ? '#dc2626' : 'var(--ss-dashboard-muted)', userSelect: 'none' }}>
-                        <input type="checkbox" checked={emailConfirm} onChange={(e) => setEmailConfirm(e.target.checked)} style={{ width: 16, height: 16, accentColor: '#dc2626', cursor: 'pointer' }} />
-                        I confirm I want to send this email. This cannot be undone.
-                      </label>
-                    </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1.2fr', gap: '1rem' }}>
+                  <div>
+                    <label htmlFor="sched-start" style={labelStyle}>
+                      <i className="fas fa-calendar-plus" style={{ marginRight: '0.4rem', color: '#2563eb' }} />Start Date &amp; Time
+                    </label>
+                    <input id="sched-start" type="datetime-local" value={scheduleStart} onChange={(e) => setScheduleStart(e.target.value)} style={inputStyle} />
                   </div>
-                )}
-              </div>
-
-              {/* Actions */}
-              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                <button
-                  type="button"
-                  disabled={!scheduleStart || !scheduleMessage.trim()}
-                  onClick={handleScheduleSave}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    minHeight: 40,
-                    padding: '0 1.1rem',
-                    borderRadius: 14,
-                    border: 'none',
-                    background: (!scheduleStart || !scheduleMessage.trim()) ? 'rgba(148,163,184,0.25)' : 'linear-gradient(135deg,#0ea5a4,#2563eb)',
-                    color: (!scheduleStart || !scheduleMessage.trim()) ? '#94a3b8' : '#fff',
-                    fontFamily: 'var(--font-accent)',
-                    fontWeight: 700,
-                    fontSize: '0.87rem',
-                    cursor: (!scheduleStart || !scheduleMessage.trim()) ? 'not-allowed' : 'pointer',
-                    transition: 'all 0.2s ease',
-                    boxShadow: (!scheduleStart || !scheduleMessage.trim()) ? 'none' : '0 14px 28px -14px rgba(37,99,235,0.55)',
-                  }}
-                >
-                  <i className="fas fa-calendar-days" />
-                  {scheduleSaved ? 'Saved!' : 'Schedule Maintenance'}
-                </button>
-                {scheduleNotify && (
+                  <div>
+                    <label htmlFor="sched-end" style={labelStyle}>
+                      <i className="fas fa-calendar-check" style={{ marginRight: '0.4rem', color: '#16a34a' }} />Estimated End
+                    </label>
+                    <input id="sched-end" type="datetime-local" value={scheduleEnd} onChange={(e) => setScheduleEnd(e.target.value)} style={inputStyle} />
+                  </div>
+                  <div>
+                    <label htmlFor="sched-msg" style={labelStyle}>
+                      <i className="fas fa-message" style={{ marginRight: '0.4rem', color: '#0f766e' }} />Maintenance Message
+                    </label>
+                    <textarea id="sched-msg" value={scheduleMessage} onChange={(e) => setScheduleMessage(e.target.value)} placeholder="Brief description shown to users during the maintenance window." rows={3} style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.55 }} />
+                  </div>
+                </div>
+                <div style={{ marginTop: '1rem' }}>
+                  <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.65rem', cursor: 'pointer', fontSize: '0.86rem', fontWeight: 600, color: 'var(--ss-dashboard-text)', userSelect: 'none' }}>
+                    <Toggle id="sched-notify" checked={scheduleNotify} onChange={(e) => setScheduleNotify(e.target.checked)} />
+                    Notify users via email
+                  </label>
+                  {scheduleNotify && (
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
+                      <div>
+                        <label htmlFor="email-target" style={labelStyle}>Recipients</label>
+                        <select id="email-target" value={emailTarget} onChange={(e) => setEmailTarget(e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
+                          <option value="all">All users</option>
+                          <option value="active">Active users (last 30 days)</option>
+                          <option value="admins">Admins only</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label htmlFor="email-subject" style={labelStyle}>Subject</label>
+                        <input id="email-subject" type="text" value={emailSubject} onChange={(e) => setEmailSubject(e.target.value)} placeholder="e.g. Scheduled maintenance on May 12" style={inputStyle} />
+                      </div>
+                      <div style={{ gridColumn: '1 / -1' }}>
+                        <label htmlFor="email-body" style={labelStyle}>Message Body</label>
+                        <textarea id="email-body" value={emailBody} onChange={(e) => setEmailBody(e.target.value)} placeholder="Plain text only." rows={3} style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6 }} />
+                      </div>
+                      <div style={{ gridColumn: '1 / -1' }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer', fontSize: '0.86rem', fontWeight: 600, color: emailConfirm ? '#dc2626' : 'var(--ss-dashboard-muted)', userSelect: 'none' }}>
+                          <input type="checkbox" checked={emailConfirm} onChange={(e) => setEmailConfirm(e.target.checked)} style={{ width: 15, height: 15, accentColor: '#dc2626', cursor: 'pointer' }} />
+                          I confirm I want to send this email. This cannot be undone.
+                        </label>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <div style={{ display: 'flex', gap: '0.65rem', marginTop: '1.25rem', flexWrap: 'wrap', alignItems: 'center' }}>
                   <button
                     type="button"
-                    disabled={!emailConfirm || !emailSubject.trim() || !emailBody.trim()}
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                      minHeight: 40,
-                      padding: '0 1.1rem',
-                      borderRadius: 14,
-                      border: 'none',
-                      background: (!emailConfirm || !emailSubject.trim() || !emailBody.trim()) ? 'rgba(148,163,184,0.25)' : 'linear-gradient(135deg,#ef4444,#dc2626)',
-                      color: (!emailConfirm || !emailSubject.trim() || !emailBody.trim()) ? '#94a3b8' : '#fff',
-                      fontFamily: 'var(--font-accent)',
-                      fontWeight: 700,
-                      fontSize: '0.87rem',
-                      cursor: (!emailConfirm || !emailSubject.trim() || !emailBody.trim()) ? 'not-allowed' : 'pointer',
-                      transition: 'all 0.2s ease',
-                      boxShadow: (!emailConfirm || !emailSubject.trim() || !emailBody.trim()) ? 'none' : '0 14px 28px -14px rgba(220,38,38,0.6)',
-                    }}
+                    disabled={!scheduleStart || !scheduleMessage.trim()}
+                    onClick={handleScheduleSave}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', minHeight: 38, padding: '0 1rem', borderRadius: 14, border: 'none', background: (!scheduleStart || !scheduleMessage.trim()) ? 'rgba(148,163,184,0.25)' : 'linear-gradient(135deg,#0ea5a4,#2563eb)', color: (!scheduleStart || !scheduleMessage.trim()) ? '#94a3b8' : '#fff', fontFamily: 'var(--font-accent)', fontWeight: 700, fontSize: '0.86rem', cursor: (!scheduleStart || !scheduleMessage.trim()) ? 'not-allowed' : 'pointer', transition: 'all 0.2s ease', boxShadow: (!scheduleStart || !scheduleMessage.trim()) ? 'none' : '0 14px 28px -14px rgba(37,99,235,0.55)' }}
                   >
-                    <i className="fas fa-paper-plane" />
-                    Send Email Broadcast
+                    <i className="fas fa-calendar-days" />{scheduleSaved ? 'Saved!' : 'Schedule Maintenance'}
                   </button>
-                )}
-                <button
-                  type="button"
-                  className="ss-dashboard-btn ss-dashboard-btn-secondary"
-                  style={{ minHeight: 40, fontSize: '0.87rem' }}
-                  onClick={() => { setScheduleStart(''); setScheduleEnd(''); setScheduleMessage(''); setScheduleNotify(true); setEmailSubject(''); setEmailBody(''); setEmailConfirm(false); }}
-                >
-                  <i className="fas fa-rotate-left" style={{ marginRight: '0.4rem' }} />
-                  Clear
-                </button>
+                  {scheduleNotify && (
+                    <button
+                      type="button"
+                      disabled={!emailConfirm || !emailSubject.trim() || !emailBody.trim()}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', minHeight: 38, padding: '0 1rem', borderRadius: 14, border: 'none', background: (!emailConfirm || !emailSubject.trim() || !emailBody.trim()) ? 'rgba(148,163,184,0.25)' : 'linear-gradient(135deg,#ef4444,#dc2626)', color: (!emailConfirm || !emailSubject.trim() || !emailBody.trim()) ? '#94a3b8' : '#fff', fontFamily: 'var(--font-accent)', fontWeight: 700, fontSize: '0.86rem', cursor: (!emailConfirm || !emailSubject.trim() || !emailBody.trim()) ? 'not-allowed' : 'pointer', transition: 'all 0.2s ease', boxShadow: (!emailConfirm || !emailSubject.trim() || !emailBody.trim()) ? 'none' : '0 14px 28px -14px rgba(220,38,38,0.6)' }}
+                    >
+                      <i className="fas fa-paper-plane" />Send Email Broadcast
+                    </button>
+                  )}
+                  <button type="button" className="ss-dashboard-btn ss-dashboard-btn-secondary" style={{ minHeight: 38, fontSize: '0.86rem' }} onClick={() => { setScheduleStart(''); setScheduleEnd(''); setScheduleMessage(''); setScheduleNotify(true); setEmailSubject(''); setEmailBody(''); setEmailConfirm(false); }}>
+                    <i className="fas fa-rotate-left" style={{ marginRight: '0.4rem' }} />Clear
+                  </button>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.55rem', marginTop: '1.1rem', padding: '0.65rem 0.9rem', borderRadius: 10, background: 'rgba(148,163,184,0.08)', fontSize: '0.8rem', color: 'var(--ss-dashboard-muted)', lineHeight: 1.5 }}>
+                  <i className="fas fa-circle-info" style={{ color: '#2563eb', flexShrink: 0, marginTop: '0.15rem' }} />
+                  <span>Scheduling a window will automatically enable <strong>Maintenance Mode</strong> at the start time and disable it at the end.</span>
+                </div>
               </div>
 
-              {/* Info note */}
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '0.6rem',
-                  marginTop: '1.25rem',
-                  padding: '0.75rem 1rem',
-                  borderRadius: 10,
-                  background: 'rgba(148,163,184,0.08)',
-                  fontSize: '0.82rem',
-                  color: 'var(--ss-dashboard-muted)',
-                  lineHeight: 1.5,
-                }}
-              >
-                <i className="fas fa-circle-info" style={{ color: '#2563eb', flexShrink: 0, marginTop: '0.15rem' }} />
-                <span>
-                  Scheduling a maintenance window will automatically enable <strong>Maintenance Mode</strong> at the start time and disable it at the estimated end time.
-                  Users will receive an in-app banner as soon as the window is saved.
-                </span>
-              </div>
             </div>
           </div>
         </div>

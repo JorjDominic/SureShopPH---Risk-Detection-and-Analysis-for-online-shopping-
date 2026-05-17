@@ -8,7 +8,6 @@ import '../../styles/dashboard.css';
 function ScanPage() {
   const { user, loading } = useAuth();
   const [url, setUrl] = useState('');
-  const [scanType, setScanType] = useState('product');
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
@@ -24,7 +23,7 @@ function ScanPage() {
     try {
       const scanResult = await runScan({
         url: url.trim(),
-        scanType,
+        scanType: 'url',
         userId: user?.id,
       });
       setResult(scanResult);
@@ -64,7 +63,7 @@ function ScanPage() {
             <div className="ss-dashboard-section-heading">
               <div>
                 <p className="ss-dashboard-eyebrow">Submit</p>
-                <h2>Scan a URL</h2>
+                <h2>Manual URL Scan</h2>
               </div>
             </div>
             <div className="ss-dashboard-panel">
@@ -73,19 +72,6 @@ function ScanPage() {
             {error && <div className="udb-alert udb-alert-error">{error}</div>}
 
             <form onSubmit={handleScan} className="udb-scan-form">
-              <div className="udb-form-group" style={{ maxWidth: 580 }}>
-                <label htmlFor="scan-type">Scan Type</label>
-                <select
-                  id="scan-type"
-                  className="udb-form-input"
-                  value={scanType}
-                  onChange={(e) => setScanType(e.target.value)}
-                >
-                  <option value="product">Product Listing</option>
-                  <option value="url">Website / URL</option>
-                </select>
-              </div>
-
               <div className="udb-form-group" style={{ maxWidth: 580 }}>
                 <label htmlFor="scan-url">URL to Scan</label>
                 <input

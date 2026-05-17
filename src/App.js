@@ -25,7 +25,7 @@ import AdminControls from './views/admin/adminControls';
 import AdminLayout from './components/AdminLayout';
 import UserLayout from './components/UserLayout';
 import ErrorBoundary from './components/ErrorBoundary';
-import { isSupabaseConfigured } from './config/supabase';
+import { isSupabaseConfigured, supabase } from './config/supabase';
 import { useAuth } from './context/AuthContext';
 
 function DeferredSectionContent({ children, minHeight = 420 }) {
@@ -94,6 +94,38 @@ function AdminRoute({ children }) {
     return <Navigate to="/userdashboard" replace />;
   }
 
+  return children;
+}
+
+function MaintenancePage() {
+  return (
+    <div
+      style={{
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '1rem',
+        textAlign: 'center',
+        padding: '2rem',
+        background: 'var(--ss-dashboard-bg, #f8fafc)',
+        color: 'var(--ss-dashboard-text, #0f172a)',
+      }}
+    >
+      <i className="fas fa-cone" style={{ fontSize: '3.5rem', color: '#f97316' }} />
+      <h1 style={{ fontSize: '1.85rem', margin: 0, fontFamily: 'var(--font-display)' }}>Scheduled Maintenance</h1>
+      <p style={{ color: '#64748b', maxWidth: 440, lineHeight: 1.6, margin: 0 }}>
+        SureShopPH is temporarily unavailable while we perform maintenance.
+        We’ll be back shortly — thank you for your patience.
+      </p>
+    </div>
+  );
+}
+
+function MaintenanceGuard({ enabled, children }) {
+  const { isAdmin } = useAuth();
+  if (enabled && !isAdmin) return <MaintenancePage />;
   return children;
 }
 
@@ -607,6 +639,18 @@ const SitemapContent = () => (
 function App() {
   const { session, loading: authLoading } = useAuth();
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [maintenanceEnabled, setMaintenanceEnabled] = useState(false);
+
+  useEffect(() => {
+    supabase
+      .from('system_config')
+      .select('value')
+      .eq('key', 'maintenance_mode')
+      .single()
+      .then(({ data }) => {
+        if (data?.value?.enabled) setMaintenanceEnabled(true);
+      });
+  }, []);
 
   useEffect(() => {
     const isLocalhost = /^(localhost|127\.0\.0\.1)$/.test(window.location.hostname);
@@ -688,10 +732,10 @@ function App() {
         <Route path="/social/linkedin" element={<Navigate to="/" replace />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy session={session} />} />
         <Route path="/tools/account-settings" element={<Navigate to="/settings" replace />} />
-        <Route path="/userdashboard" element={<ProtectedRoute><UserLayout /></ProtectedRoute>}>
+        <Route path="/userdashboard" element={<ProtectedRoute><MaintenanceGuard enabled={maintenanceEnabled}><UserLayout /></MaintenanceGuard></ProtectedRoute>}>
           <Route index element={<UserDashboard />} />
         </Route>
-        <Route element={<ProtectedRoute><UserLayout /></ProtectedRoute>}>
+        <Route element={<ProtectedRoute><MaintenanceGuard enabled={maintenanceEnabled}><UserLayout /></MaintenanceGuard></ProtectedRoute>}>
           <Route path="/scan" element={<ScanPage />} />
           <Route path="/scan-history" element={<ScanHistoryPage />} />
           <Route path="/settings" element={<SettingsPage />} />

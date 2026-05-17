@@ -157,7 +157,7 @@ function AdminDashboard() {
   const [typeSegments, setTypeSegments] = useState([]);
   const [recentScans, setRecentScans] = useState([]);
   const [scanPage, setScanPage] = useState(0);
-  const SCAN_PAGE_SIZE = 10;
+  const SCAN_PAGE_SIZE = 7;
 
   useEffect(() => {
     if (authLoading) return;

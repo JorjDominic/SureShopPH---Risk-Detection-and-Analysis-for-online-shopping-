@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { supabase } from '../../config/supabase';
 import '../../styles/dashboard.css';
 
 // ─── Toggle Switch ────────────────────────────────────────────────────────────
@@ -187,6 +188,28 @@ function AdminControls() {
   const [scheduleEnd, setScheduleEnd] = useState('');
   const [scheduleMessage, setScheduleMessage] = useState('');
   const [scheduleNotify, setScheduleNotify] = useState(true);
+  const [scheduleSaved, setScheduleSaved] = useState(false);
+
+  // ── Load config from Supabase ─────────────────────────────────────────────
+  useEffect(() => {
+    supabase.from('system_config').select('key, value').then(({ data }) => {
+      data?.forEach(({ key, value }) => {
+        if (key === 'maintenance_mode') setMaintenanceMode(value.enabled ?? false);
+        if (key === 'announcement') {
+          setBannerEnabled(value.enabled ?? false);
+          setBannerType(value.type ?? 'info');
+          setBannerMessage(value.message ?? '');
+          setBannerDismissible(value.dismissible ?? true);
+        }
+        if (key === 'scheduled_maintenance') {
+          setScheduleStart(value.start ?? '');
+          setScheduleEnd(value.end ?? '');
+          setScheduleMessage(value.message ?? '');
+          setScheduleNotify(value.notify ?? true);
+        }
+      });
+    });
+  }, []);
 
   if (authLoading || loading) return <div className="ss-dashboard-page" aria-busy="true" />;
   if (!user) return <Navigate to="/login" replace />;
@@ -205,10 +228,27 @@ function AdminControls() {
   };
   const bps = bannerPreviewStyles[bannerType];
 
-  const handleBannerSave = (e) => {
+  const handleBannerSave = async (e) => {
     e.preventDefault();
-    setBannerSaved(true);
-    setTimeout(() => setBannerSaved(false), 2500);
+    const { error } = await supabase.from('system_config').upsert({
+      key: 'announcement',
+      value: { enabled: bannerEnabled, type: bannerType, message: bannerMessage, dismissible: bannerDismissible },
+    });
+    if (!error) {
+      setBannerSaved(true);
+      setTimeout(() => setBannerSaved(false), 2500);
+    }
+  };
+
+  const handleScheduleSave = async () => {
+    const { error } = await supabase.from('system_config').upsert({
+      key: 'scheduled_maintenance',
+      value: { start: scheduleStart, end: scheduleEnd, message: scheduleMessage, notify: scheduleNotify },
+    });
+    if (!error) {
+      setScheduleSaved(true);
+      setTimeout(() => setScheduleSaved(false), 2500);
+    }
   };
 
   const inputStyle = {
@@ -317,7 +357,11 @@ function AdminControls() {
                   label="Maintenance Mode"
                   description="All non-admin users are redirected to a maintenance notice. Admins retain full access."
                   checked={maintenanceMode}
-                  onChange={(e) => setMaintenanceMode(e.target.checked)}
+                  onChange={async (e) => {
+                    const enabled = e.target.checked;
+                    setMaintenanceMode(enabled);
+                    await supabase.from('system_config').upsert({ key: 'maintenance_mode', value: { enabled } });
+                  }}
                   danger
                 />
                 <FlagRow
@@ -756,6 +800,7 @@ function AdminControls() {
                 <button
                   type="button"
                   disabled={!scheduleStart || !scheduleMessage.trim()}
+                  onClick={handleScheduleSave}
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
@@ -777,7 +822,7 @@ function AdminControls() {
                   }}
                 >
                   <i className="fas fa-calendar-days" />
-                  Schedule Maintenance
+                  {scheduleSaved ? 'Saved!' : 'Schedule Maintenance'}
                 </button>
                 <button
                   type="button"

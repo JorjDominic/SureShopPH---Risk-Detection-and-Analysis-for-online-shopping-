@@ -7,7 +7,7 @@ import { useAuth } from '../../context/AuthContext';
 import AdminSubNav, { TRAINING_TABS } from '../../components/AdminSubNav';
 import '../../styles/dashboard.css';
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 7;
 
 function AdminLogs() {
   const { user, loading: authLoading } = useAuth();

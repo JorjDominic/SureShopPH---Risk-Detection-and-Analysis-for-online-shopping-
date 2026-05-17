@@ -4,7 +4,7 @@ import { supabase } from '../../config/supabase';
 import { useAuth } from '../../context/AuthContext';
 import '../../styles/dashboard.css';
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 7;
 
 function ScanHistoryPage() {
   const { user, loading } = useAuth();

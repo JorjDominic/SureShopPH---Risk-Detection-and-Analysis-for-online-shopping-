@@ -74,7 +74,7 @@ function UserDashboard() {
     return () => { active = false; };
   }, [authLoading, user, isAdmin, isAdminView, navigate]);
 
-  const SCAN_PAGE_SIZE = 10;
+  const SCAN_PAGE_SIZE = 7;
   const scanPageCount = Math.ceil(recentScans.length / SCAN_PAGE_SIZE);
   const pagedScans = recentScans.slice(scanPage * SCAN_PAGE_SIZE, (scanPage + 1) * SCAN_PAGE_SIZE);
 

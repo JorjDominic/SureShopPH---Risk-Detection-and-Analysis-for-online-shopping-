@@ -182,6 +182,8 @@ function AdminControls() {
   const [emailSubject, setEmailSubject] = useState('');
   const [emailBody, setEmailBody] = useState('');
   const [emailConfirm, setEmailConfirm] = useState(false);
+  const [emailError, setEmailError] = useState('');
+  const [emailSending, setEmailSending] = useState(false);
 
   // ── Scheduled Maintenance ─────────────────────────────────────────────────
   const [scheduleStart, setScheduleStart] = useState('');
@@ -228,16 +230,37 @@ function AdminControls() {
 
   const handleSendNotification = async (e) => {
     e.preventDefault();
+    setEmailError('');
+    setEmailSending(true);
+
+    // Save in-app banner to Supabase
     const { error: bannerError } = await supabase.from('system_config').upsert({
       key: 'announcement',
       value: { enabled: bannerEnabled, type: bannerType, message: bannerMessage, dismissible: bannerDismissible },
     });
+
+    // Save schedule if set
     if (schedEnabled && scheduleStart) {
       await supabase.from('system_config').upsert({
         key: 'scheduled_maintenance',
         value: { start: scheduleStart, end: scheduleEnd, message: bannerMessage, notify: scheduleNotify },
       });
     }
+
+    // Fire email via Edge Function if email channel is on and confirmed
+    if (scheduleNotify && emailConfirm) {
+      const htmlBody = `<p style="font-family:sans-serif;font-size:15px;line-height:1.6;color:#1e293b">${emailBody.replace(/\n/g, '<br/>')}</p>`;
+      const { error: fnError } = await supabase.functions.invoke('send-notification', {
+        body: { target: emailTarget, subject: emailSubject.trim(), html: htmlBody },
+      });
+      if (fnError) {
+        setEmailError(`Banner saved, but email failed: ${fnError.message}`);
+        setEmailSending(false);
+        return;
+      }
+    }
+
+    setEmailSending(false);
     if (!bannerError) {
       setBannerSaved(true);
       setTimeout(() => setBannerSaved(false), 2500);
@@ -480,17 +503,28 @@ function AdminControls() {
                 </div>
 
                 {/* ── Actions ── */}
+                {emailError && (
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', marginTop: '1rem', padding: '0.65rem 0.9rem', borderRadius: 10, background: 'rgba(220,38,38,0.08)', border: '1px solid rgba(220,38,38,0.25)', fontSize: '0.82rem', color: '#dc2626', lineHeight: 1.5 }}>
+                    <i className="fas fa-circle-exclamation" style={{ flexShrink: 0, marginTop: '0.1rem' }} />
+                    <span>{emailError}</span>
+                  </div>
+                )}
                 <div style={{ display: 'flex', gap: '0.65rem', marginTop: '1.25rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                  <button
-                    type="submit"
-                    disabled={!bannerMessage.trim() || (scheduleNotify && (!emailConfirm || !emailSubject.trim() || !emailBody.trim()))}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', minHeight: 38, padding: '0 1.1rem', borderRadius: 14, border: 'none', background: (!bannerMessage.trim() || (scheduleNotify && (!emailConfirm || !emailSubject.trim() || !emailBody.trim()))) ? 'rgba(148,163,184,0.25)' : 'linear-gradient(135deg,#0ea5a4,#2563eb)', color: (!bannerMessage.trim() || (scheduleNotify && (!emailConfirm || !emailSubject.trim() || !emailBody.trim()))) ? '#94a3b8' : '#fff', fontFamily: 'var(--font-accent)', fontWeight: 700, fontSize: '0.86rem', cursor: (!bannerMessage.trim() || (scheduleNotify && (!emailConfirm || !emailSubject.trim() || !emailBody.trim()))) ? 'not-allowed' : 'pointer', transition: 'all 0.2s ease', boxShadow: (!bannerMessage.trim() || (scheduleNotify && (!emailConfirm || !emailSubject.trim() || !emailBody.trim()))) ? 'none' : '0 14px 28px -14px rgba(37,99,235,0.55)' }}
-                  >
-                    <i className={`fas ${bannerSaved ? 'fa-check' : 'fa-bell'}`} />
-                    {bannerSaved ? 'Sent!' : 'Send Notification'}
-                  </button>
+                  {(() => {
+                    const isDisabled = emailSending || !bannerMessage.trim() || (scheduleNotify && (!emailConfirm || !emailSubject.trim() || !emailBody.trim()));
+                    return (
+                      <button
+                        type="submit"
+                        disabled={isDisabled}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', minHeight: 38, padding: '0 1.1rem', borderRadius: 14, border: 'none', background: isDisabled ? 'rgba(148,163,184,0.25)' : 'linear-gradient(135deg,#0ea5a4,#2563eb)', color: isDisabled ? '#94a3b8' : '#fff', fontFamily: 'var(--font-accent)', fontWeight: 700, fontSize: '0.86rem', cursor: isDisabled ? 'not-allowed' : 'pointer', transition: 'all 0.2s ease', boxShadow: isDisabled ? 'none' : '0 14px 28px -14px rgba(37,99,235,0.55)' }}
+                      >
+                        <i className={`fas ${emailSending ? 'fa-spinner fa-spin' : bannerSaved ? 'fa-check' : 'fa-bell'}`} />
+                        {emailSending ? 'Sending…' : bannerSaved ? 'Sent!' : 'Send Notification'}
+                      </button>
+                    );
+                  })()}
                   <button type="button" className="ss-dashboard-btn ss-dashboard-btn-secondary" style={{ minHeight: 38, fontSize: '0.86rem' }}
-                    onClick={() => { setBannerMessage(''); setBannerEnabled(false); setScheduleNotify(false); setSchedEnabled(false); setScheduleStart(''); setScheduleEnd(''); setEmailSubject(''); setEmailBody(''); setEmailConfirm(false); }}>
+                    onClick={() => { setBannerMessage(''); setBannerEnabled(false); setScheduleNotify(false); setSchedEnabled(false); setScheduleStart(''); setScheduleEnd(''); setEmailSubject(''); setEmailBody(''); setEmailConfirm(false); setEmailError(''); }}>
                     <i className="fas fa-rotate-left" style={{ marginRight: '0.4rem' }} />Clear
                   </button>
                 </div>

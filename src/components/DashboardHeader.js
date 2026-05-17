@@ -88,23 +88,26 @@ function DashboardHeader({ user, onLogout, logoutBusy, notification }) {
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              {notification && (
-                <button
-                  type="button"
-                  aria-label="Active notification"
-                  title={notification.message}
-                  style={{
-                    position: 'relative',
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'default',
-                    color: NOTIF_DOT_COLOR[notification.type] ?? '#2563eb',
-                    fontSize: '1.1rem',
-                    padding: '0.25rem',
-                    lineHeight: 1,
-                  }}
-                >
-                  <i className="fas fa-bell" />
+              <button
+                type="button"
+                aria-label={notification ? 'Active notification' : 'No notifications'}
+                title={notification ? notification.message : 'No active notifications'}
+                style={{
+                  position: 'relative',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'default',
+                  color: notification
+                    ? (NOTIF_DOT_COLOR[notification.type] ?? '#2563eb')
+                    : 'rgba(148,163,184,0.55)',
+                  fontSize: '1.1rem',
+                  padding: '0.25rem',
+                  lineHeight: 1,
+                  transition: 'color 0.2s ease',
+                }}
+              >
+                <i className="fas fa-bell" />
+                {notification && (
                   <span
                     style={{
                       position: 'absolute',
@@ -117,8 +120,8 @@ function DashboardHeader({ user, onLogout, logoutBusy, notification }) {
                       border: '1.5px solid var(--ss-dashboard-bg, #fff)',
                     }}
                   />
-                </button>
-              )}
+                )}
+              </button>
               <span className="ss-landing-live-pill ss-dashboard-live-pill">
                 <span className="ss-landing-live-dot" />
                 {displayName}

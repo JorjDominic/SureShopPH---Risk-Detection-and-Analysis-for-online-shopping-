@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+﻿import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '../config/supabase';
 import { getCurrentSession, onAuthStateChange } from '../services/authService';
 
@@ -94,7 +94,6 @@ export function AuthProvider({ children }) {
       session,
       user,
       role,
-      token: session?.access_token ?? null,
       isAdmin: role === 'admin',
       isAuthenticated: Boolean(session),
       loading,

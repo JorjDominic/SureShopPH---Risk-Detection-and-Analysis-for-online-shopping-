@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { runScan } from '../../services/scanService';
@@ -6,7 +6,7 @@ import ReportListingModal from '../../components/ReportListingModal';
 import '../../styles/dashboard.css';
 
 function ScanPage() {
-  const { user, loading, token } = useAuth();
+  const { user, loading } = useAuth();
   const [url, setUrl] = useState('');
   const [scanType, setScanType] = useState('product');
   const [scanning, setScanning] = useState(false);
@@ -25,7 +25,7 @@ function ScanPage() {
       const scanResult = await runScan({
         url: url.trim(),
         scanType,
-        token,
+        userId: user?.id,
       });
       setResult(scanResult);
       if (!scanResult.persisted && scanResult.persistError) {
@@ -153,7 +153,11 @@ function ScanPage() {
                     Analysis source: {result.source === 'edge' ? 'server model' : 'local heuristic'}
                   </p>
                 )}
-                <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                {result.id && (
+                  <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    <Link to={`/scan-details/${result.id}`} className="ss-dashboard-btn ss-dashboard-btn-secondary">
+                      <i className="fas fa-eye"></i> View Full Report
+                    </Link>
                     <button
                       type="button"
                       onClick={() => setReportOpen(true)}
@@ -163,6 +167,7 @@ function ScanPage() {
                       <i className="fas fa-flag"></i> Report this listing
                     </button>
                   </div>
+                )}
               </div>
             )}
             </div>

@@ -1,5 +1,5 @@
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import DashboardIcon from './DashboardIcon';
 import SignOutModal from './SignOutModal';
@@ -7,11 +7,14 @@ import '../styles/landing.css';
 import '../styles/dashboard.css';
 
 const NOTIF_DOT_COLOR = { info: '#2563eb', warning: '#f97316', critical: '#dc2626' };
+const NOTIF_ICON    = { info: 'fa-circle-info', warning: 'fa-triangle-exclamation', critical: 'fa-circle-exclamation' };
 
-function DashboardHeader({ user, onLogout, logoutBusy, notification }) {
+function DashboardHeader({ user, onLogout, logoutBusy, notification, notifUnread, onNotifRead }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [showSignOutModal, setShowSignOutModal] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [bellOpen, setBellOpen] = useState(false);
+  const bellRef = useRef(null);
   const location = useLocation();
 
   const isAdmin =
@@ -38,6 +41,16 @@ function DashboardHeader({ user, onLogout, logoutBusy, notification }) {
 
   // Close the mobile menu on route change.
   useEffect(() => { setMobileOpen(false); }, [location.pathname]);
+
+  // Close bell dropdown when clicking outside.
+  useEffect(() => {
+    if (!bellOpen) return;
+    const handler = (e) => {
+      if (bellRef.current && !bellRef.current.contains(e.target)) setBellOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [bellOpen]);
 
   const isActive = (path) => location.pathname === path;
   const closeMobile = () => setMobileOpen(false);
@@ -88,40 +101,67 @@ function DashboardHeader({ user, onLogout, logoutBusy, notification }) {
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <button
-                type="button"
-                aria-label={notification ? 'Active notification' : 'No notifications'}
-                title={notification ? notification.message : 'No active notifications'}
-                style={{
-                  position: 'relative',
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'default',
-                  color: notification
-                    ? (NOTIF_DOT_COLOR[notification.type] ?? '#2563eb')
-                    : 'rgba(148,163,184,0.55)',
-                  fontSize: '1.1rem',
-                  padding: '0.25rem',
-                  lineHeight: 1,
-                  transition: 'color 0.2s ease',
-                }}
-              >
-                <i className="fas fa-bell" />
-                {notification && (
-                  <span
-                    style={{
-                      position: 'absolute',
-                      top: 1,
-                      right: 1,
-                      width: 8,
-                      height: 8,
-                      borderRadius: '50%',
-                      background: NOTIF_DOT_COLOR[notification.type] ?? '#2563eb',
+              <div ref={bellRef} style={{ position: 'relative' }}>
+                <button
+                  type="button"
+                  aria-label={notification ? 'View notification' : 'No notifications'}
+                  onClick={() => {
+                    if (!notification) return;
+                    setBellOpen((v) => !v);
+                    if (notifUnread && onNotifRead) onNotifRead();
+                  }}
+                  style={{
+                    position: 'relative',
+                    background: 'none',
+                    border: 'none',
+                    cursor: notification ? 'pointer' : 'default',
+                    color: notification
+                      ? (NOTIF_DOT_COLOR[notification.type] ?? '#2563eb')
+                      : 'rgba(148,163,184,0.55)',
+                    fontSize: '1.1rem',
+                    padding: '0.25rem',
+                    lineHeight: 1,
+                    transition: 'color 0.2s ease',
+                  }}
+                >
+                  <i className="fas fa-bell" />
+                  {notifUnread && (
+                    <span style={{
+                      position: 'absolute', top: 0, right: 0,
+                      minWidth: 16, height: 16, borderRadius: 8,
+                      background: '#dc2626',
                       border: '1.5px solid var(--ss-dashboard-bg, #fff)',
-                    }}
-                  />
+                      fontSize: '0.6rem', fontWeight: 800, color: '#fff',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1,
+                    }}>1</span>
+                  )}
+                </button>
+                {bellOpen && notification && (
+                  <div style={{
+                    position: 'absolute', top: 'calc(100% + 10px)', right: 0,
+                    width: 280, borderRadius: 14,
+                    background: 'var(--ss-dashboard-card, #0f172a)',
+                    border: `1px solid ${NOTIF_DOT_COLOR[notification.type] ?? '#2563eb'}44`,
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+                    padding: '0.9rem 1rem', zIndex: 9000,
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                      <i className={`fas ${NOTIF_ICON[notification.type] ?? 'fa-circle-info'}`}
+                        style={{ color: NOTIF_DOT_COLOR[notification.type] ?? '#2563eb', fontSize: '0.9rem' }} />
+                      <span style={{ fontWeight: 800, fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.07em', color: NOTIF_DOT_COLOR[notification.type] ?? '#2563eb' }}>
+                        {notification.type}
+                      </span>
+                      <button type="button" onClick={() => setBellOpen(false)}
+                        style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(148,163,184,0.6)', fontSize: '0.85rem', padding: 0 }}>
+                        <i className="fas fa-xmark" />
+                      </button>
+                    </div>
+                    <p style={{ margin: 0, fontSize: '0.84rem', color: 'var(--ss-dashboard-text, #e2e8f0)', lineHeight: 1.5 }}>
+                      {notification.message}
+                    </p>
+                  </div>
                 )}
-              </button>
+              </div>
               <span className="ss-landing-live-pill ss-dashboard-live-pill">
                 <span className="ss-landing-live-dot" />
                 {displayName}

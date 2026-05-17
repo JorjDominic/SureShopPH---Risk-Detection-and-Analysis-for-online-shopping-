@@ -145,24 +145,29 @@ Deno.serve(async (req) => {
     );
   }
 
-  // ── 4. Send via Resend (max 50 per request) ──────────────────────────────
-  const BATCH_SIZE = 50;
+  // ── 4. Send via Resend batch endpoint (each recipient gets their own email) ─
+  // Max 100 per batch request per Resend docs.
+  const BATCH_SIZE = 100;
   let totalSent = 0;
 
   for (let i = 0; i < recipients.length; i += BATCH_SIZE) {
     const batch = recipients.slice(i, i + BATCH_SIZE);
-    const res = await fetch("https://api.resend.com/emails", {
+
+    // Build individual email objects so no recipient sees others' addresses
+    const emails = batch.map((to) => ({
+      from: FROM_EMAIL,
+      to,
+      subject: (subject as string).trim(),
+      html,
+    }));
+
+    const res = await fetch("https://api.resend.com/emails/batch", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
-      body: JSON.stringify({
-        from: FROM_EMAIL,
-        to: batch,
-        subject: (subject as string).trim(),
-        html,
-      }),
+      body: JSON.stringify(emails),
     });
 
     if (!res.ok) {

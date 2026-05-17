@@ -94,6 +94,7 @@ export function AuthProvider({ children }) {
       session,
       user,
       role,
+      token: session?.access_token ?? null,
       isAdmin: role === 'admin',
       isAuthenticated: Boolean(session),
       loading,

@@ -13,7 +13,7 @@ const REPORT_TYPES = [
  * Modal that lets a signed-in user submit a report against a listing URL.
  * Inserts into public.user_reports with status='pending'.
  */
-function ReportListingModal({ open, onClose, userId, listingUrl, defaultType = 'scam' }) {
+function ReportListingModal({ open, onClose, userId, listingUrl, defaultType = 'scam', readOnly = false }) {
   const [reportType, setReportType] = useState(defaultType);
   const [description, setDescription] = useState('');
   const [busy, setBusy] = useState(false);
@@ -35,6 +35,7 @@ function ReportListingModal({ open, onClose, userId, listingUrl, defaultType = '
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (readOnly) { setError('The platform is in read-only mode. Reports cannot be submitted right now.'); return; }
     if (!userId) { setError('You must be signed in to report a listing.'); return; }
     if (!listingUrl) { setError('No listing URL was provided.'); return; }
 

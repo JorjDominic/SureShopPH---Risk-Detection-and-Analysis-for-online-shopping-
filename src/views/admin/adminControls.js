@@ -196,6 +196,9 @@ function AdminControls() {
     supabase.from('system_config').select('key, value').then(({ data }) => {
       data?.forEach(({ key, value }) => {
         if (key === 'maintenance_mode') setMaintenanceMode(value.enabled ?? false);
+        if (key === 'scanner_enabled') setScannerEnabled(value.enabled ?? true);
+        if (key === 'registrations_open') setRegistrationsOpen(value.open ?? true);
+        if (key === 'read_only_mode') setReadOnlyMode(value.enabled ?? false);
         if (key === 'announcement') {
           setBannerEnabled(value.enabled ?? false);
           setBannerType(value.type ?? 'info');
@@ -369,9 +372,12 @@ function AdminControls() {
               <div style={{ marginTop: '0.5rem' }}>
                 <FlagRow id="flag-maintenance" icon="fa-cone" label="Maintenance Mode" description="All non-admin users are redirected to a maintenance notice. Admins retain full access." checked={maintenanceMode}
                   onChange={async (e) => { const enabled = e.target.checked; setMaintenanceMode(enabled); await supabase.from('system_config').upsert({ key: 'maintenance_mode', value: { enabled } }); }} danger />
-                <FlagRow id="flag-scanner" icon="fa-magnifying-glass-chart" label="URL Scanner" description="Allow users to submit new scan requests. Disable during model updates or backend maintenance." checked={scannerEnabled} onChange={(e) => setScannerEnabled(e.target.checked)} />
-                <FlagRow id="flag-registrations" icon="fa-user-plus" label="New Registrations" description="Allow new users to create accounts. Disable to temporarily pause sign-ups." checked={registrationsOpen} onChange={(e) => setRegistrationsOpen(e.target.checked)} />
-                <FlagRow id="flag-readonly" icon="fa-lock" label="Read-Only Mode" description="Blocks all user writes (scans, reports, settings) while still allowing browsing. Admins are unaffected." checked={readOnlyMode} onChange={(e) => setReadOnlyMode(e.target.checked)} danger />
+                <FlagRow id="flag-scanner" icon="fa-magnifying-glass-chart" label="URL Scanner" description="Allow users to submit new scan requests. Disable during model updates or backend maintenance." checked={scannerEnabled}
+                  onChange={async (e) => { const enabled = e.target.checked; setScannerEnabled(enabled); await supabase.from('system_config').upsert({ key: 'scanner_enabled', value: { enabled } }); }} />
+                <FlagRow id="flag-registrations" icon="fa-user-plus" label="New Registrations" description="Allow new users to create accounts. Disable to temporarily pause sign-ups." checked={registrationsOpen}
+                  onChange={async (e) => { const open = e.target.checked; setRegistrationsOpen(open); await supabase.from('system_config').upsert({ key: 'registrations_open', value: { open } }); }} />
+                <FlagRow id="flag-readonly" icon="fa-lock" label="Read-Only Mode" description="Blocks all user writes (scans, reports, settings) while still allowing browsing. Admins are unaffected." checked={readOnlyMode}
+                  onChange={async (e) => { const enabled = e.target.checked; setReadOnlyMode(enabled); await supabase.from('system_config').upsert({ key: 'read_only_mode', value: { enabled } }); }} danger />
               </div>
             </div>
           </div>

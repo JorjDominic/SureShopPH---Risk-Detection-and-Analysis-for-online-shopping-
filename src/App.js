@@ -648,8 +648,21 @@ function App() {
       .eq('key', 'maintenance_mode')
       .single()
       .then(({ data }) => {
-        if (data?.value?.enabled) setMaintenanceEnabled(true);
+        setMaintenanceEnabled(data?.value?.enabled ?? false);
       });
+
+    const channel = supabase
+      .channel('maintenance-mode-watch')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'system_config', filter: 'key=eq.maintenance_mode' },
+        (payload) => {
+          setMaintenanceEnabled(payload.new?.value?.enabled ?? false);
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
   useEffect(() => {

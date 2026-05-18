@@ -5,6 +5,7 @@ import GoogleLogo from "../components/GoogleLogo"
 import "../styles/login.css"
 import LandingHeader from "../components/LandingHeader"
 import LandingFooter from "../components/LandingFooter"
+import { supabase } from "../config/supabase"
 
 const MAX_EMAIL_LENGTH = 255
 const MAX_PASSWORD_LENGTH = 255
@@ -24,7 +25,19 @@ function Register() {
 	const [lockSeconds, setLockSeconds] = useState(0)
 	const [errors, setErrors] = useState({})
 	const [touched, setTouched] = useState({})
+	const [registrationsClosed, setRegistrationsClosed] = useState(false)
 	const submittingRef = useRef(false)
+
+	useEffect(() => {
+		supabase
+			.from('system_config')
+			.select('value')
+			.eq('key', 'registrations_open')
+			.single()
+			.then(({ data }) => {
+				if (data?.value?.open === false) setRegistrationsClosed(true);
+			});
+	}, []);
 
 	useEffect(() => {
 		const { waitSeconds } = getRateLimitStatus("register", email)
@@ -103,6 +116,11 @@ function Register() {
 	const handleRegister = async (event) => {
 		event.preventDefault()
 		if (submittingRef.current || loading) return
+		if (registrationsClosed) {
+			setMessage("New registrations are currently closed. Please try again later.")
+			setMessageType("error")
+			return
+		}
 
 		const isValid = validateForm()
 		if (!isValid) {
@@ -196,6 +214,12 @@ function Register() {
 						Join SureShop and get safer shopping signals before every purchase.
 					</p>
 
+					{registrationsClosed && (
+						<div className="alert alert-error" role="alert">
+							<strong>Registrations are currently closed.</strong> New accounts cannot be created at this time. Please check back later.
+						</div>
+					)}
+
 					{message ? (
 						<div
 							className={
@@ -234,7 +258,7 @@ function Register() {
 						type="button"
 						className="auth-google-btn auth-google-btn-register"
 						onClick={handleGoogleSignUp}
-						disabled={googleLoading || loading}
+						disabled={googleLoading || loading || registrationsClosed}
 					>
 						<span className="auth-google-icon" aria-hidden="true"><GoogleLogo /></span>
 						<span>{googleLoading ? "Redirecting to Google..." : "Continue with Google"}</span>

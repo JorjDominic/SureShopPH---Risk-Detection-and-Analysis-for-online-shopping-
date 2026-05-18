@@ -7,6 +7,8 @@ import '../../styles/dashboard.css';
 function SettingsPage() {
   const { user, loading, refreshUser } = useAuth();
 
+  const [readOnly, setReadOnly] = useState(false);
+
   const [displayName, setDisplayName] = useState('');
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileMsg, setProfileMsg] = useState(null);
@@ -16,6 +18,17 @@ function SettingsPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [changingPassword, setChangingPassword] = useState(false);
   const [passwordMsg, setPasswordMsg] = useState(null);
+
+  useEffect(() => {
+    supabase
+      .from('system_config')
+      .select('value')
+      .eq('key', 'read_only_mode')
+      .single()
+      .then(({ data }) => {
+        if (data?.value?.enabled) setReadOnly(true);
+      });
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -29,6 +42,7 @@ function SettingsPage() {
 
   const handleSaveProfile = async (e) => {
     e.preventDefault();
+    if (readOnly) { setProfileMsg({ type: 'error', text: 'The platform is in read-only mode. Changes cannot be saved right now.' }); return; }
     setProfileMsg(null);
     setSavingProfile(true);
     try {
@@ -47,6 +61,7 @@ function SettingsPage() {
 
   const handleChangePassword = async (e) => {
     e.preventDefault();
+    if (readOnly) { setPasswordMsg({ type: 'error', text: 'The platform is in read-only mode. Changes cannot be saved right now.' }); return; }
     setPasswordMsg(null);
 
     if (!currentPassword) {
@@ -116,6 +131,13 @@ function SettingsPage() {
   return (
     <div className="ss-dashboard-page">
       <main className="ss-dashboard-main">
+
+        {readOnly && (
+          <div role="alert" style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', padding: '0.65rem 1.5rem', background: 'rgba(249,115,22,0.1)', borderBottom: '1px solid rgba(249,115,22,0.3)', color: '#c2410c', fontSize: '0.875rem' }}>
+            <i className="fas fa-lock" />
+            <span>The platform is currently in <strong>read-only mode</strong>. Changes cannot be saved until it is lifted by an administrator.</span>
+          </div>
+        )}
 
         {/* Page title */}
         <div className="ss-dashboard-section">

@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { supabase } from '../../config/supabase';
 import { runScan } from '../../services/scanService';
 import ReportListingModal from '../../components/ReportListingModal';
 import '../../styles/dashboard.css';
@@ -12,9 +13,26 @@ function ScanPage() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
   const [reportOpen, setReportOpen] = useState(false);
+  const [scannerDisabled, setScannerDisabled] = useState(false);
+  const [readOnly, setReadOnly] = useState(false);
+
+  useEffect(() => {
+    supabase
+      .from('system_config')
+      .select('key, value')
+      .in('key', ['scanner_enabled', 'read_only_mode'])
+      .then(({ data }) => {
+        data?.forEach(({ key, value }) => {
+          if (key === 'scanner_enabled') setScannerDisabled(value.enabled === false);
+          if (key === 'read_only_mode') setReadOnly(value.enabled === true);
+        });
+      });
+  }, []);
 
   const handleScan = async (e) => {
     e.preventDefault();
+    if (scannerDisabled) { setError('The URL scanner is temporarily unavailable. Please try again later.'); return; }
+    if (readOnly) { setError('The platform is in read-only mode. New scans are not allowed right now.'); return; }
     if (!url.trim()) { setError('Please enter a URL to scan.'); return; }
     setError('');
     setResult(null);
@@ -68,6 +86,14 @@ function ScanPage() {
             </div>
             <div className="ss-dashboard-panel">
 
+            {(scannerDisabled || readOnly) && (
+              <div className="udb-alert udb-alert-error" style={{ marginBottom: '1rem' }}>
+                <i className="fas fa-ban" style={{ marginRight: '0.5rem' }} />
+                {scannerDisabled
+                  ? 'The URL scanner is temporarily unavailable. Please try again later.'
+                  : 'The platform is in read-only mode. New scans are not allowed right now.'}
+              </div>
+            )}
 
             {error && <div className="udb-alert udb-alert-error">{error}</div>}
 
@@ -82,11 +108,12 @@ function ScanPage() {
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
                   required
+                  disabled={scannerDisabled || readOnly}
                 />
               </div>
 
               <div>
-                <button type="submit" className="ss-dashboard-btn ss-dashboard-btn-primary" disabled={scanning}>
+                <button type="submit" className="ss-dashboard-btn ss-dashboard-btn-primary" disabled={scanning || scannerDisabled || readOnly}>
                   {scanning
                     ? <><i className="fas fa-spinner fa-spin"></i> Scanning...</>
                     : <><i className="fas fa-search"></i> Scan Now</>}
@@ -166,6 +193,7 @@ function ScanPage() {
           userId={user?.id}
           listingUrl={result?.url || url}
           defaultType={result?.risk_level === 'High' ? 'scam' : 'misleading'}
+          readOnly={readOnly}
         />
 
         {/* How it works */}

@@ -305,35 +305,77 @@ function LandingPage({ session }) {
           <DeferredSectionContent minHeight={700}>
             <div className="container">
             <div className="ss-landing-section-header">
-              <p className="ss-landing-eyebrow">Simple by Design</p>
-              <h2 className="ss-landing-section-title">How SureshopPH Works</h2>
-              <p className="ss-landing-section-subtitle">Three steps to safer online shopping</p>
+              <p className="ss-landing-eyebrow">Step-by-Step Guide</p>
+              <h2 className="ss-landing-section-title">How to Use SureShopPH</h2>
+              <p className="ss-landing-section-subtitle">Seven simple steps to safer online shopping</p>
             </div>
-            <div className="ss-landing-steps">
+            <div className="ss-landing-steps" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(270px, 1fr))', maxWidth: 1140 }}>
+
               <div className="ss-landing-step-card ss-reveal">
                 <div className="ss-landing-step-number">01</div>
-                <div className="ss-landing-step-icon">
-                  <i className="fas fa-puzzle-piece"></i>
-                </div>
+                <div className="ss-landing-step-icon"><i className="fas fa-puzzle-piece"></i></div>
                 <h3>Install the Extension</h3>
-                <p>Add SureshopPH to any Chromium-based browser — Chrome, Edge, Brave, or Opera — in seconds.</p>
+                <p>Add SureShopPH to your Chrome browser from the Chrome Web Store. The extension requires Chrome 114 or later.</p>
               </div>
+
               <div className="ss-landing-step-card ss-reveal">
                 <div className="ss-landing-step-number">02</div>
-                <div className="ss-landing-step-icon">
-                  <i className="fas fa-search"></i>
-                </div>
-                <h3>Browse Normally</h3>
-                <p>Shop on Shopee, Lazada, or Facebook Marketplace as you normally would. The extension automatically extracts listing data in the background.</p>
+                <div className="ss-landing-step-icon"><i className="fas fa-key"></i></div>
+                <h3>Activate with Your Key</h3>
+                <p>Click the SureShopPH icon in your browser toolbar to open the side panel. Enter your activation key and click <strong>Activate</strong> to unlock the scanner.</p>
               </div>
+
               <div className="ss-landing-step-card ss-reveal">
                 <div className="ss-landing-step-number">03</div>
-                <div className="ss-landing-step-icon">
-                  <i className="fas fa-shield-alt"></i>
-                </div>
-                <h3>Get Your Risk Score</h3>
-                <p>Receive a real-time Risk Score and breakdown of detected red flags directly on the listing page — empowering you to decide with confidence.</p>
+                <div className="ss-landing-step-icon"><i className="fas fa-store"></i></div>
+                <h3>Go to a Product Listing</h3>
+                <p>Navigate to a product page on any supported platform: <strong>Shopee</strong> (shopee.ph), <strong>Lazada</strong> (lazada.com.ph), or <strong>Facebook Marketplace</strong>.</p>
               </div>
+
+              <div className="ss-landing-step-card ss-reveal">
+                <div className="ss-landing-step-number">04</div>
+                <div className="ss-landing-step-icon"><i className="fas fa-table-columns"></i></div>
+                <h3>Open the Side Panel</h3>
+                <p>Click the SureShopPH icon in your toolbar, or press <kbd style={{ fontSize: '0.8em', background: 'rgba(148,163,184,0.18)', border: '1px solid rgba(148,163,184,0.35)', borderRadius: 4, padding: '0.1em 0.4em' }}>Alt + Shift + S</kbd> to open the side panel on any page.</p>
+              </div>
+
+              <div className="ss-landing-step-card ss-reveal">
+                <div className="ss-landing-step-number">05</div>
+                <div className="ss-landing-step-icon"><i className="fas fa-magnifying-glass-chart"></i></div>
+                <h3>Run a Scan</h3>
+                <p>Choose your scan type: <strong>Quick Scan</strong> for fast analysis, <strong>Deep Scan</strong> for thorough analysis with reviews, or <strong>Scan Comments</strong> to focus on buyer review patterns.</p>
+                <p style={{ marginTop: '0.75rem', fontSize: '0.82rem', background: 'rgba(14,165,164,0.08)', borderLeft: '3px solid var(--ss-primary, #0ea5a4)', padding: '0.55rem 0.75rem', borderRadius: '0 6px 6px 0', color: 'var(--ss-gray, #64748b)', lineHeight: 1.5 }}>
+                  <strong>Tip:</strong> During a Deep Scan or Comments Scan, browse the 1-star, 3-star, and 5-star review tabs to help SureShopPH analyze a wider range of feedback.
+                </p>
+              </div>
+
+              <div className="ss-landing-step-card ss-reveal">
+                <div className="ss-landing-step-number">06</div>
+                <div className="ss-landing-step-icon"><i className="fas fa-chart-bar"></i></div>
+                <h3>Read Your Risk Score</h3>
+                <div style={{ display: 'grid', gap: '0.55rem', textAlign: 'left', marginTop: '0.5rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '0.85rem' }}>
+                    <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#22c55e', flexShrink: 0 }} />
+                    <span><strong>0–39</strong> — Low Risk: Looks normal</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '0.85rem' }}>
+                    <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#eab308', flexShrink: 0 }} />
+                    <span><strong>40–69</strong> — Medium Risk: Review carefully</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '0.85rem' }}>
+                    <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#ef4444', flexShrink: 0 }} />
+                    <span><strong>70–100</strong> — High Risk: Avoid if possible</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="ss-landing-step-card ss-reveal">
+                <div className="ss-landing-step-number">07</div>
+                <div className="ss-landing-step-icon"><i className="fas fa-scale-balanced"></i></div>
+                <h3>Decide with Confidence</h3>
+                <p>Use the score as a guide alongside your own judgment before making a purchase. SureShopPH is an assistant, not a guarantee.</p>
+              </div>
+
             </div>
             </div>
           </DeferredSectionContent>
@@ -347,20 +389,7 @@ function LandingPage({ session }) {
               <h2 className="ss-landing-section-title">Join the SureshopPH Community</h2>
               <p className="ss-landing-section-subtitle">Filipino shoppers protecting each other from online fraud</p>
             </div>
-            <div className="ss-landing-community-stats">
-              <div className="ss-landing-community-stat">
-                <div className="ss-landing-community-number">XX+</div>
-                <p>Active Users</p>
-              </div>
-              <div className="ss-landing-community-stat">
-                <div className="ss-landing-community-number">XX+</div>
-                <p>Listings Scanned</p>
-              </div>
-              <div className="ss-landing-community-stat">
-                <div className="ss-landing-community-number">XX+</div>
-                <p>Risks Flagged</p>
-              </div>
-            </div>
+
             <div className="ss-landing-community-content">
               <div className="ss-landing-community-text">
                 <h3>Collective Protection for Filipino Shoppers</h3>
@@ -398,8 +427,7 @@ function LandingPage({ session }) {
                     <span>Web dashboard tour</span>
                   </div>
                 </div>
-                <div className="ss-landing-demo-video">
-                  <div className="ss-landing-video-placeholder" style={{ padding: '2rem', textAlign: 'center' }}>
+                <div className="ss-landing-demo-video" style={{ aspectRatio: 'unset', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem', textAlign: 'center' }}>
                     <h3 style={{ marginTop: 0, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
                       <i className="fas fa-bolt" style={{ color: '#fbbf24' }}></i>
                       Try it now
@@ -419,7 +447,6 @@ function LandingPage({ session }) {
                     >
                       <i className="fas fa-rocket"></i> Start free
                     </Link>
-                  </div>
                 </div>
               </div>
             </div>

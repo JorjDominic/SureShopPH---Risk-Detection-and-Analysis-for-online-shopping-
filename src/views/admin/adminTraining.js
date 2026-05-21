@@ -9,9 +9,6 @@ import '../../styles/dashboard.css';
 // ─── Constants ────────────────────────────────────────────────────────────────
 const SAMPLE_MINIMUM = 200;
 const SAMPLE_PAGE_SIZE = 10;
-const MOCK_TOTAL = 47;
-const MOCK_SUSPICIOUS = 24;
-const MOCK_CREDIBLE = 23;
 const LOW_QUALITY_CHAR_THRESHOLD = 10;
 const NEAR_DUP_THRESHOLD = 0.7;
 
@@ -39,68 +36,40 @@ const SUBMIT_CHECKLIST = [
   'Would a real buyer write this?',
 ];
 
-// ─── Mock data ────────────────────────────────────────────────────────────────
-const INITIAL_SAMPLES = [
-  {
-    id: 's1',
-    text: 'Grabe ang ganda ng item! Legit seller, dumating in 2 days. Highly recommend! Sulit na sulit ang bayad ko.',
-    label: 'credible',
-    notes: 'Clear positive tone, specific delivery detail.',
-    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: 's2',
-    text: 'PRANK LANG TO!! Hindi talaga ito legit na seller hahaha joke lang mga lodi. Like and share para sa free item!!!',
-    label: 'suspicious',
-    notes: 'Engagement-bait pattern, no real purchase intent.',
-    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: 's3',
-    text: 'Subok na! Original talaga. May warranty pa. Tatlong beses na akong nag-order dito, hindi pa nila ako binibigo.',
-    label: 'credible',
-    notes: 'Repeat buyer signal, warranty mention.',
-    createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: 's4',
-    text: 'LIMITADO LANG! Mag-order na agad bago maubusan! SCAM ALERT sa ibang sellers, kami lang ang tunay! GCash only!',
-    label: 'suspicious',
-    notes: 'Urgency + exclusivity manipulation. GCash-only flag.',
-    createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: 's5',
-    text: 'Hindi ko feel yung packaging kaya 4 stars lang. Pero yung item mismo okay naman. Matagal lang dumating — almost 3 weeks.',
-    label: 'credible',
-    notes: 'Balanced critique, credible delivery complaint.',
-    createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: 's6',
-    text: 'Free iPhone 15 kung mag-share ka ng post na ito sa 10 friends! Legit to, nanalo na ako! I-redeem sa link sa bio!!!',
-    label: 'suspicious',
-    notes: 'Classic share-bait giveaway scam.',
-    createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-];
 
-const TRAINING_HISTORY = [
-  {
-    id: 'h1',
-    date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-    samples: 120,
-    accuracy: 81.4,
-    trainedBy: 'admin@sureshopph.com',
-  },
-  {
-    id: 'h2',
-    date: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
-    samples: 156,
-    accuracy: 84.7,
-    trainedBy: 'admin@sureshopph.com',
-  },
-];
+
+// ─── API ────────────────────────────────────────────────────────────────────
+const API_BASE = 'http://localhost:8000';
+
+async function apiFetch(path, token, options = {}) {
+  const { headers: extraHeaders, ...rest } = options;
+  const res = await fetch(`${API_BASE}${path}`, {
+    ...rest,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      ...extraHeaders,
+    },
+  });
+  if (!res.ok) {
+    const msg = await res.text().catch(() => `HTTP ${res.status}`);
+    throw new Error(msg || `HTTP ${res.status}`);
+  }
+  const ct = res.headers.get('content-type') ?? '';
+  if (res.status === 204 || !ct.includes('application/json')) return null;
+  return res.json();
+}
+
+// Map a backend training-data record → UI sample shape.
+function mapSample(item) {
+  return {
+    id: item.id,
+    text: item.text,
+    label: item.is_fake ? 'suspicious' : 'credible',
+    notes: item.notes ?? '',
+    createdAt: item.created_at,
+  };
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function relativeTime(isoString) {
@@ -269,13 +238,13 @@ function HealthPill({ ok, redWhenBad = false, okLabel, badLabel, title }) {
 // ─── Main Component ───────────────────────────────────────────────────────────
 function AdminTraining() {
   // Auth (sourced from AuthContext)
-  const { user, loading: authLoading } = useAuth();
+  const { user, session, loading: authLoading } = useAuth();
 
   // Page loading skeleton
   const [pageReady, setPageReady] = useState(false);
 
   // Sample table
-  const [samples, setSamples] = useState(INITIAL_SAMPLES);
+  const [samples, setSamples] = useState([]);
   const [filterTab, setFilterTab] = useState('all'); // 'all' | 'suspicious' | 'credible'
   const [samplePage, setSamplePage] = useState(0);
 
@@ -299,6 +268,14 @@ function AdminTraining() {
   const [trainTipVisible, setTrainTipVisible] = useState(false);
   const trainBtnRef = useRef(null);
 
+  // API-driven state
+  const [stats, setStats] = useState({ total: 0, fake: 0, real: 0, ready_to_train: false, recommended_min: SAMPLE_MINIMUM });
+  const [modelStats, setModelStats] = useState({ model_loaded: false, active_version_id: null, history: [] });
+
+  // Training job polling
+  const [trainState, setTrainState] = useState(null); // null | { jobId, status, result }
+  const trainPollRef = useRef(null);
+
   // Toasts
   const [toasts, setToasts] = useState([]);
   const toastIdRef = useRef(0);
@@ -309,16 +286,38 @@ function AdminTraining() {
     setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 3200);
   }, []);
 
-  // Auth check + fake load delay
+  // Load data on mount and whenever auth state changes
   useEffect(() => {
     if (authLoading) return undefined;
+    const token = session?.access_token;
     let active = true;
 
-    // Simulate content load (mock — no real call)
-    setTimeout(() => { if (active) setPageReady(true); }, 800);
+    const load = async () => {
+      try {
+        const [rawSamples, rawStats, rawModelStats] = await Promise.all([
+          apiFetch('/admin/training-data?limit=1000', token),
+          apiFetch('/admin/training-data/stats', token),
+          apiFetch('/admin/model-stats', token),
+        ]);
+        if (!active) return;
+        setSamples((rawSamples ?? []).map(mapSample));
+        setStats(rawStats ?? { total: 0, fake: 0, real: 0, ready_to_train: false, recommended_min: SAMPLE_MINIMUM });
+        setModelStats(rawModelStats ?? { model_loaded: false, active_version_id: null, history: [] });
+      } catch {
+        if (active) addToast('Failed to load training data', 'error');
+      } finally {
+        if (active) setPageReady(true);
+      }
+    };
 
+    load();
     return () => { active = false; };
-  }, [authLoading]);
+  }, [authLoading, session]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Clean up polling interval on unmount
+  useEffect(() => {
+    return () => { if (trainPollRef.current) clearInterval(trainPollRef.current); };
+  }, []);
 
   // Reset sample page when filter tab changes
   useEffect(() => { setSamplePage(0); }, [filterTab]);
@@ -337,27 +336,82 @@ function AdminTraining() {
     if (dupStatus === 'exact') return;
 
     setSubmitBusy(true);
-    await new Promise((r) => setTimeout(r, 420)); // fake async
-
-    const newSample = {
-      id: `s${Date.now()}`,
-      text: reviewText.trim(),
-      label: selectedLabel,
-      notes: notes.trim(),
-      createdAt: new Date().toISOString(),
-    };
-
-    setSamples((prev) => [newSample, ...prev]);
-    setReviewText('');
-    setSelectedLabel(null);
-    setNotes('');
-    setSubmitBusy(false);
-    addToast('Sample added', 'success', 'fa-plus-circle');
+    try {
+      await apiFetch('/admin/training-data', session?.access_token, {
+        method: 'POST',
+        body: JSON.stringify({
+          text: reviewText.trim(),
+          is_fake: selectedLabel === 'suspicious',
+          notes: notes.trim() || null,
+        }),
+      });
+      const [rawSamples, rawStats] = await Promise.all([
+        apiFetch('/admin/training-data?limit=1000', session?.access_token),
+        apiFetch('/admin/training-data/stats', session?.access_token),
+      ]);
+      setSamples((rawSamples ?? []).map(mapSample));
+      setStats(rawStats ?? stats);
+      setReviewText('');
+      setSelectedLabel(null);
+      setNotes('');
+      addToast('Sample added', 'success', 'fa-plus-circle');
+    } catch {
+      addToast('Failed to add sample', 'error');
+    } finally {
+      setSubmitBusy(false);
+    }
   };
 
-  const handleDelete = (id) => {
-    setSamples((prev) => prev.filter((s) => s.id !== id));
-    addToast('Sample deleted', 'success', 'fa-trash');
+  const handleDelete = async (id) => {
+    try {
+      await apiFetch(`/admin/training-data/${id}`, session?.access_token, { method: 'DELETE' });
+      const [rawSamples, rawStats] = await Promise.all([
+        apiFetch('/admin/training-data?limit=1000', session?.access_token),
+        apiFetch('/admin/training-data/stats', session?.access_token),
+      ]);
+      setSamples((rawSamples ?? []).map(mapSample));
+      setStats(rawStats ?? stats);
+      addToast('Sample deleted', 'success', 'fa-trash');
+    } catch {
+      addToast('Failed to delete sample', 'error');
+    }
+  };
+
+  const handleTrainModel = async () => {
+    const s = trainState?.status;
+    if (s === 'queued' || s === 'running') return;
+    try {
+      const { job_id } = await apiFetch('/admin/train-model', session?.access_token, { method: 'POST' });
+      setTrainState({ jobId: job_id, status: 'queued', result: null });
+      addToast('Training job started', 'success', 'fa-brain');
+      if (trainPollRef.current) clearInterval(trainPollRef.current);
+      trainPollRef.current = setInterval(async () => {
+        try {
+          const data = await apiFetch(`/admin/training-status/${job_id}`, session?.access_token);
+          setTrainState((prev) => ({ ...prev, status: data.status, result: data.result ?? null }));
+          if (data.status === 'done' || data.status === 'failed') {
+            clearInterval(trainPollRef.current);
+            trainPollRef.current = null;
+            if (data.status === 'done') {
+              const acc = data.result?.accuracy != null
+                ? ` — Accuracy: ${(data.result.accuracy * 100).toFixed(1)}%`
+                : '';
+              addToast(`Training complete${acc}`, 'success', 'fa-circle-check');
+              const rawModelStats = await apiFetch('/admin/model-stats', session?.access_token);
+              setModelStats(rawModelStats ?? modelStats);
+            } else {
+              addToast('Training failed', 'error');
+            }
+          }
+        } catch {
+          clearInterval(trainPollRef.current);
+          trainPollRef.current = null;
+          addToast('Failed to poll training status', 'error');
+        }
+      }, 2000);
+    } catch {
+      addToast('Failed to start training', 'error');
+    }
   };
 
   const filteredSamples = filterTab === 'all'
@@ -367,10 +421,10 @@ function AdminTraining() {
   const samplePageCount = Math.ceil(filteredSamples.length / SAMPLE_PAGE_SIZE);
   const pagedSamples = filteredSamples.slice(samplePage * SAMPLE_PAGE_SIZE, (samplePage + 1) * SAMPLE_PAGE_SIZE);
 
-  // Derived stats
-  const suspiciousCount = samples.filter((s) => s.label === 'suspicious').length;
-  const credibleCount = samples.filter((s) => s.label === 'credible').length;
-  const total = suspiciousCount + credibleCount;
+  // Derived stats — sourced from the /stats endpoint
+  const suspiciousCount = stats.fake;
+  const credibleCount = stats.real;
+  const total = stats.total;
   // "Balanced" only when dataset is large enough AND neither class is below 30%
   const isBalanced =
     total >= SAMPLE_MINIMUM &&
@@ -379,17 +433,14 @@ function AdminTraining() {
     credibleCount / total >= 0.3;
   const isImbalanced = suspiciousCount > 0 && credibleCount > 0 && !isBalanced && Math.abs(suspiciousCount - credibleCount) > Math.min(suspiciousCount, credibleCount) * 0.5;
 
-  // ─── Dataset Health (mock) ────────────────────────────────────────────────
-  // Minimum size — uses MOCK_TOTAL so the indicator reflects the documented
-  // "47 / 200" mock state until a real backend is wired.
-  const healthMinSizeOk = MOCK_TOTAL >= SAMPLE_MINIMUM;
+  // ─── Dataset Health ───────────────────────────────────────────────────────
+  const healthMinSizeOk = stats.ready_to_train;
 
-  // Balance — neither label below 30% of the (mock) total.
-  const mockTotal = MOCK_SUSPICIOUS + MOCK_CREDIBLE;
+  // Balance — neither label below 30% of the total.
   const healthBalanceOk =
-    mockTotal > 0 &&
-    MOCK_SUSPICIOUS / mockTotal >= 0.3 &&
-    MOCK_CREDIBLE / mockTotal >= 0.3;
+    total > 0 &&
+    suspiciousCount / total >= 0.3 &&
+    credibleCount / total >= 0.3;
 
   // Low quality — count short rows in the in-memory samples list.
   const lowQualityCount = samples.filter(
@@ -405,6 +456,11 @@ function AdminTraining() {
   const healthAnyRed = !healthMinSizeOk; // only the size pill is red-eligible
   const healthAllGreen = healthMinSizeOk && healthBalanceOk && healthQualityOk && healthDupesOk;
   const healthOnlyYellow = !healthAnyRed && !healthAllGreen;
+
+  // Last training run (from model-stats history)
+  const lastRun = modelStats.history.length > 0
+    ? modelStats.history[modelStats.history.length - 1]
+    : null;
 
   // Debounced duplicate detection on reviewText
   useEffect(() => {
@@ -479,17 +535,17 @@ function AdminTraining() {
                     <div className="ss-dashboard-stat-top">
                       <div>
                         <p>Total Samples</p>
-                        <h3 style={{ color: 'var(--ss-dashboard-text)' }}>{MOCK_TOTAL}</h3>
+                        <h3 style={{ color: 'var(--ss-dashboard-text)' }}>{stats.total}</h3>
                       </div>
                       <div className="ss-dashboard-stat-icon" style={{ width: 44, height: 44, borderRadius: 14, background: 'linear-gradient(135deg,var(--ss-dashboard-teal),var(--ss-dashboard-blue))', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <i className="fas fa-database" style={{ fontSize: '1.1rem' }} />
                       </div>
                     </div>
                     <div className="ss-dashboard-meter" style={{ margin: '0.6rem 0 0.5rem' }}>
-                      <span style={{ width: `${(MOCK_TOTAL / SAMPLE_MINIMUM) * 100}%`, background: 'linear-gradient(90deg,var(--ss-dashboard-teal),var(--ss-dashboard-blue))' }} />
+                      <span style={{ width: `${Math.min((stats.total / SAMPLE_MINIMUM) * 100, 100)}%`, background: 'linear-gradient(90deg,var(--ss-dashboard-teal),var(--ss-dashboard-blue))' }} />
                     </div>
                     <small style={{ color: 'var(--ss-dashboard-muted)', fontSize: '0.79rem' }}>
-                      <strong style={{ color: 'var(--ss-dashboard-text)' }}>{MOCK_TOTAL}</strong> / {SAMPLE_MINIMUM} minimum needed
+                      <strong style={{ color: 'var(--ss-dashboard-text)' }}>{stats.total}</strong> / {SAMPLE_MINIMUM} minimum needed
                     </small>
                   </>
                 )}
@@ -509,9 +565,9 @@ function AdminTraining() {
                       <div>
                         <p>Dataset Balance</p>
                         <h3 style={{ color: 'var(--ss-dashboard-text)', fontSize: '1.35rem', marginTop: '0.2rem' }}>
-                          <span style={{ color: '#ea580c' }}>{MOCK_SUSPICIOUS}</span>
+                          <span style={{ color: '#ea580c' }}>{stats.fake}</span>
                           <span style={{ color: 'var(--ss-dashboard-muted)', fontWeight: 400, fontSize: '1rem' }}> suspicious · </span>
-                          <span style={{ color: '#16a34a' }}>{MOCK_CREDIBLE}</span>
+                          <span style={{ color: '#16a34a' }}>{stats.real}</span>
                           <span style={{ color: 'var(--ss-dashboard-muted)', fontWeight: 400, fontSize: '1rem' }}> credible</span>
                         </h3>
                       </div>
@@ -562,7 +618,7 @@ function AdminTraining() {
                       <div>
                         <p>Model Status</p>
                       </div>
-                      <div className="ss-dashboard-stat-icon" style={{ width: 44, height: 44, borderRadius: 14, background: 'linear-gradient(135deg,#64748b,#475569)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <div className="ss-dashboard-stat-icon" style={{ width: 44, height: 44, borderRadius: 14, background: modelStats.model_loaded ? 'linear-gradient(135deg,#22c55e,#16a34a)' : 'linear-gradient(135deg,#64748b,#475569)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <i className="fas fa-robot" style={{ fontSize: '1.1rem' }} />
                       </div>
                     </div>
@@ -571,15 +627,23 @@ function AdminTraining() {
                         display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
                         padding: '0.28rem 0.7rem', borderRadius: 999, fontSize: '0.74rem', fontWeight: 800,
                         fontFamily: 'var(--font-accent)', letterSpacing: '0.04em', textTransform: 'uppercase',
-                        background: 'rgba(100,116,139,0.14)', color: '#475569',
+                        background: modelStats.model_loaded ? 'rgba(22,163,74,0.12)' : 'rgba(100,116,139,0.14)',
+                        color: modelStats.model_loaded ? '#166534' : '#475569',
                       }}
                     >
                       <i className="fas fa-circle" style={{ fontSize: '0.45rem' }} />
-                      Not trained yet
+                      {modelStats.model_loaded ? 'Active' : 'Not trained yet'}
                     </span>
-                    <small style={{ display: 'block', marginTop: '0.55rem', color: 'var(--ss-dashboard-muted)', fontSize: '0.79rem' }}>
-                      Collect {SAMPLE_MINIMUM - MOCK_TOTAL} more samples to enable training
-                    </small>
+                    {modelStats.model_loaded && modelStats.active_version_id && (
+                      <small style={{ display: 'block', marginTop: '0.55rem', color: 'var(--ss-dashboard-muted)', fontSize: '0.79rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        Version: {modelStats.active_version_id}
+                      </small>
+                    )}
+                    {!modelStats.model_loaded && stats.total < SAMPLE_MINIMUM && (
+                      <small style={{ display: 'block', marginTop: '0.55rem', color: 'var(--ss-dashboard-muted)', fontSize: '0.79rem' }}>
+                        Collect {SAMPLE_MINIMUM - stats.total} more samples to enable training
+                      </small>
+                    )}
                   </>
                 )}
               </div>
@@ -597,14 +661,18 @@ function AdminTraining() {
                     <div className="ss-dashboard-stat-top">
                       <div>
                         <p>Last Trained</p>
-                        <h3 style={{ color: 'var(--ss-dashboard-text)', fontSize: '1.6rem' }}>Never</h3>
+                        <h3 style={{ color: 'var(--ss-dashboard-text)', fontSize: '1.6rem' }}>
+                          {lastRun ? relativeTime(lastRun.created_at ?? lastRun.date ?? new Date().toISOString()) : 'Never'}
+                        </h3>
                       </div>
                       <div className="ss-dashboard-stat-icon" style={{ width: 44, height: 44, borderRadius: 14, background: 'linear-gradient(135deg,#2563eb,#1d4ed8)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <i className="fas fa-clock-rotate-left" style={{ fontSize: '1.1rem' }} />
                       </div>
                     </div>
                     <small style={{ color: 'var(--ss-dashboard-muted)', fontSize: '0.79rem' }}>
-                      No successful training run recorded
+                      {lastRun
+                        ? `${lastRun.sample_count ?? lastRun.samples ?? '—'} samples — ${lastRun.accuracy != null ? `${(lastRun.accuracy * 100).toFixed(1)}% accuracy` : 'no accuracy data'}`
+                        : 'No successful training run recorded'}
                     </small>
                   </>
                 )}
@@ -636,7 +704,7 @@ function AdminTraining() {
                   ok={healthMinSizeOk}
                   redWhenBad
                   okLabel="Ready"
-                  badLabel={`${MOCK_TOTAL} / ${SAMPLE_MINIMUM} samples`}
+                  badLabel={`${stats.total} / ${SAMPLE_MINIMUM} samples`}
                   title="Minimum Size"
                 />
                 <HealthPill
@@ -1321,32 +1389,47 @@ function AdminTraining() {
                           </tr>
                         </thead>
                         <tbody>
-                          {TRAINING_HISTORY.map((run) => (
-                            <tr key={run.id}>
-                              <td style={{ whiteSpace: 'nowrap', fontSize: '0.84rem' }}>{formatAbsDate(run.date)}</td>
-                              <td>
-                                <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--ss-dashboard-text)', fontSize: '0.9rem' }}>
-                                  {run.samples}
-                                </span>
+                          {modelStats.history.length === 0 ? (
+                            <tr>
+                              <td colSpan={4} style={{ textAlign: 'center', color: 'var(--ss-dashboard-muted)', padding: '1.5rem', fontSize: '0.84rem', fontStyle: 'italic' }}>
+                                No training runs yet
                               </td>
-                              <td>
-                                <span
-                                  style={{
-                                    display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
-                                    padding: '0.28rem 0.65rem', borderRadius: 999,
-                                    background: run.accuracy >= 85 ? 'rgba(22,163,74,0.1)' : 'rgba(249,115,22,0.1)',
-                                    color: run.accuracy >= 85 ? '#166534' : '#c2410c',
-                                    fontSize: '0.78rem', fontWeight: 800,
-                                    fontFamily: 'var(--font-accent)',
-                                  }}
-                                >
-                                  <i className={`fas ${run.accuracy >= 85 ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down'}`} style={{ fontSize: '0.7rem' }} />
-                                  {run.accuracy}%
-                                </span>
-                              </td>
-                              <td style={{ fontSize: '0.82rem', color: 'var(--ss-dashboard-muted)' }}>{run.trainedBy}</td>
                             </tr>
-                          ))}
+                          ) : modelStats.history.map((run, idx) => {
+                            const runDate = run.created_at ?? run.date;
+                            const runSamples = run.sample_count ?? run.samples;
+                            const runAccPct = run.accuracy != null ? parseFloat((run.accuracy * 100).toFixed(1)) : null;
+                            const runF1Pct = run.f1 != null ? parseFloat((run.f1 * 100).toFixed(1)) : null;
+                            const runBy = run.trained_by ?? run.trainedBy ?? '—';
+                            return (
+                              <tr key={run.id ?? idx}>
+                                <td style={{ whiteSpace: 'nowrap', fontSize: '0.84rem' }}>{runDate ? formatAbsDate(runDate) : '—'}</td>
+                                <td>
+                                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--ss-dashboard-text)', fontSize: '0.9rem' }}>
+                                    {runSamples ?? '—'}
+                                  </span>
+                                </td>
+                                <td>
+                                  {runAccPct != null ? (
+                                    <span
+                                      style={{
+                                        display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
+                                        padding: '0.28rem 0.65rem', borderRadius: 999,
+                                        background: runAccPct >= 85 ? 'rgba(22,163,74,0.1)' : 'rgba(249,115,22,0.1)',
+                                        color: runAccPct >= 85 ? '#166534' : '#c2410c',
+                                        fontSize: '0.78rem', fontWeight: 800,
+                                        fontFamily: 'var(--font-accent)',
+                                      }}
+                                    >
+                                      <i className={`fas ${runAccPct >= 85 ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down'}`} style={{ fontSize: '0.7rem' }} />
+                                      {runAccPct}%{runF1Pct != null ? ` / F1 ${runF1Pct}%` : ''}
+                                    </span>
+                                  ) : '—'}
+                                </td>
+                                <td style={{ fontSize: '0.82rem', color: 'var(--ss-dashboard-muted)' }}>{runBy}</td>
+                              </tr>
+                            );
+                          })}
                         </tbody>
                       </table>
                     </div>
@@ -1376,7 +1459,15 @@ function AdminTraining() {
                   Model Training
                 </p>
                 <p style={{ fontSize: '0.78rem', color: 'var(--ss-dashboard-muted)', margin: 0, marginTop: '0.1rem' }}>
-                  {MOCK_TOTAL} / {SAMPLE_MINIMUM} samples collected — need {SAMPLE_MINIMUM - MOCK_TOTAL} more to enable training
+                  {trainState?.status === 'queued' || trainState?.status === 'running' ? (
+                    <><i className="fas fa-spinner fa-spin" style={{ marginRight: '0.4rem' }} />{trainState.status === 'queued' ? 'Job queued — waiting for worker…' : 'Training in progress…'}</>
+                  ) : trainState?.status === 'done' ? (
+                    <>Training complete{trainState.result?.accuracy != null ? ` — Accuracy ${(trainState.result.accuracy * 100).toFixed(1)}%` : ''}{trainState.result?.f1 != null ? `, F1 ${(trainState.result.f1 * 100).toFixed(1)}%` : ''}</>
+                  ) : trainState?.status === 'failed' ? (
+                    <><i className="fas fa-circle-xmark" style={{ marginRight: '0.4rem', color: '#dc2626' }} />Training failed</>
+                  ) : (
+                    <>{stats.total} / {SAMPLE_MINIMUM} samples collected{stats.total < SAMPLE_MINIMUM ? ` — need ${SAMPLE_MINIMUM - stats.total} more to enable training` : ' — ready to train'}</>
+                  )}
                 </p>
               </div>
 
@@ -1390,28 +1481,35 @@ function AdminTraining() {
               >
                 <button
                   type="button"
-                  disabled={healthAnyRed}
+                  disabled={healthAnyRed || trainState?.status === 'queued' || trainState?.status === 'running'}
                   ref={trainBtnRef}
+                  onClick={handleTrainModel}
                   aria-describedby="train-tooltip"
                   className="ss-dashboard-btn ss-dashboard-btn-primary"
                   style={{
                     minHeight: 44,
-                    opacity: healthAnyRed ? 0.52 : 1,
-                    cursor: healthAnyRed ? 'not-allowed' : 'pointer',
+                    opacity: (healthAnyRed || trainState?.status === 'queued' || trainState?.status === 'running') ? 0.52 : 1,
+                    cursor: (healthAnyRed || trainState?.status === 'queued' || trainState?.status === 'running') ? 'not-allowed' : 'pointer',
                     filter: healthAnyRed ? 'grayscale(0.3)' : 'none',
                   }}
                 >
-                  <i
-                    className={`fas ${
-                      healthAnyRed
-                        ? 'fa-lock'
-                        : healthOnlyYellow
-                          ? 'fa-triangle-exclamation'
-                          : 'fa-brain'
-                    }`}
-                    style={{ marginRight: '0.5rem' }}
-                  />
-                  Train Model
+                  {(trainState?.status === 'queued' || trainState?.status === 'running') ? (
+                    <><i className="fas fa-spinner fa-spin" style={{ marginRight: '0.5rem' }} />{trainState.status === 'queued' ? 'Queued…' : 'Training…'}</>
+                  ) : (
+                    <>
+                      <i
+                        className={`fas ${
+                          healthAnyRed
+                            ? 'fa-lock'
+                            : healthOnlyYellow
+                              ? 'fa-triangle-exclamation'
+                              : 'fa-brain'
+                        }`}
+                        style={{ marginRight: '0.5rem' }}
+                      />
+                      Train Model
+                    </>
+                  )}
                 </button>
                 {trainTipVisible && (
                   <div
@@ -1448,7 +1546,7 @@ function AdminTraining() {
                       style={{ marginRight: '0.4rem', fontSize: '0.7rem' }}
                     />
                     {healthAnyRed
-                      ? `Need ${SAMPLE_MINIMUM} samples minimum (you have ${MOCK_TOTAL})`
+                      ? `Need ${SAMPLE_MINIMUM} samples minimum (you have ${stats.total})`
                       : healthOnlyYellow
                         ? 'Quality issues detected — training may be affected'
                         : 'Ready to train'}

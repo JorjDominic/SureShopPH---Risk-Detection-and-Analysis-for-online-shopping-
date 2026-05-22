@@ -39,7 +39,9 @@ const SUBMIT_CHECKLIST = [
 
 
 // ─── API ────────────────────────────────────────────────────────────────────
-const API_BASE = 'http://localhost:8000';
+// Use REACT_APP_API_URL in production (set in Vercel env vars to your Railway URL).
+// Falls back to localhost:8000 for local development.
+const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
 async function apiFetch(path, token, options = {}) {
   const { headers: extraHeaders, ...rest } = options;
@@ -65,7 +67,7 @@ function mapSample(item) {
   return {
     id: item.id,
     text: item.text,
-    label: item.is_fake ? 'suspicious' : 'credible',
+    label: item.label || (item.is_fake ? 'suspicious' : 'credible'),
     notes: item.notes ?? '',
     createdAt: item.created_at,
   };
@@ -341,7 +343,7 @@ function AdminTraining() {
         method: 'POST',
         body: JSON.stringify({
           text: reviewText.trim(),
-          is_fake: selectedLabel === 'suspicious',
+          label: selectedLabel,
           notes: notes.trim() || null,
         }),
       });

@@ -211,49 +211,137 @@ function ScanDetailsPage() {
                       </div>
                     )}
 
+                    {/* AI-generated insight */}
                     {scan.notes && (
-                      <div style={{ background: 'rgba(14,165,164,0.06)', border: '1px solid rgba(14,165,164,0.18)', borderRadius: 14, padding: '1rem', marginBottom: '1rem' }}>
+                      <div style={{ background: 'rgba(14,165,164,0.06)', border: '1px solid rgba(14,165,164,0.18)', borderRadius: 14, padding: '1rem', marginBottom: '1.25rem' }}>
                         <label style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--ss-dashboard-teal-dark)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '0.4rem' }}>
-                          Analysis Notes
+                          {scan.raw_data?.risk_message_source === 'groq' ? '✦ AI Analysis' : 'Analysis Summary'}
                         </label>
-                        <p style={{ margin: 0, fontSize: '0.875rem', lineHeight: 1.6 }}>{scan.notes}</p>
+                        <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.7 }}>{scan.notes}</p>
                       </div>
                     )}
 
-                    {scan.flags && Array.isArray(scan.flags) && scan.flags.length > 0 && (
+                    {/* Comments analysis — deep scan only */}
+                    {scan.raw_data?.comments_summary && (() => {
+                      const cs = scan.raw_data.comments_summary;
+                      const sentiment = (cs.dominant_sentiment || '').toLowerCase();
+                      const sentimentColor = sentiment === 'positive' ? '#16a34a' : sentiment === 'negative' ? '#dc2626' : '#ca8a04';
+                      const sentimentIcon = sentiment === 'positive' ? 'fa-thumbs-up' : sentiment === 'negative' ? 'fa-thumbs-down' : 'fa-minus';
+                      return (
+                        <div style={{ marginBottom: '1.25rem' }}>
+                          <label style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--ss-dashboard-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '0.6rem' }}>
+                            Review Analysis
+                          </label>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '0.5rem' }}>
+                            {cs.analyzed != null && (
+                              <div style={{ background: 'var(--ss-dashboard-panel-bg)', border: '1px solid var(--ss-dashboard-border)', borderRadius: 12, padding: '0.65rem 0.9rem', textAlign: 'center' }}>
+                                <div style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--ss-dashboard-text)' }}>{cs.analyzed}</div>
+                                <div style={{ fontSize: '0.7rem', color: 'var(--ss-dashboard-muted)', marginTop: 2 }}>Reviews Checked</div>
+                              </div>
+                            )}
+                            {cs.fake_review_pct != null && (
+                              <div style={{ background: cs.fake_review_pct > 40 ? 'rgba(220,38,38,0.07)' : 'var(--ss-dashboard-panel-bg)', border: `1px solid ${cs.fake_review_pct > 40 ? 'rgba(220,38,38,0.2)' : 'var(--ss-dashboard-border)'}`, borderRadius: 12, padding: '0.65rem 0.9rem', textAlign: 'center' }}>
+                                <div style={{ fontSize: '1.1rem', fontWeight: 800, color: cs.fake_review_pct > 40 ? '#dc2626' : 'var(--ss-dashboard-text)' }}>{cs.fake_review_pct}%</div>
+                                <div style={{ fontSize: '0.7rem', color: 'var(--ss-dashboard-muted)', marginTop: 2 }}>Suspicious Reviews</div>
+                              </div>
+                            )}
+                            {cs.bot_likelihood_pct != null && (
+                              <div style={{ background: cs.bot_likelihood_pct > 50 ? 'rgba(234,88,12,0.07)' : 'var(--ss-dashboard-panel-bg)', border: `1px solid ${cs.bot_likelihood_pct > 50 ? 'rgba(234,88,12,0.2)' : 'var(--ss-dashboard-border)'}`, borderRadius: 12, padding: '0.65rem 0.9rem', textAlign: 'center' }}>
+                                <div style={{ fontSize: '1.1rem', fontWeight: 800, color: cs.bot_likelihood_pct > 50 ? '#ea580c' : 'var(--ss-dashboard-text)' }}>{cs.bot_likelihood_pct}%</div>
+                                <div style={{ fontSize: '0.7rem', color: 'var(--ss-dashboard-muted)', marginTop: 2 }}>Automated Activity</div>
+                              </div>
+                            )}
+                            {cs.dominant_sentiment && (
+                              <div style={{ background: 'var(--ss-dashboard-panel-bg)', border: '1px solid var(--ss-dashboard-border)', borderRadius: 12, padding: '0.65rem 0.9rem', textAlign: 'center' }}>
+                                <div style={{ fontSize: '1.1rem', fontWeight: 800, color: sentimentColor }}><i className={`fas ${sentimentIcon}`} style={{ fontSize: '1rem' }} /></div>
+                                <div style={{ fontSize: '0.7rem', color: 'var(--ss-dashboard-muted)', marginTop: 2, textTransform: 'capitalize' }}>{cs.dominant_sentiment} Sentiment</div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })()}
+
+                    {/* Enriched risk flags with tips */}
+                    {scan.flags && Array.isArray(scan.flags) && scan.flags.length > 0 && (() => {
+                      const flagDetails = scan.raw_data?.flag_details;
+                      const severityStyle = (sev) => {
+                        if (sev === 'high') return { bg: 'rgba(220,38,38,0.08)', border: 'rgba(220,38,38,0.22)', badge: { background: 'rgba(220,38,38,0.12)', color: '#b91c1c' }, icon: 'fa-circle-exclamation', iconColor: '#dc2626' };
+                        if (sev === 'medium') return { bg: 'rgba(234,88,12,0.07)', border: 'rgba(234,88,12,0.2)', badge: { background: 'rgba(234,88,12,0.12)', color: '#9a3412' }, icon: 'fa-exclamation-triangle', iconColor: '#ea580c' };
+                        return { bg: 'rgba(202,138,4,0.07)', border: 'rgba(202,138,4,0.2)', badge: { background: 'rgba(202,138,4,0.12)', color: '#854d0e' }, icon: 'fa-circle-info', iconColor: '#ca8a04' };
+                      };
+                      return (
+                        <div style={{ marginBottom: '1.25rem' }}>
+                          <label style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--ss-dashboard-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '0.75rem' }}>
+                            Risk Flags ({scan.flags.length})
+                          </label>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                            {flagDetails
+                              ? flagDetails.map((fd, i) => {
+                                  const s = severityStyle(fd.severity);
+                                  return (
+                                    <div key={i} style={{ background: s.bg, border: `1px solid ${s.border}`, borderRadius: 12, padding: '0.85rem 1rem' }}>
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: fd.tip ? '0.4rem' : 0 }}>
+                                        <i className={`fas ${s.icon}`} style={{ color: s.iconColor, flexShrink: 0, fontSize: '0.9rem' }} />
+                                        <span style={{ fontWeight: 700, fontSize: '0.875rem', flex: 1 }}>{fd.label}</span>
+                                        <span style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', borderRadius: 999, padding: '2px 8px', ...s.badge }}>{fd.severity}</span>
+                                      </div>
+                                      {fd.tip && <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--ss-dashboard-muted)', lineHeight: 1.55, paddingLeft: '1.4rem' }}>{fd.tip}</p>}
+                                      {fd.triggered_by && <p style={{ margin: '0.3rem 0 0 1.4rem', fontSize: '0.78rem', color: 'var(--ss-dashboard-muted)', fontStyle: 'italic' }}>Detected: "{fd.triggered_by}"</p>}
+                                    </div>
+                                  );
+                                })
+                              : scan.flags.map((flag, i) => {
+                                  const s = severityStyle('medium');
+                                  return (
+                                    <div key={i} style={{ background: s.bg, border: `1px solid ${s.border}`, borderRadius: 12, padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                      <i className={`fas ${s.icon}`} style={{ color: s.iconColor, flexShrink: 0 }} />
+                                      <span style={{ fontSize: '0.875rem' }}>{typeof flag === 'string' ? flag : JSON.stringify(flag)}</span>
+                                    </div>
+                                  );
+                                })
+                            }
+                          </div>
+                        </div>
+                      );
+                    })()}
+
+                    {/* Positive trust signals */}
+                    {scan.raw_data?.positive_signals?.length > 0 && (
+                      <div style={{ marginBottom: '1.25rem' }}>
+                        <label style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--ss-dashboard-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '0.75rem' }}>
+                          Trust Signals
+                        </label>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                          {scan.raw_data.positive_signals.map((sig, i) => (
+                            <div key={i} style={{ background: 'rgba(22,163,74,0.07)', border: '1px solid rgba(22,163,74,0.2)', borderRadius: 12, padding: '0.75rem 1rem', display: 'flex', alignItems: 'flex-start', gap: '0.6rem' }}>
+                              <i className="fas fa-circle-check" style={{ color: '#16a34a', marginTop: 2, flexShrink: 0 }} />
+                              <div>
+                                <p style={{ margin: 0, fontSize: '0.875rem', fontWeight: 600 }}>{sig.message}</p>
+                                {sig.impact && <p style={{ margin: '0.2rem 0 0', fontSize: '0.78rem', color: 'var(--ss-dashboard-muted)' }}>{sig.impact}</p>}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Recommendations */}
+                    {scan.raw_data?.recommendations?.length > 0 && (
                       <div>
                         <label style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--ss-dashboard-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '0.75rem' }}>
-                          Risk Flags
+                          What to check before buying
                         </label>
-                        <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                          {scan.flags.map((flag, i) => (
+                        <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
+                          {scan.raw_data.recommendations.map((rec, i) => (
                             <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem', fontSize: '0.875rem' }}>
-                              <i className="fas fa-exclamation-triangle" style={{ color: 'var(--ss-dashboard-orange)', marginTop: 2, flexShrink: 0 }}></i>
-                              {typeof flag === 'string' ? flag : JSON.stringify(flag)}
+                              <i className="fas fa-arrow-right" style={{ color: 'var(--ss-dashboard-blue)', marginTop: 3, flexShrink: 0, fontSize: '0.75rem' }} />
+                              {rec}
                             </li>
                           ))}
                         </ul>
                       </div>
                     )}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Raw data */}
-            {scan.raw_data && (
-              <div className="ss-dashboard-section">
-                <div style={{ maxWidth: 1440, margin: "0 auto", padding: "0 1.5rem" }}>
-                  <div className="ss-dashboard-section-heading">
-                    <div>
-                      <p className="ss-dashboard-eyebrow">Advanced</p>
-                      <h2>Raw Scan Data</h2>
-                    </div>
-                  </div>
-                  <div className="ss-dashboard-panel">
-                    <pre style={{ background: 'var(--ss-code-bg)', border: '1px solid var(--ss-dashboard-border)', borderRadius: 12, padding: '1rem', fontSize: '0.78rem', color: 'var(--ss-dashboard-text)', overflowX: 'auto', margin: 0, lineHeight: 1.6 }}>
-                      {JSON.stringify(scan.raw_data, null, 2)}
-                    </pre>
                   </div>
                 </div>
               </div>

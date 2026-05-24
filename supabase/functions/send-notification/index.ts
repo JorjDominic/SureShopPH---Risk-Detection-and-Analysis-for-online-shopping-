@@ -2,7 +2,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
-const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY")!;
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -22,6 +22,13 @@ Deno.serve(async (req) => {
 
   if (req.method !== "POST") {
     return Response.json({ error: "Method not allowed" }, { status: 405, headers: CORS_HEADERS });
+  }
+
+  if (!RESEND_API_KEY) {
+    return Response.json(
+      { error: "Server misconfiguration: RESEND_API_KEY secret is not set. Add it in Supabase → Edge Functions → Secrets." },
+      { status: 500, headers: CORS_HEADERS }
+    );
   }
 
   // ── 1. Verify caller is an authenticated admin ──────────────────────────

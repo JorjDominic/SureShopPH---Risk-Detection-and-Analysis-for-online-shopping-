@@ -257,18 +257,25 @@ function AdminControls() {
 
     // Fire email via Edge Function if email channel is on and confirmed
     if (scheduleNotify && emailConfirm) {
+      if (!emailSubject.trim() || !emailBody.trim()) {
+        setEmailError('Email subject and message body are required.');
+        setEmailSending(false);
+        return;
+      }
       const htmlBody = `<p style="font-family:sans-serif;font-size:15px;line-height:1.6;color:#1e293b">${emailBody.replace(/\n/g, '<br/>')}</p>`;
-      const { error: fnError } = await supabase.functions.invoke('send-notification', {
+      const { data: fnData, error: fnError } = await supabase.functions.invoke('send-notification', {
         body: { target: emailTarget, subject: emailSubject.trim(), html: htmlBody },
       });
       if (fnError) {
-        setEmailError(`Banner saved, but email failed: ${fnError.message}`);
+        const detail = fnData?.error ? ` — ${fnData.error}` : '';
+        setEmailError(`Banner saved, but email failed: ${fnError.message}${detail}`);
         setEmailSending(false);
         return;
       }
     }
 
     setEmailSending(false);
+    setEmailConfirm(false);
     setBannerSaved(true);
     setTimeout(() => setBannerSaved(false), 2500);
   };

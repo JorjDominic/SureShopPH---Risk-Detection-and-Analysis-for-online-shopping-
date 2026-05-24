@@ -169,6 +169,7 @@ function AdminControls() {
   const [scannerEnabled, setScannerEnabled] = useState(true);
   const [registrationsOpen, setRegistrationsOpen] = useState(true);
   const [readOnlyMode, setReadOnlyMode] = useState(false);
+  const [flagError, setFlagError] = useState('');
 
   // ── Announcement Banner ───────────────────────────────────────────────────
   const [bannerEnabled, setBannerEnabled] = useState(false);
@@ -378,14 +379,19 @@ function AdminControls() {
               </div>
               <div style={{ marginTop: '0.5rem' }}>
                 <FlagRow id="flag-maintenance" icon="fa-cone" label="Maintenance Mode" description="All non-admin users are redirected to a maintenance notice. Admins retain full access." checked={maintenanceMode}
-                  onChange={async (e) => { const enabled = e.target.checked; setMaintenanceMode(enabled); await supabase.from('system_config').upsert({ key: 'maintenance_mode', value: { enabled } }, { onConflict: 'key' }); }} danger />
+                  onChange={async (e) => { const enabled = e.target.checked; setMaintenanceMode(enabled); setFlagError(''); const { error } = await supabase.from('system_config').upsert({ key: 'maintenance_mode', value: { enabled } }, { onConflict: 'key' }); if (error) { setMaintenanceMode(!enabled); setFlagError('Failed to save maintenance_mode: ' + error.message); } }} danger />
                 <FlagRow id="flag-scanner" icon="fa-magnifying-glass-chart" label="URL Scanner" description="Allow users to submit new scan requests. Disable during model updates or backend maintenance." checked={scannerEnabled}
-                  onChange={async (e) => { const enabled = e.target.checked; setScannerEnabled(enabled); await supabase.from('system_config').upsert({ key: 'scanner_enabled', value: { enabled } }, { onConflict: 'key' }); }} />
+                  onChange={async (e) => { const enabled = e.target.checked; setScannerEnabled(enabled); setFlagError(''); const { error } = await supabase.from('system_config').upsert({ key: 'scanner_enabled', value: { enabled } }, { onConflict: 'key' }); if (error) { setScannerEnabled(!enabled); setFlagError('Failed to save scanner_enabled: ' + error.message); } }} />
                 <FlagRow id="flag-registrations" icon="fa-user-plus" label="New Registrations" description="Allow new users to create accounts. Disable to temporarily pause sign-ups." checked={registrationsOpen}
-                  onChange={async (e) => { const open = e.target.checked; setRegistrationsOpen(open); await supabase.from('system_config').upsert({ key: 'registrations_open', value: { open } }, { onConflict: 'key' }); }} />
+                  onChange={async (e) => { const open = e.target.checked; setRegistrationsOpen(open); setFlagError(''); const { error } = await supabase.from('system_config').upsert({ key: 'registrations_open', value: { open } }, { onConflict: 'key' }); if (error) { setRegistrationsOpen(!open); setFlagError('Failed to save registrations_open: ' + error.message); } }} />
                 <FlagRow id="flag-readonly" icon="fa-lock" label="Read-Only Mode" description="Blocks all user writes (scans, reports, settings) while still allowing browsing. Admins are unaffected." checked={readOnlyMode}
-                  onChange={async (e) => { const enabled = e.target.checked; setReadOnlyMode(enabled); await supabase.from('system_config').upsert({ key: 'read_only_mode', value: { enabled } }, { onConflict: 'key' }); }} danger />
+                  onChange={async (e) => { const enabled = e.target.checked; setReadOnlyMode(enabled); setFlagError(''); const { error } = await supabase.from('system_config').upsert({ key: 'read_only_mode', value: { enabled } }, { onConflict: 'key' }); if (error) { setReadOnlyMode(!enabled); setFlagError('Failed to save read_only_mode: ' + error.message); } }} danger />
               </div>
+              {flagError && (
+                <p style={{ color: '#dc2626', fontSize: '0.82rem', marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <i className="fas fa-circle-exclamation" /> {flagError}
+                </p>
+              )}
             </div>
           </div>
         </div>

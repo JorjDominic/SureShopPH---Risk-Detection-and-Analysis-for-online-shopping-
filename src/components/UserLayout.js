@@ -12,6 +12,14 @@ const BANNER_COLORS = {
   critical: { bg: 'rgba(220,38,38,0.1)',   border: 'rgba(220,38,38,0.3)',   color: '#dc2626', icon: 'fa-circle-exclamation' },
 };
 
+const BANNER_COLORS_DARK = {
+  info:     { bg: 'rgba(37,99,235,0.18)',  border: 'rgba(37,99,235,0.45)',  color: '#93c5fd', icon: 'fa-circle-info' },
+  warning:  { bg: 'rgba(249,115,22,0.18)', border: 'rgba(249,115,22,0.45)', color: '#fb923c', icon: 'fa-triangle-exclamation' },
+  critical: { bg: 'rgba(220,38,38,0.18)',  border: 'rgba(220,38,38,0.45)',  color: '#f87171', icon: 'fa-circle-exclamation' },
+};
+
+const BANNER_CACHE_KEY = 'ss_banner_cache';
+
 /**
  * UserLayout — persistent shell for all signed-in user routes.
  * Mounts the dashboard header once so it does not flicker between pages.
@@ -24,8 +32,36 @@ function UserLayout() {
   const [dismissed, setDismissed] = useState(false);
   const [notifUnread, setNotifUnread] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [isDark, setIsDark] = useState(() => document.body.classList.contains('ss-theme-dark'));
+
+  // Keep isDark in sync whenever the body class changes (theme toggle)
+  useEffect(() => {
+    const observer = new MutationObserver(() =>
+      setIsDark(document.body.classList.contains('ss-theme-dark'))
+    );
+    observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
+    const seen = localStorage.getItem('ss_notif_seen');
+
+    // Show immediately from sessionStorage cache — eliminates network-fetch delay
+    try {
+      const cached = sessionStorage.getItem(BANNER_CACHE_KEY);
+      if (cached) {
+        const cachedBanner = JSON.parse(cached);
+        if (cachedBanner?.enabled && cachedBanner.message?.trim()) {
+          setBanner(cachedBanner);
+          if (seen !== cachedBanner.message) {
+            setNotifUnread(true);
+            setShowToast(true);
+          }
+        }
+      }
+    } catch { /* ignore malformed cache */ }
+
+    // Refresh from Supabase in the background and update cache
     supabase
       .from('system_config')
       .select('value')
@@ -33,12 +69,15 @@ function UserLayout() {
       .single()
       .then(({ data }) => {
         if (data?.value?.enabled && data.value.message?.trim()) {
+          sessionStorage.setItem(BANNER_CACHE_KEY, JSON.stringify(data.value));
           setBanner(data.value);
-          const seen = localStorage.getItem('ss_notif_seen');
           if (seen !== data.value.message) {
             setNotifUnread(true);
             setShowToast(true);
           }
+        } else {
+          sessionStorage.removeItem(BANNER_CACHE_KEY);
+          setBanner(null);
         }
       });
   }, []);
@@ -62,7 +101,8 @@ function UserLayout() {
     navigate('/login');
   };
 
-  const bc = BANNER_COLORS[banner?.type] || BANNER_COLORS.info;
+  const colors = isDark ? BANNER_COLORS_DARK : BANNER_COLORS;
+  const bc = colors[banner?.type] || colors.info;
 
   return (
     <div className="ss-dashboard-page">
@@ -107,9 +147,9 @@ function UserLayout() {
             style={{
               position: 'fixed', bottom: '1.5rem', right: '1.5rem', zIndex: 9999,
               width: 320, padding: '0.85rem 1rem', borderRadius: 14,
-              background: 'var(--ss-dashboard-card, #1e293b)',
+              background: isDark ? 'rgba(15,23,42,0.97)' : '#ffffff',
               border: `1px solid ${bc.border}`,
-              boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+              boxShadow: isDark ? '0 8px 32px rgba(0,0,0,0.45)' : '0 8px 32px rgba(0,0,0,0.12)',
               display: 'flex', alignItems: 'flex-start', gap: '0.65rem',
               animation: 'ss-toast-in 0.35s cubic-bezier(0.34,1.56,0.64,1) both',
             }}
@@ -119,7 +159,7 @@ function UserLayout() {
               <div style={{ fontWeight: 800, fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.07em', color: bc.color, marginBottom: '0.2rem' }}>
                 {banner.type.charAt(0).toUpperCase() + banner.type.slice(1)}
               </div>
-              <p style={{ margin: 0, fontSize: '0.84rem', lineHeight: 1.45, color: 'var(--ss-dashboard-text, #e2e8f0)', wordBreak: 'break-word' }}>
+              <p style={{ margin: 0, fontSize: '0.84rem', lineHeight: 1.45, color: isDark ? '#e2e8f0' : '#0f172a', wordBreak: 'break-word' }}>
                 {banner.message}
               </p>
             </div>

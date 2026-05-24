@@ -240,7 +240,7 @@ function AdminControls() {
     const { error: bannerError } = await supabase.from('system_config').upsert({
       key: 'announcement',
       value: { enabled: bannerEnabled, type: bannerType, message: bannerMessage, dismissible: bannerDismissible },
-    });
+    }, { onConflict: 'key' });
     if (bannerError) {
       setEmailError(`Failed to save banner: ${bannerError.message}`);
       setEmailSending(false);
@@ -252,7 +252,7 @@ function AdminControls() {
       await supabase.from('system_config').upsert({
         key: 'scheduled_maintenance',
         value: { start: scheduleStart, end: scheduleEnd, message: bannerMessage, notify: scheduleNotify },
-      });
+      }, { onConflict: 'key' });
     }
 
     // Fire email via Edge Function if email channel is on and confirmed
@@ -378,13 +378,13 @@ function AdminControls() {
               </div>
               <div style={{ marginTop: '0.5rem' }}>
                 <FlagRow id="flag-maintenance" icon="fa-cone" label="Maintenance Mode" description="All non-admin users are redirected to a maintenance notice. Admins retain full access." checked={maintenanceMode}
-                  onChange={async (e) => { const enabled = e.target.checked; setMaintenanceMode(enabled); await supabase.from('system_config').upsert({ key: 'maintenance_mode', value: { enabled } }); }} danger />
+                  onChange={async (e) => { const enabled = e.target.checked; setMaintenanceMode(enabled); await supabase.from('system_config').upsert({ key: 'maintenance_mode', value: { enabled } }, { onConflict: 'key' }); }} danger />
                 <FlagRow id="flag-scanner" icon="fa-magnifying-glass-chart" label="URL Scanner" description="Allow users to submit new scan requests. Disable during model updates or backend maintenance." checked={scannerEnabled}
-                  onChange={async (e) => { const enabled = e.target.checked; setScannerEnabled(enabled); await supabase.from('system_config').upsert({ key: 'scanner_enabled', value: { enabled } }); }} />
+                  onChange={async (e) => { const enabled = e.target.checked; setScannerEnabled(enabled); await supabase.from('system_config').upsert({ key: 'scanner_enabled', value: { enabled } }, { onConflict: 'key' }); }} />
                 <FlagRow id="flag-registrations" icon="fa-user-plus" label="New Registrations" description="Allow new users to create accounts. Disable to temporarily pause sign-ups." checked={registrationsOpen}
-                  onChange={async (e) => { const open = e.target.checked; setRegistrationsOpen(open); await supabase.from('system_config').upsert({ key: 'registrations_open', value: { open } }); }} />
+                  onChange={async (e) => { const open = e.target.checked; setRegistrationsOpen(open); await supabase.from('system_config').upsert({ key: 'registrations_open', value: { open } }, { onConflict: 'key' }); }} />
                 <FlagRow id="flag-readonly" icon="fa-lock" label="Read-Only Mode" description="Blocks all user writes (scans, reports, settings) while still allowing browsing. Admins are unaffected." checked={readOnlyMode}
-                  onChange={async (e) => { const enabled = e.target.checked; setReadOnlyMode(enabled); await supabase.from('system_config').upsert({ key: 'read_only_mode', value: { enabled } }); }} danger />
+                  onChange={async (e) => { const enabled = e.target.checked; setReadOnlyMode(enabled); await supabase.from('system_config').upsert({ key: 'read_only_mode', value: { enabled } }, { onConflict: 'key' }); }} danger />
               </div>
             </div>
           </div>

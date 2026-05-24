@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
 import { useAuth } from '../../context/AuthContext';
@@ -154,10 +154,8 @@ function AdminDashboard() {
 
   const [kpis, setKpis] = useState({ total: 0, highRisk: 0, pendingReports: 0 });
   const [trendData, setTrendData] = useState([]);
-  const [typeSegments, setTypeSegments] = useState([]);
   const [recentScans, setRecentScans] = useState([]);
-  const [scanPage, setScanPage] = useState(0);
-  const SCAN_PAGE_SIZE = 7;
+  const sliderRef = useRef(null);
 
   useEffect(() => {
     if (authLoading) return;
@@ -210,20 +208,6 @@ function AdminDashboard() {
           trend.push({ label, value: count });
         }
         setTrendData(trend);
-
-        /* ── Type / platform distribution ── */
-        const { data: typeRows } = await supabase.from('scan_history').select('scan_mode');
-        if (!active) return;
-
-        const counts = { product: 0, url: 0 };
-        for (const row of (typeRows ?? [])) {
-          const t = row.scan_mode?.toLowerCase();
-          if (t in counts) counts[t]++;
-        }
-        setTypeSegments([
-          { label: 'Product', value: counts.product, color: '#0ea5a4' },
-          { label: 'URL / Site', value: counts.url, color: '#2563eb' },
-        ]);
       } catch {
         /* non-critical — leave defaults */
       } finally {
@@ -338,10 +322,7 @@ function AdminDashboard() {
         {/* Charts row */}
         <div className="ss-dashboard-section">
           <div style={{ maxWidth: 1440, margin: '0 auto', padding: '0 1.5rem' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.7fr) minmax(0, 1fr)', gap: '1.25rem' }}>
-
-              {/* Line chart */}
-              <div className="ss-dashboard-panel">
+            <div className="ss-dashboard-panel">
                 <div className="ss-dashboard-section-heading" style={{ marginBottom: '1rem' }}>
                   <div>
                     <p className="ss-dashboard-eyebrow">Trend</p>
@@ -352,39 +333,6 @@ function AdminDashboard() {
                   <LineChart data={trendData} />
                 </div>
               </div>
-
-              {/* Donut chart */}
-              <div className="ss-dashboard-panel">
-                <div style={{ marginBottom: '1rem' }}>
-                  <p className="ss-dashboard-eyebrow">Breakdown</p>
-                  <h2 style={{ fontSize: '1.1rem', fontFamily: 'var(--font-display)', color: 'var(--ss-dashboard-text)', letterSpacing: '-0.03em' }}>
-                    Top Scan Types
-                  </h2>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
-                  <DonutChart segments={typeSegments} />
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-                    {typeSegments.map((seg) => (
-                      <div key={seg.label} style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
-                        <span
-                          style={{
-                            width: 12, height: 12, borderRadius: '50%',
-                            background: seg.color, flexShrink: 0,
-                          }}
-                        />
-                        <span style={{ fontSize: '0.85rem', color: 'var(--ss-dashboard-muted)' }}>
-                          {seg.label}
-                        </span>
-                        <strong style={{ marginLeft: 'auto', paddingLeft: '0.5rem', fontSize: '0.85rem', color: 'var(--ss-dashboard-text)' }}>
-                          {seg.value}
-                        </strong>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-            </div>
           </div>
         </div>
 
@@ -408,81 +356,52 @@ function AdminDashboard() {
                   <p>User scans will appear here as the extension reports them.</p>
                 </div>
               ) : (
-                <div className="ss-dashboard-table-wrap">
-                  <table className="ss-dashboard-table">
-                    <thead>
-                      <tr>
-                        <th>User ID</th>
-                        <th>Type</th>
-                        <th>Product / URL</th>
-                        <th>Risk</th>
-                        <th>Score</th>
-                        <th>Date</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {recentScans.slice(scanPage * SCAN_PAGE_SIZE, (scanPage + 1) * SCAN_PAGE_SIZE).map((scan) => (
-                        <tr key={scan.id}>
-                          <td style={{ fontFamily: 'monospace', fontSize: '0.78rem', color: '#94a3b8' }}>
-                            {scan.user_id?.slice(0, 8)}\u2026
-                          </td>
-                          <td>{scan.scan_mode ? scan.scan_mode.charAt(0).toUpperCase() + scan.scan_mode.slice(1) : '\u2014'}</td>
-                          <td style={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {scan.url || scan.platform || '\u2014'}
-                          </td>
-                          <td>
-                            <span className={`ss-dashboard-risk ${riskClass(scan.risk_level)}`}>
-                              {scan.risk_level || 'Unknown'}
-                            </span>
-                          </td>
-                          <td style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>
-                            {scan.risk_score != null ? `${scan.risk_score}%` : '\u2014'}
-                          </td>
-                          <td style={{ whiteSpace: 'nowrap', fontSize: '0.82rem' }}>
-                            {formatDate(scan.created_at)}
-                          </td>
-                          <td>
-                            <Link
-                              to={`/scan-details/${scan.id}`}
-                              className="ss-dashboard-btn ss-dashboard-btn-secondary"
-                              style={{ minHeight: 34, padding: '0 0.75rem', fontSize: '0.78rem' }}
-                            >
-                              <i className="fas fa-eye"></i>
-                            </Link>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-              {recentScans.length > SCAN_PAGE_SIZE && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-                  <span style={{ fontSize: '0.85rem', color: '#64748b' }}>
-                    Page {scanPage + 1} of {Math.ceil(recentScans.length / SCAN_PAGE_SIZE)}
-                  </span>
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button
-                      type="button"
-                      className="ss-dashboard-btn ss-dashboard-btn-secondary"
-                      disabled={scanPage === 0}
-                      onClick={() => setScanPage((p) => Math.max(0, p - 1))}
-                      style={{ minHeight: 36, padding: '0 0.9rem', fontSize: '0.83rem' }}
-                    >
-                      <i className="fas fa-chevron-left"></i> Prev
+                <>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.4rem', marginBottom: '0.85rem' }}>
+                    <button type="button" className="ss-dashboard-btn ss-dashboard-btn-secondary" style={{ minHeight: 32, padding: '0 0.7rem' }} onClick={() => sliderRef.current?.scrollBy({ left: -260, behavior: 'smooth' })} aria-label="Scroll left">
+                      <i className="fas fa-chevron-left" />
                     </button>
-                    <button
-                      type="button"
-                      className="ss-dashboard-btn ss-dashboard-btn-secondary"
-                      disabled={(scanPage + 1) * SCAN_PAGE_SIZE >= recentScans.length}
-                      onClick={() => setScanPage((p) => p + 1)}
-                      style={{ minHeight: 36, padding: '0 0.9rem', fontSize: '0.83rem' }}
-                    >
-                      Next <i className="fas fa-chevron-right"></i>
+                    <button type="button" className="ss-dashboard-btn ss-dashboard-btn-secondary" style={{ minHeight: 32, padding: '0 0.7rem' }} onClick={() => sliderRef.current?.scrollBy({ left: 260, behavior: 'smooth' })} aria-label="Scroll right">
+                      <i className="fas fa-chevron-right" />
                     </button>
                   </div>
-                </div>
+                  <div
+                    ref={sliderRef}
+                    style={{ display: 'flex', gap: '0.85rem', overflowX: 'auto', scrollSnapType: 'x mandatory', scrollBehavior: 'smooth', paddingBottom: '0.25rem', msOverflowStyle: 'none', scrollbarWidth: 'none' }}
+                  >
+                    {recentScans.map((scan) => (
+                      <div
+                        key={scan.id}
+                        style={{ minWidth: 230, maxWidth: 230, flexShrink: 0, scrollSnapAlign: 'start', background: 'var(--ss-dashboard-bg, rgba(248,250,252,0.6))', border: '1px solid var(--ss-dashboard-border)', borderRadius: 12, padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.55rem' }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                          <span className={`ss-dashboard-risk ${riskClass(scan.risk_level)}`}>
+                            {scan.risk_level || 'Unknown'}
+                          </span>
+                          {scan.risk_score != null && (
+                            <span style={{ fontFamily: 'monospace', fontSize: '0.75rem', color: 'var(--ss-dashboard-muted)', fontWeight: 600 }}>{scan.risk_score}%</span>
+                          )}
+                        </div>
+                        <p style={{ margin: 0, fontSize: '0.84rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--ss-dashboard-text)', fontWeight: 500 }} title={scan.url || scan.platform}>
+                          {scan.url || scan.platform || '—'}
+                        </p>
+                        <p style={{ margin: 0, fontSize: '0.72rem', color: 'var(--ss-dashboard-muted)', fontFamily: 'monospace' }}>
+                          {scan.user_id?.slice(0, 8)}…
+                        </p>
+                        <p style={{ margin: 0, fontSize: '0.74rem', color: 'var(--ss-dashboard-muted)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                          <i className="fas fa-clock" />{formatDate(scan.created_at)}
+                        </p>
+                        <Link
+                          to={`/scan-details/${scan.id}`}
+                          className="ss-dashboard-btn ss-dashboard-btn-secondary"
+                          style={{ fontSize: '0.78rem', minHeight: 32, padding: '0 0.75rem', marginTop: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}
+                        >
+                          <i className="fas fa-eye" /> View
+                        </Link>
+                      </div>
+                    ))}
+                  </div>
+                </>
               )}
             </div>
           </div>

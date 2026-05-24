@@ -1,5 +1,5 @@
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
 import { useAuth } from '../../context/AuthContext';
@@ -18,7 +18,7 @@ function UserDashboard() {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ total: 0, highRisk: 0, protected: 0 });
   const [recentScans, setRecentScans] = useState([]);
-  const [scanPage, setScanPage] = useState(0);
+  const sliderRef = useRef(null);
   const [extensionActive, setExtensionActive] = useState(false);
   const [keyBusy, setKeyBusy] = useState(false);
   const [keyError, setKeyError] = useState(null);
@@ -74,9 +74,6 @@ function UserDashboard() {
     return () => { active = false; };
   }, [authLoading, user, isAdmin, isAdminView, navigate]);
 
-  const SCAN_PAGE_SIZE = 7;
-  const scanPageCount = Math.ceil(recentScans.length / SCAN_PAGE_SIZE);
-  const pagedScans = recentScans.slice(scanPage * SCAN_PAGE_SIZE, (scanPage + 1) * SCAN_PAGE_SIZE);
 
   const displayName = useMemo(() => {
     if (!user) return 'Shopper';
@@ -401,71 +398,44 @@ function UserDashboard() {
                 </div>
               </div>
             ) : (
-              <>
               <div className="ss-dashboard-panel">
-                <div className="ss-dashboard-table-wrap">
-                  <table className="ss-dashboard-table">
-                    <thead>
-                      <tr>
-                        <th>Type</th>
-                        <th>Product</th>
-                        <th>Risk Level</th>
-                        <th>Time</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {pagedScans.map((scan) => (
-                        <tr key={scan.id}>
-                          <td>{scan.scan_mode ? scan.scan_mode.charAt(0).toUpperCase() + scan.scan_mode.slice(1) : '—'}</td>
-                          <td style={{ maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {scan.url || '—'}
-                          </td>
-                          <td>
-                            <span className={`ss-dashboard-risk ${riskClass(scan.risk_level)}`}>
-                              {scan.risk_level || 'Unknown'}
-                            </span>
-                          </td>
-                          <td style={{ whiteSpace: 'nowrap', fontSize: '0.82rem' }}>{formatDate(scan.created_at)}</td>
-                          <td>
-                            <Link
-                              to={`/scan-details/${scan.id}`}
-                              className="ss-dashboard-btn ss-dashboard-btn-secondary"
-                              style={{ minHeight: 36, padding: '0 0.85rem', fontSize: '0.8rem' }}
-                            >
-                              <i className="fas fa-eye"></i>&nbsp;View
-                            </Link>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.4rem', marginBottom: '0.85rem' }}>
+                  <button type="button" className="ss-dashboard-btn ss-dashboard-btn-secondary" style={{ minHeight: 32, padding: '0 0.7rem' }} onClick={() => sliderRef.current?.scrollBy({ left: -260, behavior: 'smooth' })} aria-label="Scroll left">
+                    <i className="fas fa-chevron-left" />
+                  </button>
+                  <button type="button" className="ss-dashboard-btn ss-dashboard-btn-secondary" style={{ minHeight: 32, padding: '0 0.7rem' }} onClick={() => sliderRef.current?.scrollBy({ left: 260, behavior: 'smooth' })} aria-label="Scroll right">
+                    <i className="fas fa-chevron-right" />
+                  </button>
+                </div>
+                <div
+                  ref={sliderRef}
+                  style={{ display: 'flex', gap: '0.85rem', overflowX: 'auto', scrollSnapType: 'x mandatory', scrollBehavior: 'smooth', paddingBottom: '0.25rem', msOverflowStyle: 'none', scrollbarWidth: 'none' }}
+                >
+                  {recentScans.map((scan) => (
+                    <div
+                      key={scan.id}
+                      style={{ minWidth: 220, maxWidth: 220, flexShrink: 0, scrollSnapAlign: 'start', background: 'var(--ss-dashboard-bg, rgba(248,250,252,0.6))', border: '1px solid var(--ss-dashboard-border)', borderRadius: 12, padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.55rem' }}
+                    >
+                      <span className={`ss-dashboard-risk ${riskClass(scan.risk_level)}`} style={{ alignSelf: 'flex-start' }}>
+                        {scan.risk_level || 'Unknown'}
+                      </span>
+                      <p style={{ margin: 0, fontSize: '0.84rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--ss-dashboard-text)', fontWeight: 500 }} title={scan.url}>
+                        {scan.url || '—'}
+                      </p>
+                      <p style={{ margin: 0, fontSize: '0.74rem', color: 'var(--ss-dashboard-muted)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                        <i className="fas fa-clock" />{formatDate(scan.created_at)}
+                      </p>
+                      <Link
+                        to={`/scan-details/${scan.id}`}
+                        className="ss-dashboard-btn ss-dashboard-btn-secondary"
+                        style={{ fontSize: '0.78rem', minHeight: 32, padding: '0 0.75rem', marginTop: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}
+                      >
+                        <i className="fas fa-eye" /> View
+                      </Link>
+                    </div>
+                  ))}
                 </div>
               </div>
-              {scanPageCount > 1 && (
-                <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', marginTop: '1.25rem', alignItems: 'center' }}>
-                  <button
-                    type="button"
-                    className="ss-dashboard-btn ss-dashboard-btn-secondary"
-                    onClick={() => setScanPage((p) => Math.max(0, p - 1))}
-                    disabled={scanPage === 0}
-                  >
-                    <i className="fas fa-chevron-left"></i> Prev
-                  </button>
-                  <span style={{ fontSize: '0.85rem', color: 'var(--ss-dashboard-muted)' }}>
-                    Page {scanPage + 1} of {scanPageCount}
-                  </span>
-                  <button
-                    type="button"
-                    className="ss-dashboard-btn ss-dashboard-btn-secondary"
-                    onClick={() => setScanPage((p) => Math.min(scanPageCount - 1, p + 1))}
-                    disabled={scanPage >= scanPageCount - 1}
-                  >
-                    Next <i className="fas fa-chevron-right"></i>
-                  </button>
-                </div>
-              )}
-              </>
             )}
           </div>
         </div>
